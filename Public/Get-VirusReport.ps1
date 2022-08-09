@@ -38,12 +38,14 @@
     .NOTES
     General notes
     #>
-    [CmdletBinding(DefaultParameterSetName = 'File')]
+    [CmdletBinding(DefaultParameterSetName = 'FileInformation')]
     Param(
         [Parameter(Mandatory)][string] $ApiKey,
-        [Parameter(ParameterSetName = "FileHash", ValueFromPipeline, ValueFromPipelineByPropertyName)]
-        [string] $FileHash,
-        [Parameter(ParameterSetName = "FileInformation", ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = "Analysis", ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [string] $AnalysisId,
+        [Parameter(ParameterSetName = "Hash", ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [string] $Hash,
+        [alias('FileHash')][Parameter(ParameterSetName = "FileInformation", ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [System.IO.FileInfo] $File,
         [alias('Uri')][Parameter(ParameterSetName = "Url", ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [Uri] $Url,
@@ -66,11 +68,21 @@
                     'X-Apikey' = $ApiKey
                 }
             }
-        } elseif ($PSCmdlet.ParameterSetName -eq "FileHash") {
-            $VTFileHash = $FileHash
+        } elseif ($PSCmdlet.ParameterSetName -eq "Analysis") {
+            $SearchQueryEscaped = [uri]::EscapeUriString($AnalysisId)
             $RestMethod = @{
                 Method  = 'GET'
-                Uri     = "https://www.virustotal.com/api/v3/files/$FileHash"
+                Uri     = "https://www.virustotal.com/api/v3/analyses/$SearchQueryEscaped"
+                Headers = @{
+                    "Accept"   = "application/json"
+                    'X-Apikey' = $ApiKey
+                }
+            }
+
+        } elseif ($PSCmdlet.ParameterSetName -eq "Hash") {
+            $RestMethod = @{
+                Method  = 'GET'
+                Uri     = "https://www.virustotal.com/api/v3/files/$Hash"
                 Headers = @{
                     "Accept"   = "application/json"
                     'X-Apikey' = $ApiKey
@@ -116,8 +128,16 @@
                 }
             }
         }
-        $InvokeApiOutput = Invoke-RestMethod @RestMethod -ErrorAction Stop
-        $InvokeApiOutput
+        Try {
+            $InvokeApiOutput = Invoke-RestMethod @RestMethod -ErrorAction Stop
+            $InvokeApiOutput
+        } catch {
+            if ($PSBoundParameters.ErrorAction -eq 'Stop') {
+                throw
+            } else {
+                Write-Warning -Message "Get-VirusReport - Using $($PSCmdlet.ParameterSetName) task failed with error: $($_.Exception.Message)"
+            }
+        }
     }
 }
 

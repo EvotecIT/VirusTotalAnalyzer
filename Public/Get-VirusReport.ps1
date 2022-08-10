@@ -38,6 +38,7 @@
     .NOTES
     General notes
     #>
+    [alias('Get-VirusScan')]
     [CmdletBinding(DefaultParameterSetName = 'FileInformation')]
     Param(
         [Parameter(Mandatory)][string] $ApiKey,

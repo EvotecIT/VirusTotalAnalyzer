@@ -1,4 +1,4 @@
-﻿Import-Module .\VirusTotal.psd1 -Force
+﻿Import-Module .\VirusTotalAnalyzer.psd1 -Force
 
 $VTApi = Get-Content -LiteralPath "C:\Support\Important\VirusTotalApi.txt"
 

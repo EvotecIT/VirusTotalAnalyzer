@@ -1,10 +1,10 @@
 ﻿function ConvertTo-VTBody {
     <#
     .SYNOPSIS
-    Converts file to memory stream to create body for Invoke-RestMethod and send it to VirusTotal.
+    Converts file to memory stream to create body for Invoke-RestMethod and send it to Virus Total.
 
     .DESCRIPTION
-    Converts file to memory stream to create body for Invoke-RestMethod and send it to VirusTotal.
+    Converts file to memory stream to create body for Invoke-RestMethod and send it to Virus Total.
 
     .PARAMETER FileInformation
     Path to a file to send to Virus Total

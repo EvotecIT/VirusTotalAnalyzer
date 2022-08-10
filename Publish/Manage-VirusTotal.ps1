@@ -3,7 +3,7 @@ Import-Module "C:\Support\GitHub\PSPublishModule\PSPublishModule.psd1" -Force
 
 $Configuration = @{
     Information = @{
-        ModuleName        = 'VirusTotal'
+        ModuleName        = 'VirusTotalAnalyzer'
         DirectoryProjects = 'C:\Support\GitHub'
 
         Manifest          = @{
@@ -25,9 +25,9 @@ $Configuration = @{
             PowerShellVersion    = '5.1'
             # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
             # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
-            Tags                 = @('Windows', 'Linux', 'macOs', 'VirusTotal')
+            Tags                 = @('Windows', 'Linux', 'macOs', 'VirusTotal', 'virus', 'threat', 'analyzer')
 
-            ProjectUri           = 'https://github.com/EvotecIT/VirusTotal'
+            ProjectUri           = 'https://github.com/EvotecIT/VirusTotalAnalyzer'
 
             RequiredModules      = @(
                 #@{ ModuleName = 'PSEventViewer'; ModuleVersion = 'Latest'; Guid = '5df72a79-cdf6-4add-b38d-bcacf26fb7bc' }
@@ -154,10 +154,10 @@ $Configuration = @{
             Verbose         = $false
         }
         PublishModule      = @{  # requires Enable to be on to process all of that
-            Enabled      = $false
+            Enabled      = $true
             Prerelease   = ''
             RequireForce = $false
-            GitHub       = $false
+            GitHub       = $true
         }
     }
 }

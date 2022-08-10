@@ -1,14 +1,14 @@
 ﻿<p align="center">
-  <a href="https://www.powershellgallery.com/packages/VirusTotal"><img src="https://img.shields.io/powershellgallery/v/VirusTotal.svg"></a>
-  <a href="https://www.powershellgallery.com/packages/VirusTotal"><img src="https://img.shields.io/powershellgallery/vpre/VirusTotal.svg?label=powershell%20gallery%20preview&colorB=yellow"></a>
-  <a href="https://github.com/EvotecIT/VirusTotal"><img src="https://img.shields.io/github/license/EvotecIT/VirusTotal.svg"></a>
+  <a href="https://www.powershellgallery.com/packages/VirusTotalAnalyzer"><img src="https://img.shields.io/powershellgallery/v/VirusTotalAnalyzer.svg"></a>
+  <a href="https://www.powershellgallery.com/packages/VirusTotalAnalyzer"><img src="https://img.shields.io/powershellgallery/vpre/VirusTotalAnalyzer.svg?label=powershell%20gallery%20preview&colorB=yellow"></a>
+  <a href="https://github.com/EvotecIT/VirusTotalAnalyzer"><img src="https://img.shields.io/github/license/EvotecIT/VirusTotalAnalyzer.svg"></a>
 </p>
 
 <p align="center">
-  <a href="https://www.powershellgallery.com/packages/VirusTotal"><img src="https://img.shields.io/powershellgallery/p/VirusTotal.svg"></a>
-  <a href="https://github.com/EvotecIT/VirusTotal"><img src="https://img.shields.io/github/languages/top/evotecit/VirusTotal.svg"></a>
-  <a href="https://github.com/EvotecIT/VirusTotal"><img src="https://img.shields.io/github/languages/code-size/evotecit/VirusTotal.svg"></a>
-  <a href="https://www.powershellgallery.com/packages/VirusTotal"><img src="https://img.shields.io/powershellgallery/dt/VirusTotal.svg"></a>
+  <a href="https://www.powershellgallery.com/packages/VirusTotalAnalyzer"><img src="https://img.shields.io/powershellgallery/p/VirusTotalAnalyzer.svg"></a>
+  <a href="https://github.com/EvotecIT/VirusTotalAnalyzer"><img src="https://img.shields.io/github/languages/top/evotecit/VirusTotalAnalyzer.svg"></a>
+  <a href="https://github.com/EvotecIT/VirusTotalAnalyzer"><img src="https://img.shields.io/github/languages/code-size/evotecit/VirusTotalAnalyzer.svg"></a>
+  <a href="https://www.powershellgallery.com/packages/VirusTotalAnalyzer"><img src="https://img.shields.io/powershellgallery/dt/VirusTotalAnalyzer.svg"></a>
 </p>
 
 <p align="center">
@@ -17,12 +17,12 @@
   <a href="https://www.linkedin.com/in/pklys"><img src="https://img.shields.io/badge/LinkedIn-pklys-0077B5.svg?logo=LinkedIn"></a>
 </p>
 
-# VirusTotal PowerShell Module
+# VirusTotalAnalyzer PowerShell Module
 
 ## To install
 
 ```powershell
-Install-Module -Name VirusTotal -AllowClobber -Force
+Install-Module -Name VirusTotalAnalyzer -AllowClobber -Force
 ```
 
 Force and AllowClobber aren't necessary, but they do skip errors in case some appear.
@@ -30,7 +30,7 @@ Force and AllowClobber aren't necessary, but they do skip errors in case some ap
 ## And to update
 
 ```powershell
-Update-Module -Name VirusTotal
+Update-Module -Name VirusTotalAnalyzer
 ```
 
 That's it. Whenever there's a new version, you run the command, and you can enjoy it. Remember that you may need to close, reopen PowerShell session if you have already used module before updating it.

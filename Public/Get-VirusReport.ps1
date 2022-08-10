@@ -59,13 +59,21 @@
     Process {
         $RestMethod = @{}
         if ($PSCmdlet.ParameterSetName -eq 'FileInformation') {
-            $VTFileHash = Get-FileHash -LiteralPath $File -Algorithm SHA256
-            $RestMethod = @{
-                Method  = 'GET'
-                Uri     = "https://www.virustotal.com/api/v3/files/$($VTFileHash.Hash)"
-                Headers = @{
-                    "Accept"   = "application/json"
-                    'X-Apikey' = $ApiKey
+            if (Test-Path -LiteralPath $File) {
+                $VTFileHash = Get-FileHash -LiteralPath $File -Algorithm SHA256
+                $RestMethod = @{
+                    Method  = 'GET'
+                    Uri     = "https://www.virustotal.com/api/v3/files/$($VTFileHash.Hash)"
+                    Headers = @{
+                        "Accept"   = "application/json"
+                        'X-Apikey' = $ApiKey
+                    }
+                }
+            } else {
+                if ($PSBoundParameters.ErrorAction -eq 'Stop') {
+                    throw "Failed because the file $File does not exist."
+                } else {
+                    Write-Warning -Message "Get-VirusReport - Using $($PSCmdlet.ParameterSetName) task failed because the file $File does not exist."
                 }
             }
         } elseif ($PSCmdlet.ParameterSetName -eq "Analysis") {

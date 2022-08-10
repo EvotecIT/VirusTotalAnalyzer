@@ -4,7 +4,8 @@
     Send a file, file hash or url to VirusTotal for a scan.
 
     .DESCRIPTION
-    Send a file, file hash or url to VirusTotal for a scan using Virus Total v3 Api
+    Send a file, file hash or url to VirusTotal for a scan using Virus Total v3 Api.
+    If file hash is provided then we tell VirusTotal to reanalyze the file it has rather than sending a new file.
 
     .PARAMETER ApiKey
     ApiKey to use for the scan. This key is available only for registred users (free).

@@ -23,6 +23,11 @@
 It allowws to check if file is infected or not and also to get information about file.
 You can also request information about URL, Domain or IPAddress.
 
+
+You can read about it on my blog:
+
+- [Working with Virus Total from PowerShell](https://evotec.xyz/working-with-virustotal-from-powershell/)
+
 ### Getting information from VirusTotal
 After installation of module you can use it like this:
 

@@ -1,4 +1,4 @@
-﻿function Invoke-VirusScan {
+﻿function New-VirusScan {
     <#
     .SYNOPSIS
     Send a file, file hash or url to VirusTotal for a scan.
@@ -24,14 +24,14 @@
     .EXAMPLE
     $VTApi = 'YourApiCode'
 
-    Invoke-VirusScan -ApiKey $VTApi -Url 'evotec.pl'
-    Invoke-VirusScan -ApiKey $VTApi -Url 'https://evotec.pl'
+    New-VirusScan -ApiKey $VTApi -Url 'evotec.pl'
+    New-VirusScan -ApiKey $VTApi -Url 'https://evotec.pl'
 
     .EXAMPLE
     $VTApi = 'YourApiCode
 
     # Submit file to scan
-    $Output = Invoke-VirusScan -ApiKey $VTApi -File "C:\Users\przemyslaw.klys\Documents\WindowsPowerShell\Modules\AuditPolicy\AuditPolicy.psd1"
+    $Output = New-VirusScan -ApiKey $VTApi -File "C:\Users\przemyslaw.klys\Documents\WindowsPowerShell\Modules\AuditPolicy\AuditPolicy.psd1"
     $Output | Format-List
 
     # Since the output will return scan ID we can use it to get the report
@@ -91,7 +91,7 @@
                     }
                 }
             } else {
-                Write-Warning -Message "Invoke-VirusScan - File $FileHash doesn't exists. Skipping..."
+                Write-Warning -Message "New-VirusScan - File $FileHash doesn't exists. Skipping..."
             }
         } elseif ($PSCmdlet.ParameterSetName -eq "Url") {
             $RestMethod = @{
@@ -113,7 +113,7 @@
                 if ($PSBoundParameters.ErrorAction -eq 'Stop') {
                     throw
                 } else {
-                    Write-Warning -Message "Invoke-VirusScan - Using $($PSCmdlet.ParameterSetName) task failed with error: $($_.Exception.Message)"
+                    Write-Warning -Message "New-VirusScan - Using $($PSCmdlet.ParameterSetName) task failed with error: $($_.Exception.Message)"
                 }
             }
         }

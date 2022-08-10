@@ -3,7 +3,7 @@
 $VTApi = Get-Content -LiteralPath "C:\Support\Important\VirusTotalApi.txt"
 
 # Submit file to scan
-$Output = Invoke-VirusScan -ApiKey $VTApi -File "$PSScriptRoot\Submisions\TestFile.txt"
+$Output = New-VirusScan -ApiKey $VTApi -File "$PSScriptRoot\Submisions\TestFile.txt"
 $Output | Format-List
 
 # Since the output will return scan ID we can use it to get the report

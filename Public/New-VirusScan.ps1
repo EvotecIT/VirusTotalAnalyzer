@@ -73,7 +73,7 @@
         } elseif ($PSCmdlet.ParameterSetName -eq "Hash") {
             $RestMethod = @{
                 Method  = 'POST'
-                Uri     = "https://www.virustotal.com/api/v3/ files/$Hash/analyse"
+                Uri     = "https://www.virustotal.com/api/v3/files/$Hash/analyse"
                 Headers = @{
                     "Accept"   = "application / json"
                     'X-Apikey' = $ApiKey

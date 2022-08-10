@@ -5,14 +5,14 @@
     CompanyName          = 'Evotec'
     CompatiblePSEditions = @('Desktop', 'Core')
     Copyright            = '(c) 2011 - 2022 Przemyslaw Klys @ Evotec. All rights reserved.'
-    Description          = 'PowerShell module that intearacts with the VirusTotalAnalyzer service using a VirusTotalAnalyzer API (free)'
+    Description          = 'PowerShell module that intearacts with the VirusTotal service using a VirusTotal API (free)'
     FunctionsToExport    = @('Get-VirusReport', 'Invoke-VirusScan')
     GUID                 = '2e82faa1-d870-42b2-b5aa-4a63bf02f43e'
     ModuleVersion        = '0.0.1'
     PowerShellVersion    = '5.1'
     PrivateData          = @{
         PSData = @{
-            Tags       = @('Windows', 'Linux', 'macOs', 'VirusTotalAnalyzer')
+            Tags       = @('Windows', 'Linux', 'macOs', 'VirusTotal', 'virus', 'threat', 'analyzer')
             ProjectUri = 'https://github.com/EvotecIT/VirusTotalAnalyzer'
         }
     }

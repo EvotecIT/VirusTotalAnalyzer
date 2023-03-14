@@ -139,7 +139,16 @@
         }
         Try {
             $InvokeApiOutput = Invoke-RestMethod @RestMethod -ErrorAction Stop
-            $InvokeApiOutput
+            if ($InvokeApiOutput -is [string]) {
+                $InvokeApiOutput = $InvokeApiOutput.Replace("`"`": {", "`"external_assemblies`": {")
+                try {
+                    $InvokeApiOutput | ConvertFrom-Json -ErrorAction Stop
+                } catch {
+                    Write-Warning -Message "Get-VirusReport - Using $($PSCmdlet.ParameterSetName) task failed with error: $($_.Exception.Message)"
+                }
+            } else {
+                $InvokeApiOutput
+            }
         } catch {
             if ($PSBoundParameters.ErrorAction -eq 'Stop') {
                 throw

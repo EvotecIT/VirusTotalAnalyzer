@@ -2,8 +2,10 @@
 
 $VTApi = Get-Content -LiteralPath "C:\Support\Important\VirusTotalApi.txt"
 
+$Items = Get-ChildItem -LiteralPath "C:\Users\przemyslaw.klys\Documents\WindowsPowerShell\Modules\PSWriteHTML\Resources\CSS" -Include "*.css" -File -Recurse
+
 # Submit file to scan
-$Output = New-VirusScan -ApiKey $VTApi -File "$PSScriptRoot\Submisions\TestFile.txt"
+$Output = $Items | New-VirusScan -ApiKey $VTApi -Verbose
 $Output | Format-List
 
 Start-Sleep -Seconds 120

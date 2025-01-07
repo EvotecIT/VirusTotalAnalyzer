@@ -67,11 +67,22 @@
         if ($PSCmdlet.ParameterSetName -eq 'FileInformation') {
             if ($File.Length -gt 33554432) {
                 # Request large file upload URL
-                $UploadUrlResponse = Invoke-RestMethod -Method 'GET' -Uri 'https://www.virustotal.com/api/v3/files/upload_url' -Headers @{
-                    "Accept"   = "application/json"
-                    'x-apikey' = $ApiKey
+                try {
+                    $UploadUrlResponse = Invoke-RestMethod -Method 'GET' -Uri 'https://www.virustotal.com/api/v3/files/upload_url' -Headers @{
+                        "Accept"   = "application/json"
+                        'x-apikey' = $ApiKey
+                    } -ErrorAction Stop
+                } catch {
+                    if ($PSBoundParameters.ErrorAction -eq 'Stop') {
+                        throw
+                    } else {
+                        Write-Warning -Message "New-VirusScan - Using $($PSCmdlet.ParameterSetName) task failed with error: $($_.Exception.Message)"
+                    }
                 }
                 $Boundary = [Guid]::NewGuid().ToString().Replace('-', '')
+
+                Write-Verbose -Message "New-VirusScan - Uploading large file $($File.FullName) to VirusTotal using $($UploadUrlResponse.data)"
+
                 $RestMethod = @{
                     Method      = 'POST'
                     Uri         = $UploadUrlResponse.data
@@ -139,10 +150,22 @@
                 $InvokeApiOutput = Invoke-RestMethod @RestMethod -ErrorAction Stop
                 $InvokeApiOutput
             } catch {
-                if ($PSBoundParameters.ErrorAction -eq 'Stop') {
-                    throw
+                if ($_.ErrorDetails.Message) {
+                    if ($PSBoundParameters.ErrorAction -eq 'Stop') {
+                        throw
+                    } else {
+                        if ($_.ErrorDetails.RecommendedAction) {
+                            Write-Warning -Message "New-VirusScan - Using $($PSCmdlet.ParameterSetName) task failed with error: $($_.Exception.Message) and full message: $($_.ErrorDetails.Message) and recommended action: $($_.ErrorDetails.RecommendedAction)"
+                        } else {
+                            Write-Warning -Message "New-VirusScan - Using $($PSCmdlet.ParameterSetName) task failed with error: $($_.Exception.Message) and full message: $($_.ErrorDetails.Message)"
+                        }
+                    }
                 } else {
-                    Write-Warning -Message "New-VirusScan - Using $($PSCmdlet.ParameterSetName) task failed with error: $($_.Exception.Message)"
+                    if ($PSBoundParameters.ErrorAction -eq 'Stop') {
+                        throw
+                    } else {
+                        Write-Warning -Message "New-VirusScan - Using $($PSCmdlet.ParameterSetName) task failed with error: $($_.Exception.Message)"
+                    }
                 }
             }
         }

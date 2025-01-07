@@ -1,0 +1,4 @@
+Ignore/*
+.vs/*
+.vscode/*
+Artefacts/*

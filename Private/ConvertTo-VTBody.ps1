@@ -26,32 +26,35 @@
         [string] $Boundary
     )
     [byte[]] $CRLF = 13, 10 # ASCII code for CRLF
-
     $MemoryStream = [System.IO.MemoryStream]::new()
 
+    # Write boundary
     $BoundaryInformation = [System.Text.Encoding]::ASCII.GetBytes("--$Boundary")
     $MemoryStream.Write($BoundaryInformation, 0, $BoundaryInformation.Length)
     $MemoryStream.Write($CRLF, 0, $CRLF.Length)
 
-    $FileData = [System.Text.Encoding]::ASCII.GetBytes("Content-Disposition: form-data; name=`"file`"; filename=$($FileInformation.Name);")
+    # Content-Disposition (wrap filename in quotes)
+    $FileData = [System.Text.Encoding]::ASCII.GetBytes("Content-Disposition: form-data; name=`"file`"; filename=`"$($FileInformation.Name)`"")
     $MemoryStream.Write($FileData, 0, $FileData.Length)
     $MemoryStream.Write($CRLF, 0, $CRLF.Length)
 
-    $ContentType = [System.Text.Encoding]::ASCII.GetBytes('Content-Type:application/octet-stream')
+    # Content-Type
+    $ContentType = [System.Text.Encoding]::ASCII.GetBytes('Content-Type: application/octet-stream')
     $MemoryStream.Write($ContentType, 0, $ContentType.Length)
-
     $MemoryStream.Write($CRLF, 0, $CRLF.Length)
     $MemoryStream.Write($CRLF, 0, $CRLF.Length)
 
+    # File content
     $FileContent = [System.IO.File]::ReadAllBytes($FileInformation.FullName)
     $MemoryStream.Write($FileContent, 0, $FileContent.Length)
-
     $MemoryStream.Write($CRLF, 0, $CRLF.Length)
-    $MemoryStream.Write($BoundaryInformation, 0, $BoundaryInformation.Length)
 
+    # End boundary
+    $MemoryStream.Write($BoundaryInformation, 0, $BoundaryInformation.Length)
     $Closure = [System.Text.Encoding]::ASCII.GetBytes('--')
     $MemoryStream.Write($Closure, 0, $Closure.Length)
     $MemoryStream.Write($CRLF, 0, $CRLF.Length)
 
+    # Return raw byte array
     , $MemoryStream.ToArray()
 }

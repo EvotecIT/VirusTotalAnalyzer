@@ -20,7 +20,10 @@
     Provide a file path for a file to sendto Virus Total.
 
     .PARAMETER Url
-    Parameter description
+    Provide a URL to send to Virus Total.
+
+    .PARAMETER Password
+    Password to use for the file. This is used for password protected files.
 
     .EXAMPLE
     $VTApi = 'YourApiCode'
@@ -43,6 +46,7 @@
 
     .NOTES
     API Reference: https://developers.virustotal.com/reference/files-scan
+    This function now supports large files (> 32MB) by requesting an upload_url.
 
     #>
     [CmdletBinding()]
@@ -55,21 +59,56 @@
         [Parameter(ParameterSetName = "FileInformation", ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [System.IO.FileInfo] $File,
         [alias('Uri')][Parameter(ParameterSetName = "Url", ValueFromPipeline, ValueFromPipelineByPropertyName)]
-        [Uri] $Url
+        [Uri] $Url,
+        [string] $Password
     )
     process {
         $RestMethod = @{}
         if ($PSCmdlet.ParameterSetName -eq 'FileInformation') {
-            $Boundary = [Guid]::NewGuid().ToString().Replace('-', '')
-            $RestMethod = @{
-                Method      = 'POST'
-                Uri         = 'https://www.virustotal.com/api/v3/files'
-                Headers     = @{
-                    "Accept"   = "application/json"
-                    'x-apikey' = $ApiKey
+            if ($File.Length -gt 33554432) {
+                # Request large file upload URL
+                try {
+                    $UploadUrlResponse = Invoke-RestMethod -Method 'GET' -Uri 'https://www.virustotal.com/api/v3/files/upload_url' -Headers @{
+                        "Accept"   = "application/json"
+                        'x-apikey' = $ApiKey
+                    } -ErrorAction Stop
+                } catch {
+                    if ($PSBoundParameters.ErrorAction -eq 'Stop') {
+                        throw
+                    } else {
+                        Write-Warning -Message "New-VirusScan - Using $($PSCmdlet.ParameterSetName) task failed with error: $($_.Exception.Message)"
+                    }
                 }
-                Body        = ConvertTo-VTBody -File $File -Boundary $Boundary
-                ContentType = 'multipart/form-data; boundary=' + $boundary
+                $Boundary = [Guid]::NewGuid().ToString().Replace('-', '')
+
+                Write-Verbose -Message "New-VirusScan - Uploading large file $($File.FullName) to VirusTotal using $($UploadUrlResponse.data)"
+
+                $RestMethod = @{
+                    Method      = 'POST'
+                    Uri         = $UploadUrlResponse.data
+                    Headers     = @{
+                        "accept"   = "application/json"
+                        'x-apikey' = $ApiKey
+                        'password' = $Password
+                    }
+                    Body        = ConvertTo-VTBody -File $File -Boundary $Boundary
+                    ContentType = 'multipart/form-data; boundary=' + $Boundary
+                }
+                Remove-EmptyValue -Hashtable $RestMethod.Headers
+            } else {
+                $Boundary = [Guid]::NewGuid().ToString().Replace('-', '')
+                $RestMethod = @{
+                    Method      = 'POST'
+                    Uri         = 'https://www.virustotal.com/api/v3/files'
+                    Headers     = @{
+                        "Accept"   = "application/json"
+                        'x-apikey' = $ApiKey
+                        'password' = $Password
+                    }
+                    Body        = ConvertTo-VTBody -File $File -Boundary $Boundary
+                    ContentType = 'multipart/form-data; boundary=' + $boundary
+                }
+                Remove-EmptyValue -Hashtable $RestMethod.Headers
             }
         } elseif ($PSCmdlet.ParameterSetName -eq "Hash") {
             $RestMethod = @{
@@ -111,10 +150,22 @@
                 $InvokeApiOutput = Invoke-RestMethod @RestMethod -ErrorAction Stop
                 $InvokeApiOutput
             } catch {
-                if ($PSBoundParameters.ErrorAction -eq 'Stop') {
-                    throw
+                if ($_.ErrorDetails.Message) {
+                    if ($PSBoundParameters.ErrorAction -eq 'Stop') {
+                        throw
+                    } else {
+                        if ($_.ErrorDetails.RecommendedAction) {
+                            Write-Warning -Message "New-VirusScan - Using $($PSCmdlet.ParameterSetName) task failed with error: $($_.Exception.Message) and full message: $($_.ErrorDetails.Message) and recommended action: $($_.ErrorDetails.RecommendedAction)"
+                        } else {
+                            Write-Warning -Message "New-VirusScan - Using $($PSCmdlet.ParameterSetName) task failed with error: $($_.Exception.Message) and full message: $($_.ErrorDetails.Message)"
+                        }
+                    }
                 } else {
-                    Write-Warning -Message "New-VirusScan - Using $($PSCmdlet.ParameterSetName) task failed with error: $($_.Exception.Message)"
+                    if ($PSBoundParameters.ErrorAction -eq 'Stop') {
+                        throw
+                    } else {
+                        Write-Warning -Message "New-VirusScan - Using $($PSCmdlet.ParameterSetName) task failed with error: $($_.Exception.Message)"
+                    }
                 }
             }
         }

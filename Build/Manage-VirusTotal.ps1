@@ -1,165 +1,107 @@
 ﻿Clear-Host
-Import-Module "C:\Support\GitHub\PSPublishModule\PSPublishModule.psd1" -Force
 
-$Configuration = @{
-    Information = @{
-        ModuleName        = 'VirusTotalAnalyzer'
-        DirectoryProjects = 'C:\Support\GitHub'
+Build-Module -ModuleName 'VirusTotalAnalyzer' {
+    # Usual defaults as per standard module
+    $Manifest = [ordered] @{
+        # Version number of this module.
+        ModuleVersion        = '0.0.X'
+        # Supported PSEditions
+        CompatiblePSEditions = @('Desktop', 'Core')
+        # ID used to uniquely identify this module
+        GUID                 = '2e82faa1-d870-42b2-b5aa-4a63bf02f43e'
+        # Author of this module
+        Author               = 'Przemyslaw Klys'
+        # Company or vendor of this module
+        CompanyName          = 'Evotec'
+        # Copyright statement for this module
+        Copyright            = "(c) 2011 - $((Get-Date).Year) Przemyslaw Klys @ Evotec. All rights reserved."
+        # Description of the functionality provided by this module
+        Description          = 'PowerShell module that intearacts with the VirusTotal service using a VirusTotal API (free)'
+        # Minimum version of the Windows PowerShell engine required by this module
+        PowerShellVersion    = '5.1'
+        # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
+        # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
+        Tags                 = @('Windows', 'Linux', 'macOs', 'VirusTotal', 'virus', 'threat', 'analyzer')
 
-        Manifest          = @{
-            # Version number of this module.
-            ModuleVersion        = '0.0.X'
-            # Supported PSEditions
-            CompatiblePSEditions = @('Desktop', 'Core')
-            # ID used to uniquely identify this module
-            GUID                 = '2e82faa1-d870-42b2-b5aa-4a63bf02f43e'
-            # Author of this module
-            Author               = 'Przemyslaw Klys'
-            # Company or vendor of this module
-            CompanyName          = 'Evotec'
-            # Copyright statement for this module
-            Copyright            = "(c) 2011 - $((Get-Date).Year) Przemyslaw Klys @ Evotec. All rights reserved."
-            # Description of the functionality provided by this module
-            Description          = 'PowerShell module that intearacts with the VirusTotal service using a VirusTotal API (free)'
-            # Minimum version of the Windows PowerShell engine required by this module
-            PowerShellVersion    = '5.1'
-            # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-            # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
-            Tags                 = @('Windows', 'Linux', 'macOs', 'VirusTotal', 'virus', 'threat', 'analyzer')
-
-            ProjectUri           = 'https://github.com/EvotecIT/VirusTotalAnalyzer'
-
-            RequiredModules      = @(
-                #@{ ModuleName = 'PSEventViewer'; ModuleVersion = 'Latest'; Guid = '5df72a79-cdf6-4add-b38d-bcacf26fb7bc' }
-                #@{ ModuleName = 'PSSharedGoods'; ModuleVersion = 'Latest'; Guid = 'ee272aa8-baaa-4edf-9f45-b6d6f7d844fe' }
-                #@{ ModuleName = 'PSWriteHTML'; ModuleVersion = 'Latest'; Guid = 'a7bdf640-f5cb-4acf-9de0-365b322d245c' }
-            )
-        }
+        ProjectUri           = 'https://github.com/EvotecIT/VirusTotalAnalyzer'
     }
-    Options     = @{
-        Merge             = @{
-            Sort           = 'None'
-            FormatCodePSM1 = @{
-                Enabled           = $true
-                RemoveComments    = $false
-                FormatterSettings = @{
-                    IncludeRules = @(
-                        'PSPlaceOpenBrace',
-                        'PSPlaceCloseBrace',
-                        'PSUseConsistentWhitespace',
-                        'PSUseConsistentIndentation',
-                        'PSAlignAssignmentStatement',
-                        'PSUseCorrectCasing'
-                    )
+    New-ConfigurationManifest @Manifest
 
-                    Rules        = @{
-                        PSPlaceOpenBrace           = @{
-                            Enable             = $true
-                            OnSameLine         = $true
-                            NewLineAfter       = $true
-                            IgnoreOneLineBlock = $true
-                        }
+    # Add standard module dependencies (directly, but can be used with loop as well)
+    New-ConfigurationModule -Type RequiredModule -Name 'PSSharedGoods' -Guid 'Auto' -Version 'Latest'
+    New-ConfigurationModule -Type ExternalModule -Name 'Microsoft.PowerShell.Management', 'Microsoft.PowerShell.Utility'
 
-                        PSPlaceCloseBrace          = @{
-                            Enable             = $true
-                            NewLineAfter       = $false
-                            IgnoreOneLineBlock = $true
-                            NoEmptyLineBefore  = $false
-                        }
+    # Add approved modules, that can be used as a dependency, but only when specific function from those modules is used
+    # And on that time only that function and dependant functions will be copied over
+    # Keep in mind it has it's limits when "copying" functions such as it should not depend on DLLs or other external files
+    New-ConfigurationModule -Type ApprovedModule -Name 'PSSharedGoods', 'PSWriteColor', 'Connectimo', 'PSUnifi', 'PSWebToolbox', 'PSMyPassword'
 
-                        PSUseConsistentIndentation = @{
-                            Enable              = $true
-                            Kind                = 'space'
-                            PipelineIndentation = 'IncreaseIndentationAfterEveryPipeline'
-                            IndentationSize     = 4
-                        }
+    $ConfigurationFormat = [ordered] @{
+        RemoveComments                              = $false
 
-                        PSUseConsistentWhitespace  = @{
-                            Enable          = $true
-                            CheckInnerBrace = $true
-                            CheckOpenBrace  = $true
-                            CheckOpenParen  = $true
-                            CheckOperator   = $true
-                            CheckPipe       = $true
-                            CheckSeparator  = $true
-                        }
+        PlaceOpenBraceEnable                        = $true
+        PlaceOpenBraceOnSameLine                    = $true
+        PlaceOpenBraceNewLineAfter                  = $true
+        PlaceOpenBraceIgnoreOneLineBlock            = $false
 
-                        PSAlignAssignmentStatement = @{
-                            Enable         = $true
-                            CheckHashtable = $true
-                        }
+        PlaceCloseBraceEnable                       = $true
+        PlaceCloseBraceNewLineAfter                 = $true
+        PlaceCloseBraceIgnoreOneLineBlock           = $false
+        PlaceCloseBraceNoEmptyLineBefore            = $true
 
-                        PSUseCorrectCasing         = @{
-                            Enable = $true
-                        }
-                    }
-                }
-            }
-            FormatCodePSD1 = @{
-                Enabled        = $true
-                RemoveComments = $false
-            }
-            Integrate      = @{
-                ApprovedModules = @('PSSharedGoods', 'PSWriteColor', 'Connectimo', 'PSUnifi', 'PSWebToolbox', 'PSMyPassword')
-            }
-        }
-        Standard          = @{
-            FormatCodePSM1 = @{
+        UseConsistentIndentationEnable              = $true
+        UseConsistentIndentationKind                = 'space'
+        UseConsistentIndentationPipelineIndentation = 'IncreaseIndentationAfterEveryPipeline'
+        UseConsistentIndentationIndentationSize     = 4
 
-            }
-            FormatCodePSD1 = @{
-                Enabled = $true
-                #RemoveComments = $true
-            }
-        }
-        ImportModules     = @{
-            Self            = $true
-            RequiredModules = $false
-            Verbose         = $false
-        }
-        PowerShellGallery = @{
-            ApiKey   = 'C:\Support\Important\PowerShellGalleryAPI.txt'
-            FromFile = $true
-        }
-        GitHub            = @{
-            ApiKey   = 'C:\Support\Important\GithubAPI.txt'
-            FromFile = $true
-            UserName = 'EvotecIT'
-            #RepositoryName = 'PSWriteHTML'
-        }
-        Documentation     = @{
-            Path       = 'Docs'
-            PathReadme = 'Docs\Readme.md'
-        }
+        UseConsistentWhitespaceEnable               = $true
+        UseConsistentWhitespaceCheckInnerBrace      = $true
+        UseConsistentWhitespaceCheckOpenBrace       = $true
+        UseConsistentWhitespaceCheckOpenParen       = $true
+        UseConsistentWhitespaceCheckOperator        = $true
+        UseConsistentWhitespaceCheckPipe            = $true
+        UseConsistentWhitespaceCheckSeparator       = $true
+
+        AlignAssignmentStatementEnable              = $true
+        AlignAssignmentStatementCheckHashtable      = $true
+
+        UseCorrectCasingEnable                      = $true
     }
-    Steps       = @{
-        BuildModule        = @{  # requires Enable to be on to process all of that
-            Enable           = $true
-            DeleteBefore     = $false
-            Merge            = $true
-            MergeMissing     = $true
-            SignMerged       = $true
-            Releases         = $true
-            ReleasesUnpacked = $false
-            RefreshPSD1Only  = $false
-        }
-        BuildDocumentation = @{
-            Enable        = $false # enables documentation processing
-            StartClean    = $true # always starts clean
-            UpdateWhenNew = $true # always updates right after new
-        }
-        ImportModules      = @{
-            Self            = $true
-            RequiredModules = $false
-            Verbose         = $false
-        }
-        PublishModule      = @{  # requires Enable to be on to process all of that
-            Enabled      = $false
-            Prerelease   = ''
-            RequireForce = $false
-            GitHub       = $false
-        }
+    # format PSD1 and PSM1 files when merging into a single file
+    # enable formatting is not required as Configuration is provided
+    New-ConfigurationFormat -ApplyTo 'OnMergePSM1', 'OnMergePSD1' -Sort None @ConfigurationFormat
+    # format PSD1 and PSM1 files within the module
+    # enable formatting is required to make sure that formatting is applied (with default settings)
+    New-ConfigurationFormat -ApplyTo 'DefaultPSD1', 'DefaultPSM1' -EnableFormatting -Sort None
+    # when creating PSD1 use special style without comments and with only required parameters
+    New-ConfigurationFormat -ApplyTo 'DefaultPSD1', 'OnMergePSD1' -PSD1Style 'Minimal'
+
+    # configuration for documentation, at the same time it enables documentation processing
+    New-ConfigurationDocumentation -Enable:$false -StartClean -UpdateWhenNew -PathReadme 'Docs\Readme.md' -Path 'Docs'
+
+    New-ConfigurationImportModule -ImportSelf -ImportRequiredModules
+
+    $newConfigurationBuildSplat = @{
+        Enable                            = $true
+        SignModule                        = $true
+        CertificateThumbprint             = '483292C9E317AA13B07BB7A96AE9D1A5ED9E7703'
+        DeleteTargetModuleBeforeBuild     = $true
+        MergeModuleOnBuild                = $true
+        MergeFunctionsFromApprovedModules = $true
+        DoNotAttemptToFixRelativePaths    = $true
     }
+
+    New-ConfigurationBuild @newConfigurationBuildSplat
+
+    New-ConfigurationArtefact -Type Unpacked -Enable -Path "$PSScriptRoot\..\Artefacts\Unpacked" -AddRequiredModules -RequiredModulesPath "$PSScriptRoot\..\Artefacts\Unpacked\Modules" -CopyFiles @{
+
+    } -CopyFilesRelative
+
+    New-ConfigurationArtefact -Type Packed -Enable -Path "$PSScriptRoot\..\Artefacts\Packed" -AddRequiredModules -RequiredModulesPath "$PSScriptRoot\..\Artefacts\Packed\Modules" -CopyFiles @{
+
+    } -CopyFilesRelative -IncludeTagName
+
+    # global options for publishing to github/psgallery
+    #New-ConfigurationPublish -Type PowerShellGallery -FilePath 'C:\Support\Important\PowerShellGalleryAPI.txt' -Enabled:$false
+    #New-ConfigurationPublish -Type GitHub -FilePath 'C:\Support\Important\GitHubAPI.txt' -UserName 'EvotecIT' -Enabled:$false
 }
-
-New-PrepareModule -Configuration $Configuration

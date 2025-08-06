@@ -3,15 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirusTotalAnalyzer", "VirusTotalAnalyzer\VirusTotalAnalyzer.csproj", "{5A9298CA-66D0-4E9A-8758-310BB2C9844B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirusTotalAnalyzer", "src\VirusTotalAnalyzer\VirusTotalAnalyzer.csproj", "{5A9298CA-66D0-4E9A-8758-310BB2C9844B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirusTotalAnalyzer.PowerShell", "VirusTotalAnalyzer.PowerShell\VirusTotalAnalyzer.PowerShell.csproj", "{1CF59B7B-D4DC-4C72-8F9A-CFA0C2BFF5E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirusTotalAnalyzer.PowerShell", "src\VirusTotalAnalyzer.PowerShell\VirusTotalAnalyzer.PowerShell.csproj", "{1CF59B7B-D4DC-4C72-8F9A-CFA0C2BFF5E8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirusTotalAnalyzer.Examples", "VirusTotalAnalyzer.Examples\VirusTotalAnalyzer.Examples.csproj", "{B8A74485-EA0C-4B34-8170-3F12BAFB816A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirusTotalAnalyzer.Examples", "examples\VirusTotalAnalyzer.Examples\VirusTotalAnalyzer.Examples.csproj", "{B8A74485-EA0C-4B34-8170-3F12BAFB816A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirusTotalAnalyzer.Tests", "test\VirusTotalAnalyzer.Tests\VirusTotalAnalyzer.Tests.csproj", "{3B26D545-508F-499C-ABF5-8DC58B989510}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirusTotalAnalyzer.Tests", "VirusTotalAnalyzer.Tests\VirusTotalAnalyzer.Tests.csproj", "{3B26D545-508F-499C-ABF5-8DC58B989510}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -74,11 +72,5 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{5A9298CA-66D0-4E9A-8758-310BB2C9844B} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
-		{1CF59B7B-D4DC-4C72-8F9A-CFA0C2BFF5E8} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
-		{B8A74485-EA0C-4B34-8170-3F12BAFB816A} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
-		{3B26D545-508F-499C-ABF5-8DC58B989510} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 EndGlobal

@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../src/VirusTotalAnalyzer/VirusTotalAnalyzer.csproj" />
+    <ProjectReference Include="../VirusTotalAnalyzer/VirusTotalAnalyzer.csproj" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
   </ItemGroup>
 </Project>

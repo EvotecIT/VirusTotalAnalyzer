@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -27,6 +28,11 @@ using var submitHttpClient = new HttpClient(new StubHandler(analysisJson))
 var submitClient = new VirusTotalClient(submitHttpClient);
 var analysis = await submitClient.SubmitUrlAsync("https://example.com", AnalysisType.Url);
 Console.WriteLine($"Submission status: {analysis?.Data.Attributes.Status}");
+
+using var exampleStream = new MemoryStream(Encoding.UTF8.GetBytes("example"));
+var builder = new MultipartFormDataBuilder(exampleStream, "example.txt");
+using var httpContent = builder.Build();
+Console.WriteLine($"Multipart boundary example: {builder.Boundary}");
 
 class StubHandler : HttpMessageHandler
 {

@@ -19,6 +19,15 @@ var client = new VirusTotalClient(httpClient);
 var report = await client.GetFileReportAsync("abc");
 Console.WriteLine($"Sample file md5: {report?.Data.Attributes.Md5}");
 
+var analysisJson = "{\"id\":\"analysis\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+using var submitHttpClient = new HttpClient(new StubHandler(analysisJson))
+{
+    BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+};
+var submitClient = new VirusTotalClient(submitHttpClient);
+var analysis = await submitClient.SubmitUrlAsync("https://example.com", AnalysisType.Url);
+Console.WriteLine($"Submission status: {analysis?.Data.Attributes.Status}");
+
 class StubHandler : HttpMessageHandler
 {
     private readonly string _response;

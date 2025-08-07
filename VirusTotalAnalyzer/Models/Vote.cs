@@ -29,3 +29,30 @@ public sealed class VotesResponse
     [JsonPropertyName("data")]
     public List<Vote> Data { get; set; } = new();
 }
+
+public sealed class VoteResponse
+{
+    [JsonPropertyName("data")]
+    public Vote Data { get; set; } = new();
+}
+
+public sealed class CreateVoteRequest
+{
+    [JsonPropertyName("data")]
+    public CreateVoteData Data { get; set; } = new();
+}
+
+public sealed class CreateVoteData
+{
+    [JsonPropertyName("type")]
+    public string Type { get; set; } = "vote";
+
+    [JsonPropertyName("attributes")]
+    public CreateVoteAttributes Attributes { get; set; } = new();
+}
+
+public sealed class CreateVoteAttributes
+{
+    [JsonPropertyName("verdict")]
+    public Verdict Verdict { get; set; }
+}

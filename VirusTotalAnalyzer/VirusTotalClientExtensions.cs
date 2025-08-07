@@ -32,4 +32,22 @@ public static class VirusTotalClientExtensions
         if (client == null) throw new ArgumentNullException(nameof(client));
         return client.SubmitUrlAsync(url, cancellationToken);
     }
+
+    public static Task<Comment?> AddCommentAsync(this VirusTotalClient client, ResourceType resourceType, string id, string text, CancellationToken cancellationToken = default)
+    {
+        if (client == null) throw new ArgumentNullException(nameof(client));
+        return client.CreateCommentAsync(resourceType, id, text, cancellationToken);
+    }
+
+    public static Task<Vote?> VoteAsync(this VirusTotalClient client, ResourceType resourceType, string id, Verdict verdict, CancellationToken cancellationToken = default)
+    {
+        if (client == null) throw new ArgumentNullException(nameof(client));
+        return client.CreateVoteAsync(resourceType, id, verdict, cancellationToken);
+    }
+
+    public static Task DeleteAsync(this VirusTotalClient client, ResourceType resourceType, string id, CancellationToken cancellationToken = default)
+    {
+        if (client == null) throw new ArgumentNullException(nameof(client));
+        return client.DeleteItemAsync(resourceType, id, cancellationToken);
+    }
 }

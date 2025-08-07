@@ -12,7 +12,7 @@ public static class GetIpAddressReportExample
         try
         {
             var report = await client.GetIpAddressReportAsync("8.8.8.8");
-            Console.WriteLine(report?.Data?.Id);
+            Console.WriteLine(report?.Id);
         }
         catch (RateLimitExceededException ex)
         {

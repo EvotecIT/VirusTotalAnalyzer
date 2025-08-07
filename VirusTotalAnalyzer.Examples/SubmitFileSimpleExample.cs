@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using VirusTotalAnalyzer.Models;
 
@@ -24,8 +25,8 @@ public static class SubmitFileSimpleExample
 #else
             await using var stream = File.OpenRead(path);
 #endif
-            var report = await client.SubmitFileAsync(stream, Path.GetFileName(path));
-            Console.WriteLine(report?.Data?.Id);
+            var report = await client.SubmitFileAsync(stream, Path.GetFileName(path), CancellationToken.None);
+            Console.WriteLine(report?.Id);
         }
         catch (RateLimitExceededException ex)
         {

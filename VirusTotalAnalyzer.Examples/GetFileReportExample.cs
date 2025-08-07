@@ -12,7 +12,7 @@ public static class GetFileReportExample
         try
         {
             var report = await client.GetFileReportAsync("44d88612fea8a8f36de82e1278abb02f");
-            Console.WriteLine(report?.Data?.Id);
+            Console.WriteLine(report?.Id);
         }
         catch (RateLimitExceededException ex)
         {

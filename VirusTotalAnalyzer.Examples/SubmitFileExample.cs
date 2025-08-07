@@ -25,7 +25,7 @@ public static class SubmitFileExample
             await using var stream = File.OpenRead(path);
 #endif
             var report = await client.SubmitFileAsync(stream, Path.GetFileName(path), AnalysisType.File);
-            Console.WriteLine(report?.Data?.Id);
+            Console.WriteLine(report?.Id);
         }
         catch (RateLimitExceededException ex)
         {

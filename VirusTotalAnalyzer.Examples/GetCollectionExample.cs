@@ -12,7 +12,7 @@ public static class GetCollectionExample
         try
         {
             var collection = await client.GetCollectionAsync("collection-id");
-            Console.WriteLine(collection?.Data?.Id);
+            Console.WriteLine(collection?.Id);
         }
         catch (RateLimitExceededException ex)
         {

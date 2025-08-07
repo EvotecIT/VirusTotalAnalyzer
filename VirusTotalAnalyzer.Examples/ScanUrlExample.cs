@@ -12,7 +12,7 @@ public static class ScanUrlExample
         try
         {
             var report = await client.ScanUrlAsync("https://example.com");
-            Console.WriteLine(report?.Data?.Id);
+            Console.WriteLine(report?.Id);
         }
         catch (RateLimitExceededException ex)
         {

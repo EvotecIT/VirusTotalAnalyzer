@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using VirusTotalAnalyzer.Models;
 
@@ -12,10 +13,10 @@ public static class SubmitUrlExample
         try
         {
             var report = await client.SubmitUrlAsync("https://example.com", AnalysisType.Url);
-            Console.WriteLine(report?.Data?.Id);
+            Console.WriteLine(report?.Id);
 
-            var simple = await client.SubmitUrlAsync("https://example.org");
-            Console.WriteLine(simple?.Data?.Id);
+            var simple = await client.SubmitUrlAsync("https://example.org", CancellationToken.None);
+            Console.WriteLine(simple?.Id);
         }
         catch (RateLimitExceededException ex)
         {

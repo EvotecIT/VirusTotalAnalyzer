@@ -12,7 +12,7 @@ public static class GetUrlReportExample
         try
         {
             var report = await client.GetUrlReportAsync("url-id");
-            Console.WriteLine(report?.Data?.Id);
+            Console.WriteLine(report?.Id);
         }
         catch (RateLimitExceededException ex)
         {

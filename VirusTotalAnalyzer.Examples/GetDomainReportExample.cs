@@ -12,7 +12,7 @@ public static class GetDomainReportExample
         try
         {
             var report = await client.GetDomainReportAsync("example.com");
-            Console.WriteLine(report?.Data?.Id);
+            Console.WriteLine(report?.Id);
         }
         catch (RateLimitExceededException ex)
         {

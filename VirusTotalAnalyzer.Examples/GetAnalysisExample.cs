@@ -12,7 +12,7 @@ public static class GetAnalysisExample
         try
         {
             var report = await client.GetAnalysisAsync("analysis-id");
-            Console.WriteLine(report?.Data?.Id);
+            Console.WriteLine(report?.Id);
         }
         catch (RateLimitExceededException ex)
         {

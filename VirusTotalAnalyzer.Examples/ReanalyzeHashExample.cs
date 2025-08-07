@@ -12,7 +12,7 @@ public static class ReanalyzeHashExample
         try
         {
             var report = await client.ReanalyzeHashAsync("44d88612fea8a8f36de82e1278abb02f", AnalysisType.File);
-            Console.WriteLine(report?.Data?.Id);
+            Console.WriteLine(report?.Id);
         }
         catch (RateLimitExceededException ex)
         {

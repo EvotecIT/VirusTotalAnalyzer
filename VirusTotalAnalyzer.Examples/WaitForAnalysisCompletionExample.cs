@@ -12,7 +12,7 @@ public static class WaitForAnalysisCompletionExample
         try
         {
             var report = await client.WaitForAnalysisCompletionAsync("analysis-id", TimeSpan.FromSeconds(30));
-            Console.WriteLine(report?.Data?.Id);
+            Console.WriteLine(report?.Id);
         }
         catch (RateLimitExceededException ex)
         {

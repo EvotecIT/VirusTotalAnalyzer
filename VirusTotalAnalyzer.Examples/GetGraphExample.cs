@@ -12,7 +12,7 @@ public static class GetGraphExample
         try
         {
             var graph = await client.GetGraphAsync("graph-id");
-            Console.WriteLine(graph?.Data?.Id);
+            Console.WriteLine(graph?.Id);
         }
         catch (RateLimitExceededException ex)
         {

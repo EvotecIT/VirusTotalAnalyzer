@@ -20,7 +20,7 @@ public static class ScanFileExample
         try
         {
             var report = await client.ScanFileAsync(path);
-            Console.WriteLine(report?.Data?.Id);
+            Console.WriteLine(report?.Id);
         }
         catch (RateLimitExceededException ex)
         {

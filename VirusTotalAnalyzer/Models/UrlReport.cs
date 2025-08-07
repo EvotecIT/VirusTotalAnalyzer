@@ -23,8 +23,17 @@ public sealed class UrlAttributes
     [JsonPropertyName("reputation")]
     public int Reputation { get; set; }
 
+    [JsonPropertyName("creation_date")]
+    public long CreationDate { get; set; }
+
+    [JsonPropertyName("tags")]
+    public List<string> Tags { get; set; } = new();
+
     [JsonPropertyName("last_analysis_stats")]
     public AnalysisStats LastAnalysisStats { get; set; } = new();
+
+    [JsonPropertyName("last_analysis_results")]
+    public Dictionary<string, AnalysisResult> LastAnalysisResults { get; set; } = new();
 
     [JsonPropertyName("total_votes")]
     public TotalVotes TotalVotes { get; set; } = new();

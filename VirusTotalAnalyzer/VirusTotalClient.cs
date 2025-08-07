@@ -93,6 +93,69 @@ public sealed class VirusTotalClient
             .ConfigureAwait(false);
     }
 
+    public async Task<IReadOnlyList<Comment>?> GetCommentsAsync(ResourceType resourceType, string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"{GetPath(resourceType)}/{id}/comments", cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        var result = await JsonSerializer.DeserializeAsync<CommentsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return result?.Data;
+    }
+
+    public async Task<IReadOnlyList<Vote>?> GetVotesAsync(ResourceType resourceType, string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"{GetPath(resourceType)}/{id}/votes", cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        var result = await JsonSerializer.DeserializeAsync<VotesResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return result?.Data;
+    }
+
+    public async Task<RelationshipResponse?> GetRelationshipsAsync(ResourceType resourceType, string id, string relationship, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"{GetPath(resourceType)}/{id}/relationships/{relationship}", cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<RelationshipResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<SearchResponse?> SearchAsync(string query, CancellationToken cancellationToken = default)
+    {
+        var encoded = Uri.EscapeDataString(query);
+        using var response = await _httpClient.GetAsync($"intelligence/search?query={encoded}", cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<SearchResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<FeedResponse?> GetFeedAsync(ResourceType resourceType, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"feeds/{GetPath(resourceType)}", cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<FeedResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task<Uri?> GetUploadUrlAsync(CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync("files/upload_url", cancellationToken).ConfigureAwait(false);
@@ -149,6 +212,9 @@ public sealed class VirusTotalClient
             .ConfigureAwait(false);
     }
 
+    public Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, CancellationToken cancellationToken = default)
+        => SubmitFileAsync(stream, fileName, AnalysisType.File, null, cancellationToken);
+
     public async Task<AnalysisReport?> ReanalyzeHashAsync(string hash, AnalysisType analysisType = AnalysisType.File, CancellationToken cancellationToken = default)
     {
         var path = $"{GetPath(analysisType)}/{hash}/analyse";
@@ -162,6 +228,12 @@ public sealed class VirusTotalClient
         return await JsonSerializer.DeserializeAsync<AnalysisReport>(stream, _jsonOptions, cancellationToken)
             .ConfigureAwait(false);
     }
+
+    public Task<AnalysisReport?> ReanalyzeFileAsync(string hash, CancellationToken cancellationToken = default)
+        => ReanalyzeHashAsync(hash, AnalysisType.File, cancellationToken);
+
+    public Task<AnalysisReport?> ReanalyzeUrlAsync(string id, CancellationToken cancellationToken = default)
+        => ReanalyzeHashAsync(id, AnalysisType.Url, cancellationToken);
 
     public async Task<AnalysisReport?> SubmitUrlAsync(string url, AnalysisType analysisType = AnalysisType.Url, CancellationToken cancellationToken = default)
     {
@@ -181,11 +253,25 @@ public sealed class VirusTotalClient
             .ConfigureAwait(false);
     }
 
+    public Task<AnalysisReport?> SubmitUrlAsync(string url, CancellationToken cancellationToken = default)
+        => SubmitUrlAsync(url, AnalysisType.Url, cancellationToken);
+
     private static string GetPath(AnalysisType type)
         => type switch
         {
             AnalysisType.File => "files",
             AnalysisType.Url => "urls",
+            _ => throw new ArgumentOutOfRangeException(nameof(type))
+        };
+
+    private static string GetPath(ResourceType type)
+        => type switch
+        {
+            ResourceType.File => "files",
+            ResourceType.Url => "urls",
+            ResourceType.IpAddress => "ip_addresses",
+            ResourceType.Domain => "domains",
+            ResourceType.Analysis => "analyses",
             _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
 }

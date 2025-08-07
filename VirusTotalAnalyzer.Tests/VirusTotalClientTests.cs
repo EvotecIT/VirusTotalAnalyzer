@@ -148,6 +148,73 @@ public class VirusTotalClientTests
         Assert.Equal("url=https%3A%2F%2Fexample.com", handler.Contents[0]);
     }
 
+    [Fact]
+    public async Task GetCommentsAsync_DeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"c1\",\"type\":\"comment\",\"data\":{\"attributes\":{\"date\":1,\"text\":\"hi\"}}}]}";
+        var handler = new StubHandler(json);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var comments = await client.GetCommentsAsync(ResourceType.File, "abc");
+
+        Assert.NotNull(comments);
+        Assert.Single(comments);
+        Assert.Equal("c1", comments![0].Id);
+        Assert.Equal("hi", comments[0].Data.Attributes.Text);
+    }
+
+    [Fact]
+    public async Task SearchAsync_UsesCorrectPath()
+    {
+        var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"data\":[]}", Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.SearchAsync("demo query");
+
+        Assert.Single(handler.Requests);
+        Assert.Equal("/api/v3/intelligence/search", handler.Requests[0].RequestUri!.AbsolutePath);
+        Assert.Equal("query=demo%20query", handler.Requests[0].RequestUri!.Query.TrimStart('?'));
+    }
+
+    [Fact]
+    public async Task ScanFileAsync_UsesExtensionHelper()
+    {
+        var analysisJson = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(analysisJson, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var path = System.IO.Path.GetTempFileName();
+        await System.IO.File.WriteAllTextAsync(path, "demo");
+        try
+        {
+            var report = await client.ScanFileAsync(path);
+            Assert.NotNull(report);
+            Assert.Single(handler.Requests);
+        }
+        finally
+        {
+            System.IO.File.Delete(path);
+        }
+    }
+
     private sealed class StubHandler : HttpMessageHandler
     {
         private readonly string _response;

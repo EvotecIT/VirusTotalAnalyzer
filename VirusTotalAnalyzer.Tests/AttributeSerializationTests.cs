@@ -23,6 +23,12 @@ public class AttributeSerializationTests
                     Reputation = 1,
                     CreationDate = 42,
                     Tags = new List<string> { "tag" },
+                    Size = 100,
+                    FirstSubmissionDate = 10,
+                    CrowdsourcedVerdicts =
+                    {
+                        new CrowdsourcedVerdict { Source = "cs", Verdict = Verdict.Harmless, Timestamp = 1 }
+                    },
                     LastAnalysisResults = new Dictionary<string, AnalysisResult>
                     {
                         ["engine"] = new AnalysisResult { Category = "harmless", EngineName = "engine" }
@@ -36,6 +42,9 @@ public class AttributeSerializationTests
         Assert.Equal(42, roundtrip!.Data.Attributes.CreationDate);
         Assert.Equal("tag", Assert.Single(roundtrip.Data.Attributes.Tags));
         Assert.Equal("harmless", roundtrip.Data.Attributes.LastAnalysisResults["engine"].Category);
+        Assert.Equal(100, roundtrip.Data.Attributes.Size);
+        Assert.Equal(10, roundtrip.Data.Attributes.FirstSubmissionDate);
+        Assert.Equal(Verdict.Harmless, roundtrip.Data.Attributes.CrowdsourcedVerdicts[0].Verdict);
     }
 
     [Fact]
@@ -53,6 +62,11 @@ public class AttributeSerializationTests
                     Reputation = 2,
                     CreationDate = 84,
                     Tags = new List<string> { "tag" },
+                    FirstSubmissionDate = 11,
+                    CrowdsourcedVerdicts =
+                    {
+                        new CrowdsourcedVerdict { Source = "cs", Verdict = Verdict.Malicious, Timestamp = 2 }
+                    },
                     LastAnalysisResults = new Dictionary<string, AnalysisResult>
                     {
                         ["engine"] = new AnalysisResult { Category = "malicious", EngineName = "engine" }
@@ -66,6 +80,35 @@ public class AttributeSerializationTests
         Assert.Equal(84, roundtrip!.Data.Attributes.CreationDate);
         Assert.Equal("tag", Assert.Single(roundtrip.Data.Attributes.Tags));
         Assert.Equal("malicious", roundtrip.Data.Attributes.LastAnalysisResults["engine"].Category);
+        Assert.Equal(11, roundtrip.Data.Attributes.FirstSubmissionDate);
+        Assert.Equal(Verdict.Malicious, roundtrip.Data.Attributes.CrowdsourcedVerdicts[0].Verdict);
+    }
+
+    [Fact]
+    public void AnalysisAttributes_Roundtrip()
+    {
+        var report = new AnalysisReport
+        {
+            Id = "an1",
+            Type = ResourceType.Analysis,
+            Data = new AnalysisData
+            {
+                Attributes = new AnalysisAttributes
+                {
+                    Status = AnalysisStatus.Completed,
+                    Date = 5,
+                    Results = new Dictionary<string, AnalysisResult>
+                    {
+                        ["engine"] = new AnalysisResult { Category = "harmless", EngineName = "engine" }
+                    }
+                }
+            }
+        };
+
+        var json = JsonSerializer.Serialize(report);
+        var roundtrip = JsonSerializer.Deserialize<AnalysisReport>(json);
+        Assert.Equal(5, roundtrip!.Data.Attributes.Date);
+        Assert.Equal("harmless", roundtrip.Data.Attributes.Results["engine"].Category);
     }
 
     [Fact]

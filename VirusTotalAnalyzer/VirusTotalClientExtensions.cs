@@ -39,7 +39,7 @@ public static class VirusTotalClientExtensions
         return client.CreateCommentAsync(resourceType, id, text, cancellationToken);
     }
 
-    public static Task<Vote?> VoteAsync(this VirusTotalClient client, ResourceType resourceType, string id, Verdict verdict, CancellationToken cancellationToken = default)
+    public static Task<Vote?> VoteAsync(this VirusTotalClient client, ResourceType resourceType, string id, VoteVerdict verdict, CancellationToken cancellationToken = default)
     {
         if (client == null) throw new ArgumentNullException(nameof(client));
         return client.CreateVoteAsync(resourceType, id, verdict, cancellationToken);

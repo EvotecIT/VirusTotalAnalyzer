@@ -20,5 +20,8 @@ public enum AnalysisStatus
     Error,
 
     [EnumMember(Value = "timeout")]
-    Timeout
+    Timeout,
+
+    [EnumMember(Value = "cancelled")]
+    Cancelled
 }

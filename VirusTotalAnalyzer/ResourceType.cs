@@ -50,5 +50,17 @@ public enum ResourceType
     Collection,
 
     [EnumMember(Value = "bundle")]
-    Bundle
+    Bundle,
+
+    [EnumMember(Value = "livehunt_notification")]
+    LivehuntNotification,
+
+    [EnumMember(Value = "retrohunt_job")]
+    RetrohuntJob,
+
+    [EnumMember(Value = "retrohunt_notification")]
+    RetrohuntNotification,
+
+    [EnumMember(Value = "monitor_item")]
+    MonitorItem
 }

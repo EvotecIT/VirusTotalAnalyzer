@@ -177,7 +177,7 @@ public sealed class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<Vote?> CreateVoteAsync(ResourceType resourceType, string id, Verdict verdict, CancellationToken cancellationToken = default)
+    public async Task<Vote?> CreateVoteAsync(ResourceType resourceType, string id, VoteVerdict verdict, CancellationToken cancellationToken = default)
     {
         var request = new CreateVoteRequest
         {

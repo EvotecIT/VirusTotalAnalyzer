@@ -86,7 +86,7 @@ public class VirusTotalClientTests
         };
         var client = new VirusTotalClient(httpClient);
 
-        var vote = await client.CreateVoteAsync(ResourceType.File, "abc", Verdict.Malicious);
+        var vote = await client.CreateVoteAsync(ResourceType.File, "abc", VoteVerdict.Malicious);
 
         Assert.NotNull(vote);
         Assert.Single(handler.Requests);

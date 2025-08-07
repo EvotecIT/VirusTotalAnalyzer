@@ -95,6 +95,39 @@ public sealed class VirusTotalClient
             .ConfigureAwait(false);
     }
 
+    public async Task<AnalysisReport?> WaitForAnalysisCompletionAsync(
+        string id,
+        TimeSpan timeout,
+        TimeSpan? pollingInterval = null,
+        CancellationToken cancellationToken = default)
+    {
+        var interval = pollingInterval ?? TimeSpan.FromSeconds(1);
+        var start = DateTimeOffset.UtcNow;
+
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var report = await GetAnalysisAsync(id, cancellationToken).ConfigureAwait(false);
+            if (report?.Data.Attributes.Status == AnalysisStatus.Completed)
+            {
+                return report;
+            }
+
+            if (DateTimeOffset.UtcNow - start >= timeout)
+            {
+                throw new TimeoutException("The analysis did not complete within the specified timeout.");
+            }
+
+            var remaining = timeout - (DateTimeOffset.UtcNow - start);
+            var delay = remaining < interval ? remaining : interval;
+            if (delay > TimeSpan.Zero)
+            {
+                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+            }
+        }
+    }
+
     public async Task<IReadOnlyList<Comment>?> GetCommentsAsync(ResourceType resourceType, string id, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"{GetPath(resourceType)}/{id}/comments", cancellationToken).ConfigureAwait(false);

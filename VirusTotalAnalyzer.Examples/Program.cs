@@ -30,6 +30,23 @@ var submitClient = new VirusTotalClient(submitHttpClient);
 var analysis = await submitClient.SubmitUrlAsync("https://example.com", AnalysisType.Url);
 Console.WriteLine($"Submission status: {analysis?.Data.Attributes.Status}");
 
+var completedAnalysisJson = "{\"id\":\"analysis\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"completed\"}}}";
+using var waitClientHttp = new HttpClient(new QueueHandler(
+    new HttpResponseMessage(HttpStatusCode.OK)
+    {
+        Content = new StringContent(analysisJson, Encoding.UTF8, "application/json")
+    },
+    new HttpResponseMessage(HttpStatusCode.OK)
+    {
+        Content = new StringContent(completedAnalysisJson, Encoding.UTF8, "application/json")
+    }))
+{
+    BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+};
+var waitClient = new VirusTotalClient(waitClientHttp);
+var completedAnalysis = await waitClient.WaitForAnalysisCompletionAsync("analysis", TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(1));
+Console.WriteLine($"Wait completed status: {completedAnalysis?.Data.Attributes.Status}");
+
 var commentsJson = "{\"data\":[{\"id\":\"c1\",\"type\":\"comment\",\"data\":{\"attributes\":{\"date\":1,\"text\":\"example comment\"}}}]}";
 using var commentsClient = new HttpClient(new StubHandler(commentsJson))
 {
@@ -95,4 +112,14 @@ class SingleResponseHandler : HttpMessageHandler
 
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         => Task.FromResult(_response);
+}
+
+class QueueHandler : HttpMessageHandler
+{
+    private readonly System.Collections.Generic.Queue<HttpResponseMessage> _responses;
+    public QueueHandler(params HttpResponseMessage[] responses)
+        => _responses = new System.Collections.Generic.Queue<HttpResponseMessage>(responses);
+
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        => Task.FromResult(_responses.Dequeue());
 }

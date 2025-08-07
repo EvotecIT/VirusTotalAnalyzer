@@ -29,3 +29,30 @@ public sealed class CommentsResponse
     [JsonPropertyName("data")]
     public List<Comment> Data { get; set; } = new();
 }
+
+public sealed class CommentResponse
+{
+    [JsonPropertyName("data")]
+    public Comment Data { get; set; } = new();
+}
+
+public sealed class CreateCommentRequest
+{
+    [JsonPropertyName("data")]
+    public CreateCommentData Data { get; set; } = new();
+}
+
+public sealed class CreateCommentData
+{
+    [JsonPropertyName("type")]
+    public string Type { get; set; } = "comment";
+
+    [JsonPropertyName("attributes")]
+    public CreateCommentAttributes Attributes { get; set; } = new();
+}
+
+public sealed class CreateCommentAttributes
+{
+    [JsonPropertyName("text")]
+    public string Text { get; set; } = string.Empty;
+}

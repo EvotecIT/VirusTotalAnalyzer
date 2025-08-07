@@ -56,6 +56,42 @@ var commentClient = new VirusTotalClient(commentsClient);
 var comments = await commentClient.GetCommentsAsync(ResourceType.File, "abc");
 Console.WriteLine($"Comments retrieved: {comments?.Count}");
 
+var createCommentJson = @"{""data"":{""id"":""c2"",""type"":""comment"",""data"":{""attributes"":{""date"":2,""text"":""hello""}}}}";
+using var createCommentClient = new HttpClient(new StubHandler(createCommentJson))
+{
+    BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+};
+var addCommentClient = new VirusTotalClient(createCommentClient);
+var createdComment = await addCommentClient.AddCommentAsync(ResourceType.File, "abc", "hello");
+Console.WriteLine($"Created comment id: {createdComment?.Id}");
+
+var voteJson = @"{""data"":{""id"":""v1"",""type"":""vote"",""data"":{""attributes"":{""date"":1,""verdict"":""harmless""}}}}";
+using var voteClientHttp = new HttpClient(new StubHandler(voteJson))
+{
+    BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+};
+var voteClientExample = new VirusTotalClient(voteClientHttp);
+var vote = await voteClientExample.VoteAsync(ResourceType.File, "abc", Verdict.Harmless);
+Console.WriteLine($"Vote verdict: {vote?.Data.Attributes.Verdict}");
+
+var deleteHandler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.NoContent));
+using var deleteHttp = new HttpClient(deleteHandler)
+{
+    BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+};
+var deleteClient = new VirusTotalClient(deleteHttp);
+await deleteClient.DeleteAsync(ResourceType.File, "abc");
+Console.WriteLine("Deleted item");
+
+var userJson = @"{""id"":""user1"",""type"":""user"",""data"":{""attributes"":{""username"":""jdoe"",""role"":""admin""}}}";
+using var userHttp = new HttpClient(new StubHandler(userJson))
+{
+    BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+};
+var userClientExample = new VirusTotalClient(userHttp);
+var user = await userClientExample.GetUserAsync("user1");
+Console.WriteLine($"Retrieved user: {user?.Data.Attributes.Username}");
+
 var tmp = Path.GetTempFileName();
 await File.WriteAllTextAsync(tmp, "demo");
 using var scanHttpClient = new HttpClient(new StubHandler(analysisJson))

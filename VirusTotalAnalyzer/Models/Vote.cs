@@ -1,0 +1,31 @@
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+
+namespace VirusTotalAnalyzer.Models;
+
+public sealed class Vote
+{
+    public string Id { get; set; } = string.Empty;
+    public ResourceType Type { get; set; }
+    public VoteData Data { get; set; } = new();
+}
+
+public sealed class VoteData
+{
+    public VoteAttributes Attributes { get; set; } = new();
+}
+
+public sealed class VoteAttributes
+{
+    [JsonPropertyName("date")]
+    public long Date { get; set; }
+
+    [JsonPropertyName("verdict")]
+    public Verdict Verdict { get; set; }
+}
+
+public sealed class VotesResponse
+{
+    [JsonPropertyName("data")]
+    public List<Vote> Data { get; set; } = new();
+}

@@ -18,4 +18,10 @@ public sealed class AnalysisAttributes
 {
     [JsonPropertyName("status")]
     public AnalysisStatus Status { get; set; }
+
+    [JsonPropertyName("stats")]
+    public AnalysisStats Stats { get; set; } = new();
+
+    [JsonPropertyName("error")]
+    public string? Error { get; set; }
 }

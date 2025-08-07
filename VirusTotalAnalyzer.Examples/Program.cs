@@ -29,6 +29,26 @@ var submitClient = new VirusTotalClient(submitHttpClient);
 var analysis = await submitClient.SubmitUrlAsync("https://example.com", AnalysisType.Url);
 Console.WriteLine($"Submission status: {analysis?.Data.Attributes.Status}");
 
+var commentsJson = "{\"data\":[{\"id\":\"c1\",\"type\":\"comment\",\"data\":{\"attributes\":{\"date\":1,\"text\":\"example comment\"}}}]}";
+using var commentsClient = new HttpClient(new StubHandler(commentsJson))
+{
+    BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+};
+var commentClient = new VirusTotalClient(commentsClient);
+var comments = await commentClient.GetCommentsAsync(ResourceType.File, "abc");
+Console.WriteLine($"Comments retrieved: {comments?.Count}");
+
+var tmp = Path.GetTempFileName();
+await File.WriteAllTextAsync(tmp, "demo");
+using var scanHttpClient = new HttpClient(new StubHandler(analysisJson))
+{
+    BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+};
+var scanClient = new VirusTotalClient(scanHttpClient);
+var scanReport = await scanClient.ScanFileAsync(tmp);
+Console.WriteLine($"Scan status via helper: {scanReport?.Data.Attributes.Status}");
+File.Delete(tmp);
+
 using var exampleStream = new MemoryStream(Encoding.UTF8.GetBytes("example"));
 var builder = new MultipartFormDataBuilder(exampleStream, "example.txt");
 using var httpContent = builder.Build();

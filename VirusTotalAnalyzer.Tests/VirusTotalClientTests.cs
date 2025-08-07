@@ -327,7 +327,11 @@ public class VirusTotalClientTests
         var client = new VirusTotalClient(httpClient);
 
         var path = System.IO.Path.GetTempFileName();
+#if NETFRAMEWORK
+        System.IO.File.WriteAllText(path, "demo");
+#else
         await System.IO.File.WriteAllTextAsync(path, "demo");
+#endif
         try
         {
             var report = await client.ScanFileAsync(path);
@@ -408,7 +412,11 @@ public class VirusTotalClientTests
             Requests.Add(request);
             if (request.Content != null)
             {
+#if NETFRAMEWORK
+                var text = await request.Content.ReadAsStringAsync().ConfigureAwait(false);
+#else
                 var text = await request.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+#endif
                 Contents.Add(text);
             }
             else

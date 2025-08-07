@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -31,7 +33,7 @@ public sealed class VirusTotalClient
     public async Task<FileReport?> GetFileReportAsync(string id, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"files/{id}", cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
@@ -44,7 +46,7 @@ public sealed class VirusTotalClient
     public async Task<UrlReport?> GetUrlReportAsync(string id, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"urls/{id}", cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
@@ -57,7 +59,7 @@ public sealed class VirusTotalClient
     public async Task<IpAddressReport?> GetIpAddressReportAsync(string id, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"ip_addresses/{id}", cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
@@ -70,7 +72,7 @@ public sealed class VirusTotalClient
     public async Task<DomainReport?> GetDomainReportAsync(string id, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"domains/{id}", cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
@@ -83,7 +85,7 @@ public sealed class VirusTotalClient
     public async Task<AnalysisReport?> GetAnalysisAsync(string id, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"analyses/{id}", cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
@@ -96,7 +98,7 @@ public sealed class VirusTotalClient
     public async Task<IReadOnlyList<Comment>?> GetCommentsAsync(ResourceType resourceType, string id, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"{GetPath(resourceType)}/{id}/comments", cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
@@ -109,7 +111,7 @@ public sealed class VirusTotalClient
     public async Task<IReadOnlyList<Vote>?> GetVotesAsync(ResourceType resourceType, string id, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"{GetPath(resourceType)}/{id}/votes", cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
@@ -122,7 +124,7 @@ public sealed class VirusTotalClient
     public async Task<RelationshipResponse?> GetRelationshipsAsync(ResourceType resourceType, string id, string relationship, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"{GetPath(resourceType)}/{id}/relationships/{relationship}", cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
@@ -135,7 +137,7 @@ public sealed class VirusTotalClient
     {
         var encoded = Uri.EscapeDataString(query);
         using var response = await _httpClient.GetAsync($"intelligence/search?query={encoded}", cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
@@ -147,7 +149,7 @@ public sealed class VirusTotalClient
     public async Task<FeedResponse?> GetFeedAsync(ResourceType resourceType, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"feeds/{GetPath(resourceType)}", cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
@@ -159,7 +161,7 @@ public sealed class VirusTotalClient
     public async Task<Uri?> GetUploadUrlAsync(CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync("files/upload_url", cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
@@ -202,7 +204,7 @@ public sealed class VirusTotalClient
             request.Headers.Add("password", password);
         }
         using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var respStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
@@ -219,7 +221,7 @@ public sealed class VirusTotalClient
     {
         var path = $"{GetPath(analysisType)}/{hash}/analyse";
         using var response = await _httpClient.PostAsync(path, content: null, cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
@@ -243,7 +245,7 @@ public sealed class VirusTotalClient
         }
         using var content = new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("url", url) });
         using var response = await _httpClient.PostAsync("urls", content, cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
@@ -274,4 +276,60 @@ public sealed class VirusTotalClient
             ResourceType.Analysis => "analyses",
             _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
+
+    private async Task EnsureSuccessAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        if (response.IsSuccessStatusCode)
+        {
+            return;
+        }
+
+        ApiError? error = null;
+        try
+        {
+#if NET472
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+            var wrapper = await JsonSerializer.DeserializeAsync<ApiErrorResponse>(stream, _jsonOptions, cancellationToken)
+                .ConfigureAwait(false);
+            error = wrapper?.Error;
+        }
+        catch
+        {
+            // ignore deserialization errors
+        }
+
+        if ((int)response.StatusCode == 429)
+        {
+            TimeSpan? retryAfter = null;
+            if (response.Headers.TryGetValues("Retry-After", out var values))
+            {
+                var raw = values.FirstOrDefault();
+                if (int.TryParse(raw, out var seconds))
+                {
+                    retryAfter = TimeSpan.FromSeconds(seconds);
+                }
+                else if (DateTimeOffset.TryParse(raw, out var date))
+                {
+                    retryAfter = date - DateTimeOffset.UtcNow;
+                }
+            }
+
+            int? remainingQuota = null;
+            if (response.Headers.TryGetValues("X-RateLimit-Remaining", out var quotaValues))
+            {
+                var raw = quotaValues.FirstOrDefault();
+                if (int.TryParse(raw, out var q))
+                {
+                    remainingQuota = q;
+                }
+            }
+
+            throw new RateLimitExceededException(error, retryAfter, remainingQuota);
+        }
+
+        throw new ApiException(error);
+    }
 }

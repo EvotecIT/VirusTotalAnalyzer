@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using VirusTotalAnalyzer;
+using VirusTotalAnalyzer.Models;
 
 Console.WriteLine("VirusTotalAnalyzer example running.");
 
@@ -54,6 +55,27 @@ var builder = new MultipartFormDataBuilder(exampleStream, "example.txt");
 using var httpContent = builder.Build();
 Console.WriteLine($"Multipart boundary example: {builder.Boundary}");
 
+var rateLimitJson = "{\"error\":{\"code\":\"RateLimitExceeded\",\"message\":\"too many\"}}";
+var rateLimitResponse = new HttpResponseMessage(HttpStatusCode.TooManyRequests)
+{
+    Content = new StringContent(rateLimitJson, Encoding.UTF8, "application/json")
+};
+rateLimitResponse.Headers.Add("Retry-After", "5");
+rateLimitResponse.Headers.Add("X-RateLimit-Remaining", "0");
+using var rateLimitHttp = new HttpClient(new SingleResponseHandler(rateLimitResponse))
+{
+    BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+};
+var rateClient = new VirusTotalClient(rateLimitHttp);
+try
+{
+    await rateClient.GetFileReportAsync("abc");
+}
+catch (RateLimitExceededException ex)
+{
+    Console.WriteLine($"Rate limit retry after: {ex.RetryAfter?.TotalSeconds}s");
+}
+
 class StubHandler : HttpMessageHandler
 {
     private readonly string _response;
@@ -64,4 +86,13 @@ class StubHandler : HttpMessageHandler
         {
             Content = new StringContent(_response, Encoding.UTF8, "application/json")
         });
+}
+
+class SingleResponseHandler : HttpMessageHandler
+{
+    private readonly HttpResponseMessage _response;
+    public SingleResponseHandler(HttpResponseMessage response) => _response = response;
+
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        => Task.FromResult(_response);
 }

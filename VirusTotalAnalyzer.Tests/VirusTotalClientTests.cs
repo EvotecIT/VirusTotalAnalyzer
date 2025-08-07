@@ -215,6 +215,48 @@ public class VirusTotalClientTests
         }
     }
 
+    [Fact]
+    public async Task GetFileReportAsync_ThrowsApiException()
+    {
+        var errorJson = @"{""error"":{""code"":""NotFoundError"",""message"":""not found""}}";
+        var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        var handler = new RecordingHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetFileReportAsync("abc"));
+        Assert.Equal("not found", ex.Message);
+        Assert.Equal("NotFoundError", ex.Error?.Code);
+    }
+
+    [Fact]
+    public async Task Client_ThrowsRateLimitExceededException()
+    {
+        var errorJson = @"{""error"":{""code"":""RateLimitExceeded"",""message"":""too many""}}";
+        var response = new HttpResponseMessage((HttpStatusCode)429)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        response.Headers.Add("Retry-After", "10");
+        response.Headers.Add("X-RateLimit-Remaining", "123");
+        var handler = new RecordingHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<RateLimitExceededException>(() => client.GetFileReportAsync("abc"));
+        Assert.Equal(TimeSpan.FromSeconds(10), ex.RetryAfter);
+        Assert.Equal(123, ex.RemainingQuota);
+    }
+
     private sealed class StubHandler : HttpMessageHandler
     {
         private readonly string _response;

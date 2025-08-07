@@ -4,18 +4,15 @@ using VirusTotalAnalyzer.Models;
 
 namespace VirusTotalAnalyzer.Examples;
 
-public static class SubmitUrlExample
+public static class SearchExample
 {
     public static async Task RunAsync()
     {
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var report = await client.SubmitUrlAsync("https://example.com", AnalysisType.Url);
-            Console.WriteLine(report?.Data?.Id);
-
-            var simple = await client.SubmitUrlAsync("https://example.org");
-            Console.WriteLine(simple?.Data?.Id);
+            var response = await client.SearchAsync("type:file");
+            Console.WriteLine(response?.Data.Count);
         }
         catch (RateLimitExceededException ex)
         {

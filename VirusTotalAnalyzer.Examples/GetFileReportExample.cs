@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using VirusTotalAnalyzer.Models;
 
 namespace VirusTotalAnalyzer.Examples;
 
@@ -7,15 +8,19 @@ public static class GetFileReportExample
 {
     public static async Task RunAsync()
     {
-        var apiKey = Environment.GetEnvironmentVariable("VT_API_KEY");
-        if (string.IsNullOrWhiteSpace(apiKey))
+        var client = VirusTotalClient.Create("YOUR_API_KEY");
+        try
         {
-            Console.WriteLine("VT_API_KEY environment variable is not set.");
-            return;
+            var report = await client.GetFileReportAsync("44d88612fea8a8f36de82e1278abb02f");
+            Console.WriteLine(report?.Data?.Id);
         }
-
-        var client = VirusTotalClient.Create(apiKey);
-        var report = await client.GetFileReportAsync("44d88612fea8a8f36de82e1278abb02f");
-        Console.WriteLine($"Sample file md5: {report?.Data.Attributes.Md5}, size: {report?.Data.Attributes.Size}");
+        catch (RateLimitExceededException ex)
+        {
+            Console.WriteLine($"Rate limit exceeded. Retry after: {ex.RetryAfter}, remaining quota: {ex.RemainingQuota}");
+        }
+        catch (ApiException ex)
+        {
+            Console.WriteLine($"API error: {ex.Error?.Message}");
+        }
     }
 }

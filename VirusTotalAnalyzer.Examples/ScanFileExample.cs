@@ -1,21 +1,26 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using VirusTotalAnalyzer.Models;
 
 namespace VirusTotalAnalyzer.Examples;
 
-public static class SubmitUrlExample
+public static class ScanFileExample
 {
     public static async Task RunAsync()
     {
+        var path = "sample.txt";
+        if (!File.Exists(path))
+        {
+            Console.WriteLine($"File not found: {path}");
+            return;
+        }
+
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var report = await client.SubmitUrlAsync("https://example.com", AnalysisType.Url);
+            var report = await client.ScanFileAsync(path);
             Console.WriteLine(report?.Data?.Id);
-
-            var simple = await client.SubmitUrlAsync("https://example.org");
-            Console.WriteLine(simple?.Data?.Id);
         }
         catch (RateLimitExceededException ex)
         {

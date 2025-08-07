@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using VirusTotalAnalyzer;
 using VirusTotalAnalyzer.Models;
 using Xunit;
@@ -8,6 +9,12 @@ namespace VirusTotalAnalyzer.Tests;
 
 public class AttributeSerializationTests
 {
+    private static JsonSerializerOptions CreateOptions()
+    {
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        options.Converters.Add(new EnumMemberJsonConverter(JsonNamingPolicy.CamelCase));
+        return options;
+    }
     [Fact]
     public void FileAttributes_Roundtrip()
     {
@@ -38,8 +45,9 @@ public class AttributeSerializationTests
             }
         };
 
-        var json = JsonSerializer.Serialize(report);
-        var roundtrip = JsonSerializer.Deserialize<FileReport>(json);
+        var options = CreateOptions();
+        var json = JsonSerializer.Serialize(report, options);
+        var roundtrip = JsonSerializer.Deserialize<FileReport>(json, options);
         Assert.Equal(42, roundtrip!.Data.Attributes.CreationDate);
         Assert.Equal(10, roundtrip.Data.Attributes.FirstSubmissionDate);
         Assert.Equal(1234, roundtrip.Data.Attributes.Size);
@@ -78,13 +86,14 @@ public class AttributeSerializationTests
             }
         };
 
-        var json = JsonSerializer.Serialize(report);
-        var roundtrip = JsonSerializer.Deserialize<UrlReport>(json);
+        var options = CreateOptions();
+        var json = JsonSerializer.Serialize(report, options);
+        var roundtrip = JsonSerializer.Deserialize<UrlReport>(json, options);
         Assert.Equal(84, roundtrip!.Data.Attributes.CreationDate);
         Assert.Equal(70, roundtrip.Data.Attributes.FirstSubmissionDate);
         Assert.Equal(80, roundtrip.Data.Attributes.LastSubmissionDate);
         Assert.Equal("tag", Assert.Single(roundtrip.Data.Attributes.Tags));
-        Assert.Equal(1, roundtrip.Data.Attributes.CrowdSourcedVerdicts.Count);
+        Assert.Single(roundtrip.Data.Attributes.CrowdSourcedVerdicts);
         Assert.Equal(Verdict.Malicious, roundtrip.Data.Attributes.CrowdSourcedVerdicts[0].Verdict);
         Assert.Equal("malicious", roundtrip.Data.Attributes.LastAnalysisResults["engine"].Category);
     }
@@ -112,8 +121,9 @@ public class AttributeSerializationTests
             }
         };
 
-        var json = JsonSerializer.Serialize(report);
-        var roundtrip = JsonSerializer.Deserialize<DomainReport>(json);
+        var options = CreateOptions();
+        var json = JsonSerializer.Serialize(report, options);
+        var roundtrip = JsonSerializer.Deserialize<DomainReport>(json, options);
         Assert.Equal(21, roundtrip!.Data.Attributes.CreationDate);
         Assert.Equal("tag", Assert.Single(roundtrip.Data.Attributes.Tags));
         Assert.Equal("suspicious", roundtrip.Data.Attributes.LastAnalysisResults["engine"].Category);
@@ -142,8 +152,9 @@ public class AttributeSerializationTests
             }
         };
 
-        var json = JsonSerializer.Serialize(report);
-        var roundtrip = JsonSerializer.Deserialize<IpAddressReport>(json);
+        var options = CreateOptions();
+        var json = JsonSerializer.Serialize(report, options);
+        var roundtrip = JsonSerializer.Deserialize<IpAddressReport>(json, options);
         Assert.Equal(63, roundtrip!.Data.Attributes.CreationDate);
         Assert.Equal("tag", Assert.Single(roundtrip.Data.Attributes.Tags));
         Assert.Equal("undetected", roundtrip.Data.Attributes.LastAnalysisResults["engine"].Category);
@@ -160,7 +171,7 @@ public class AttributeSerializationTests
             {
                 Attributes = new AnalysisAttributes
                 {
-                    Status = AnalysisStatus.Completed,
+                    Status = AnalysisStatus.InProgress,
                     Date = 123,
                     Stats = new AnalysisStats { Harmless = 1 },
                     Results = new Dictionary<string, AnalysisResult>
@@ -171,9 +182,12 @@ public class AttributeSerializationTests
             }
         };
 
-        var json = JsonSerializer.Serialize(report);
-        var roundtrip = JsonSerializer.Deserialize<AnalysisReport>(json);
-        Assert.Equal(123, roundtrip!.Data.Attributes.Date);
+        var options = CreateOptions();
+        var json = JsonSerializer.Serialize(report, options);
+        Assert.Contains("\"status\":\"in-progress\"", json);
+        var roundtrip = JsonSerializer.Deserialize<AnalysisReport>(json, options);
+        Assert.Equal(AnalysisStatus.InProgress, roundtrip!.Data.Attributes.Status);
+        Assert.Equal(123, roundtrip.Data.Attributes.Date);
         Assert.Equal("harmless", roundtrip.Data.Attributes.Results["engine"].Category);
     }
 }

@@ -28,7 +28,7 @@ public sealed class VirusTotalClient
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
-        _jsonOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+        _jsonOptions.Converters.Add(new EnumMemberJsonConverter(JsonNamingPolicy.CamelCase));
     }
 
     public async Task<FileReport?> GetFileReportAsync(string id, CancellationToken cancellationToken = default)

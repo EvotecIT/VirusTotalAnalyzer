@@ -413,11 +413,19 @@ public class VirusTotalClientTests
             if (request.Content != null)
             {
 #if NET472
-                var text = await request.Content.ReadAsStringAsync().ConfigureAwait(false);
+                try
+                {
+                    var text = await request.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    Contents.Add(text);
+                }
+                catch
+                {
+                    Contents.Add(null);
+                }
 #else
                 var text = await request.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-#endif
                 Contents.Add(text);
+#endif
             }
             else
             {

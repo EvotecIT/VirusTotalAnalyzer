@@ -2,7 +2,6 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Reflection;
 using VirusTotalAnalyzer;
@@ -68,7 +67,7 @@ public class VirusTotalClientTests
     public async Task CreateCommentAsync_PostsComment()
     {
         var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""data"":{""attributes"":{""date"":1,""text"":""hello""}}}}";
-        var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
         });
@@ -81,16 +80,16 @@ public class VirusTotalClientTests
         var comment = await client.CreateCommentAsync(ResourceType.File, "abc", "hello");
 
         Assert.NotNull(comment);
-        Assert.Single(handler.Requests);
-        Assert.Equal("/api/v3/files/abc/comments", handler.Requests[0].RequestUri!.AbsolutePath);
-        Assert.Contains("\"text\":\"hello\"", handler.Contents[0]);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/comments", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Contains("\"text\":\"hello\"", handler.Content);
     }
 
     [Fact]
     public async Task CreateVoteAsync_PostsVerdict()
     {
         var json = @"{""data"":{""id"":""v1"",""type"":""vote"",""data"":{""attributes"":{""date"":1,""verdict"":""malicious""}}}}";
-        var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
         });
@@ -103,15 +102,15 @@ public class VirusTotalClientTests
         var vote = await client.CreateVoteAsync(ResourceType.File, "abc", VoteVerdict.Malicious);
 
         Assert.NotNull(vote);
-        Assert.Single(handler.Requests);
-        Assert.Equal("/api/v3/files/abc/votes", handler.Requests[0].RequestUri!.AbsolutePath);
-        Assert.Contains("\"verdict\":\"malicious\"", handler.Contents[0]);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/votes", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Contains("\"verdict\":\"malicious\"", handler.Content);
     }
 
     [Fact]
     public async Task DeleteItemAsync_UsesDelete()
     {
-        var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.NoContent));
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.NoContent));
         var httpClient = new HttpClient(handler)
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
@@ -120,16 +119,16 @@ public class VirusTotalClientTests
 
         await client.DeleteItemAsync(ResourceType.File, "abc");
 
-        Assert.Single(handler.Requests);
-        Assert.Equal(HttpMethod.Delete, handler.Requests[0].Method);
-        Assert.Equal("/api/v3/files/abc", handler.Requests[0].RequestUri!.AbsolutePath);
+        Assert.NotNull(handler.Request);
+        Assert.Equal(HttpMethod.Delete, handler.Request!.Method);
+        Assert.Equal("/api/v3/files/abc", handler.Request!.RequestUri!.AbsolutePath);
     }
 
     [Fact]
     public async Task GetUserAsync_DeserializesResponse()
     {
         var json = @"{""id"":""user1"",""type"":""user"",""data"":{""attributes"":{""username"":""demo"",""role"":""admin""}}}";
-        var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
         });
@@ -144,14 +143,14 @@ public class VirusTotalClientTests
         Assert.NotNull(user);
         Assert.Equal("demo", user!.Data.Attributes.Username);
         Assert.Equal(UserRole.Admin, user.Data.Attributes.Role);
-        Assert.Equal("/api/v3/users/user1", handler.Requests[0].RequestUri!.AbsolutePath);
+        Assert.Equal("/api/v3/users/user1", handler.Request!.RequestUri!.AbsolutePath);
     }
 
     [Fact]
     public async Task GetUploadUrlAsync_ReturnsUri()
     {
         var json = "{\"data\":\"https://upload.example/upload\"}";
-        var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
         });
@@ -165,8 +164,8 @@ public class VirusTotalClientTests
 
         Assert.NotNull(uri);
         Assert.Equal("https://upload.example/upload", uri!.ToString());
-        Assert.Single(handler.Requests);
-        Assert.Equal("/api/v3/files/upload_url", handler.Requests[0].RequestUri!.AbsolutePath);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/upload_url", handler.Request!.RequestUri!.AbsolutePath);
     }
 
     [Fact]
@@ -174,7 +173,7 @@ public class VirusTotalClientTests
     {
         var uploadJson = "{\"data\":\"https://upload.example/upload\"}";
         var analysisJson = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
-        var handler = new RecordingHandler(
+        var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(uploadJson, Encoding.UTF8, "application/json")
@@ -203,7 +202,7 @@ public class VirusTotalClientTests
     public async Task ReanalyzeHashAsync_UsesCorrectPath()
     {
         var json = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
-        var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
         });
@@ -216,15 +215,15 @@ public class VirusTotalClientTests
         var report = await client.ReanalyzeHashAsync("abc", AnalysisType.File);
 
         Assert.NotNull(report);
-        Assert.Single(handler.Requests);
-        Assert.Equal("/api/v3/files/abc/analyse", handler.Requests[0].RequestUri!.AbsolutePath);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/analyse", handler.Request!.RequestUri!.AbsolutePath);
     }
 
     [Fact]
     public async Task SubmitUrlAsync_PostsFormEncodedContent()
     {
         var json = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
-        var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
         });
@@ -237,12 +236,12 @@ public class VirusTotalClientTests
         var report = await client.SubmitUrlAsync("https://example.com", AnalysisType.Url);
 
         Assert.NotNull(report);
-        Assert.Single(handler.Requests);
-        var request = handler.Requests[0];
+        Assert.NotNull(handler.Request);
+        var request = handler.Request!;
         Assert.Equal(HttpMethod.Post, request.Method);
         Assert.Equal("/api/v3/urls", request.RequestUri!.AbsolutePath);
         Assert.Equal("application/x-www-form-urlencoded", request.Content!.Headers.ContentType!.MediaType);
-        Assert.Equal("url=https%3A%2F%2Fexample.com", handler.Contents[0]);
+        Assert.Equal("url=https%3A%2F%2Fexample.com", handler.Content);
     }
 
     [Fact]
@@ -250,7 +249,7 @@ public class VirusTotalClientTests
     {
         var queued = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
         var completed = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"completed\"}}}";
-        var handler = new RecordingHandler(
+        var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(queued, Encoding.UTF8, "application/json")
@@ -309,7 +308,7 @@ public class VirusTotalClientTests
     [Fact]
     public async Task SearchAsync_UsesCorrectPath()
     {
-        var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent("{\"data\":[]}", Encoding.UTF8, "application/json")
         });
@@ -321,16 +320,16 @@ public class VirusTotalClientTests
 
         await client.SearchAsync("demo query");
 
-        Assert.Single(handler.Requests);
-        Assert.Equal("/api/v3/intelligence/search", handler.Requests[0].RequestUri!.AbsolutePath);
-        Assert.Equal("query=demo%20query", handler.Requests[0].RequestUri!.Query.TrimStart('?'));
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/intelligence/search", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("query=demo%20query", handler.Request!.RequestUri!.Query.TrimStart('?'));
     }
 
     [Fact]
     public async Task ScanFileAsync_UsesExtensionHelper()
     {
         var analysisJson = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
-        var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(analysisJson, Encoding.UTF8, "application/json")
         });
@@ -350,7 +349,7 @@ public class VirusTotalClientTests
         {
             var report = await client.ScanFileAsync(path);
             Assert.NotNull(report);
-            Assert.Single(handler.Requests);
+            Assert.NotNull(handler.Request);
         }
         finally
         {
@@ -366,7 +365,7 @@ public class VirusTotalClientTests
         {
             Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
         };
-        var handler = new RecordingHandler(response);
+        var handler = new SingleResponseHandler(response);
         var httpClient = new HttpClient(handler)
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
@@ -388,7 +387,7 @@ public class VirusTotalClientTests
         };
         response.Headers.Add("Retry-After", "10");
         response.Headers.Add("X-RateLimit-Remaining", "123");
-        var handler = new RecordingHandler(response);
+        var handler = new SingleResponseHandler(response);
         var httpClient = new HttpClient(handler)
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
@@ -398,46 +397,5 @@ public class VirusTotalClientTests
         var ex = await Assert.ThrowsAsync<RateLimitExceededException>(() => client.GetFileReportAsync("abc"));
         Assert.Equal(TimeSpan.FromSeconds(10), ex.RetryAfter);
         Assert.Equal(123, ex.RemainingQuota);
-    }
-
-    private sealed class StubHandler : HttpMessageHandler
-    {
-        private readonly string _response;
-        public StubHandler(string response) => _response = response;
-
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(_response, Encoding.UTF8, "application/json")
-            });
-    }
-
-    private sealed class RecordingHandler : HttpMessageHandler
-    {
-        private readonly System.Collections.Generic.Queue<HttpResponseMessage> _responses;
-        public System.Collections.Generic.List<HttpRequestMessage> Requests { get; } = new();
-        public System.Collections.Generic.List<string?> Contents { get; } = new();
-
-        public RecordingHandler(params HttpResponseMessage[] responses)
-            => _responses = new System.Collections.Generic.Queue<HttpResponseMessage>(responses);
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            Requests.Add(request);
-            if (request.Content != null)
-            {
-#if NETFRAMEWORK
-                var text = await request.Content.ReadAsStringAsync().ConfigureAwait(false);
-#else
-                var text = await request.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-#endif
-                Contents.Add(text);
-            }
-            else
-            {
-                Contents.Add(null);
-            }
-            return _responses.Dequeue();
-        }
     }
 }

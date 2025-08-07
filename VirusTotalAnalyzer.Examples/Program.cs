@@ -12,6 +12,7 @@ using VirusTotalAnalyzer.Examples;
 // await GetCommentsExample.RunAsync();
 // await GetVotesExample.RunAsync();
 // await CreateCommentExample.RunAsync();
+// await CreateCommentWithBuilderExample.RunAsync();
 // await CreateVoteExample.RunAsync();
 // await DeleteItemExample.RunAsync();
 // await GetUserExample.RunAsync();

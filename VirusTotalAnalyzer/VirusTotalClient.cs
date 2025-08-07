@@ -166,15 +166,16 @@ public sealed class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<Comment?> CreateCommentAsync(ResourceType resourceType, string id, string text, CancellationToken cancellationToken = default)
+    public Task<Comment?> CreateCommentAsync(ResourceType resourceType, string id, string text, CancellationToken cancellationToken = default)
     {
-        var request = new CreateCommentRequest
-        {
-            Data = new CreateCommentData
-            {
-                Attributes = new CreateCommentAttributes { Text = text }
-            }
-        };
+        var request = new CommentRequestBuilder()
+            .WithText(text)
+            .Build();
+        return CreateCommentAsync(resourceType, id, request, cancellationToken);
+    }
+
+    public async Task<Comment?> CreateCommentAsync(ResourceType resourceType, string id, CreateCommentRequest request, CancellationToken cancellationToken = default)
+    {
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var response = await _httpClient.PostAsync($"{GetPath(resourceType)}/{id}/comments", content, cancellationToken).ConfigureAwait(false);
@@ -188,15 +189,16 @@ public sealed class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<Vote?> CreateVoteAsync(ResourceType resourceType, string id, VoteVerdict verdict, CancellationToken cancellationToken = default)
+    public Task<Vote?> CreateVoteAsync(ResourceType resourceType, string id, VoteVerdict verdict, CancellationToken cancellationToken = default)
     {
-        var request = new CreateVoteRequest
-        {
-            Data = new CreateVoteData
-            {
-                Attributes = new CreateVoteAttributes { Verdict = verdict }
-            }
-        };
+        var request = new VoteRequestBuilder()
+            .WithVerdict(verdict)
+            .Build();
+        return CreateVoteAsync(resourceType, id, request, cancellationToken);
+    }
+
+    public async Task<Vote?> CreateVoteAsync(ResourceType resourceType, string id, CreateVoteRequest request, CancellationToken cancellationToken = default)
+    {
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var response = await _httpClient.PostAsync($"{GetPath(resourceType)}/{id}/votes", content, cancellationToken).ConfigureAwait(false);

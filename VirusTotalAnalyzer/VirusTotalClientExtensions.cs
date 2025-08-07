@@ -44,10 +44,22 @@ public static class VirusTotalClientExtensions
         return client.CreateCommentAsync(resourceType, id, text, cancellationToken);
     }
 
+    public static Task<Comment?> AddCommentAsync(this VirusTotalClient client, ResourceType resourceType, string id, CreateCommentRequest request, CancellationToken cancellationToken = default)
+    {
+        if (client == null) throw new ArgumentNullException(nameof(client));
+        return client.CreateCommentAsync(resourceType, id, request, cancellationToken);
+    }
+
     public static Task<Vote?> VoteAsync(this VirusTotalClient client, ResourceType resourceType, string id, VoteVerdict verdict, CancellationToken cancellationToken = default)
     {
         if (client == null) throw new ArgumentNullException(nameof(client));
         return client.CreateVoteAsync(resourceType, id, verdict, cancellationToken);
+    }
+
+    public static Task<Vote?> VoteAsync(this VirusTotalClient client, ResourceType resourceType, string id, CreateVoteRequest request, CancellationToken cancellationToken = default)
+    {
+        if (client == null) throw new ArgumentNullException(nameof(client));
+        return client.CreateVoteAsync(resourceType, id, request, cancellationToken);
     }
 
     public static Task DeleteAsync(this VirusTotalClient client, ResourceType resourceType, string id, CancellationToken cancellationToken = default)

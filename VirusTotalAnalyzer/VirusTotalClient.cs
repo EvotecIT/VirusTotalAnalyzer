@@ -31,6 +31,17 @@ public sealed class VirusTotalClient
         _jsonOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
     }
 
+    public static VirusTotalClient Create(string apiKey)
+    {
+        if (string.IsNullOrWhiteSpace(apiKey)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(apiKey));
+        var httpClient = new HttpClient
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        httpClient.DefaultRequestHeaders.Add("x-apikey", apiKey);
+        return new VirusTotalClient(httpClient);
+    }
+
     public async Task<FileReport?> GetFileReportAsync(string id, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"files/{id}", cancellationToken).ConfigureAwait(false);

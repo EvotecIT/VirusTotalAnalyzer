@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Reflection;
 using VirusTotalAnalyzer;
 using VirusTotalAnalyzer.Models;
 using Xunit;
@@ -12,6 +13,19 @@ namespace VirusTotalAnalyzer.Tests;
 
 public class VirusTotalClientTests
 {
+    [Fact]
+    public void Create_SetsBaseAddressAndHeader()
+    {
+        var client = VirusTotalClient.Create("demo-key");
+
+        var field = typeof(VirusTotalClient).GetField("_httpClient", BindingFlags.NonPublic | BindingFlags.Instance);
+        var httpClient = Assert.IsType<HttpClient>(field!.GetValue(client)!);
+
+        Assert.Equal(new Uri("https://www.virustotal.com/api/v3/"), httpClient.BaseAddress);
+        Assert.True(httpClient.DefaultRequestHeaders.TryGetValues("x-apikey", out var values));
+        Assert.Equal("demo-key", Assert.Single(values));
+    }
+
     [Fact]
     public async Task GetFileReportAsync_DeserializesResponse()
     {

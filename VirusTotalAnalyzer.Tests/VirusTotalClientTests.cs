@@ -86,7 +86,7 @@ public class VirusTotalClientTests
         };
         var client = new VirusTotalClient(httpClient);
 
-        var vote = await client.CreateVoteAsync(ResourceType.File, "abc", Verdict.Malicious);
+        var vote = await client.CreateVoteAsync(ResourceType.File, "abc", VoteValue.Malicious);
 
         Assert.NotNull(vote);
         Assert.Single(handler.Requests);
@@ -327,7 +327,11 @@ public class VirusTotalClientTests
         var client = new VirusTotalClient(httpClient);
 
         var path = System.IO.Path.GetTempFileName();
+#if NET472
+        System.IO.File.WriteAllText(path, "demo");
+#else
         await System.IO.File.WriteAllTextAsync(path, "demo");
+#endif
         try
         {
             var report = await client.ScanFileAsync(path);
@@ -408,7 +412,11 @@ public class VirusTotalClientTests
             Requests.Add(request);
             if (request.Content != null)
             {
+#if NET472
+                var text = await request.Content.ReadAsStringAsync().ConfigureAwait(false);
+#else
                 var text = await request.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+#endif
                 Contents.Add(text);
             }
             else

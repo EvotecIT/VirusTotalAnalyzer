@@ -50,5 +50,14 @@ public enum ResourceType
     Collection,
 
     [EnumMember(Value = "bundle")]
-    Bundle
+    Bundle,
+
+    [EnumMember(Value = "file_behaviour")]
+    FileBehaviour,
+
+    [EnumMember(Value = "monitor_item")]
+    MonitorItem,
+
+    [EnumMember(Value = "network_location")]
+    NetworkLocation
 }

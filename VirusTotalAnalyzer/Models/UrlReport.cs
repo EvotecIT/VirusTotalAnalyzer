@@ -26,8 +26,23 @@ public sealed class UrlAttributes
     [JsonPropertyName("creation_date")]
     public long CreationDate { get; set; }
 
+    [JsonPropertyName("first_submission_date")]
+    public long FirstSubmissionDate { get; set; }
+
+    [JsonPropertyName("last_submission_date")]
+    public long LastSubmissionDate { get; set; }
+
+    [JsonPropertyName("times_submitted")]
+    public int TimesSubmitted { get; set; }
+
+    [JsonPropertyName("last_final_url")]
+    public string? LastFinalUrl { get; set; }
+
     [JsonPropertyName("tags")]
     public List<string> Tags { get; set; } = new();
+
+    [JsonPropertyName("crowdsourced_verdicts")]
+    public List<CrowdSourcedVerdict> CrowdSourcedVerdicts { get; set; } = new();
 
     [JsonPropertyName("last_analysis_stats")]
     public AnalysisStats LastAnalysisStats { get; set; } = new();

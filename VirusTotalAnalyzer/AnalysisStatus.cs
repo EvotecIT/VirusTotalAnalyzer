@@ -19,6 +19,9 @@ public enum AnalysisStatus
     [EnumMember(Value = "error")]
     Error,
 
+    [EnumMember(Value = "cancelled")]
+    Cancelled,
+
     [EnumMember(Value = "timeout")]
     Timeout
 }

@@ -21,7 +21,7 @@ public sealed class VoteAttributes
     public long Date { get; set; }
 
     [JsonPropertyName("verdict")]
-    public Verdict Verdict { get; set; }
+    public VoteValue Verdict { get; set; }
 }
 
 public sealed class VotesResponse
@@ -54,5 +54,5 @@ public sealed class CreateVoteData
 public sealed class CreateVoteAttributes
 {
     [JsonPropertyName("verdict")]
-    public Verdict Verdict { get; set; }
+    public VoteValue Verdict { get; set; }
 }

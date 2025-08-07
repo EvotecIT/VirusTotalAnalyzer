@@ -11,4 +11,5 @@ public sealed class AnalysisStats
     [JsonPropertyName("timeout")] public int Timeout { get; set; }
     [JsonPropertyName("failure")] public int Failure { get; set; }
     [JsonPropertyName("type-unsupported")] public int TypeUnsupported { get; set; }
+    [JsonPropertyName("confirmed-timeout")] public int ConfirmedTimeout { get; set; }
 }

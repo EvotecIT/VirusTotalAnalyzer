@@ -71,7 +71,7 @@ using var voteClientHttp = new HttpClient(new StubHandler(voteJson))
     BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
 };
 var voteClientExample = new VirusTotalClient(voteClientHttp);
-var vote = await voteClientExample.VoteAsync(ResourceType.File, "abc", Verdict.Harmless);
+var vote = await voteClientExample.VoteAsync(ResourceType.File, "abc", VoteValue.Harmless);
 Console.WriteLine($"Vote verdict: {vote?.Data.Attributes.Verdict}");
 
 var deleteHandler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.NoContent));

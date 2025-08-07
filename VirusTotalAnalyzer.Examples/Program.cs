@@ -40,10 +40,11 @@ Console.WriteLine($"Comments retrieved: {comments?.Count}");
 
 var tmp = Path.GetTempFileName();
 await File.WriteAllTextAsync(tmp, "demo");
-using var scanClient = new VirusTotalClient(new HttpClient(new StubHandler(analysisJson))
+using var scanHttpClient = new HttpClient(new StubHandler(analysisJson))
 {
     BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-});
+};
+var scanClient = new VirusTotalClient(scanHttpClient);
 var scanReport = await scanClient.ScanFileAsync(tmp);
 Console.WriteLine($"Scan status via helper: {scanReport?.Data.Attributes.Status}");
 File.Delete(tmp);

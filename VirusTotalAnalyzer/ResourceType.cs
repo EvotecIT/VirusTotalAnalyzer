@@ -22,6 +22,9 @@ public enum ResourceType
     [EnumMember(Value = "analysis")]
     Analysis,
 
+    [EnumMember(Value = "private_analysis")]
+    PrivateAnalysis,
+
     [EnumMember(Value = "comment")]
     Comment,
 
@@ -35,5 +38,17 @@ public enum ResourceType
     Search,
 
     [EnumMember(Value = "feed")]
-    Feed
+    Feed,
+
+    [EnumMember(Value = "graph")]
+    Graph,
+
+    [EnumMember(Value = "user")]
+    User,
+
+    [EnumMember(Value = "collection")]
+    Collection,
+
+    [EnumMember(Value = "bundle")]
+    Bundle
 }

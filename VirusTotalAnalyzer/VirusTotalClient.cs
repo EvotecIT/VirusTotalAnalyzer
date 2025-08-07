@@ -227,7 +227,8 @@ public sealed class VirusTotalClient
             requestUrl = uploadUrl.ToString();
         }
 
-        using var content = MultipartFormDataHelper.Create(stream, fileName);
+        var builder = new MultipartFormDataBuilder(stream, fileName);
+        using var content = builder.Build();
         using var request = new HttpRequestMessage(HttpMethod.Post, requestUrl)
         {
             Content = content

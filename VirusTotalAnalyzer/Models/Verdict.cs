@@ -10,5 +10,8 @@ public enum Verdict
     [EnumMember(Value = "malicious")] Malicious,
     [EnumMember(Value = "timeout")] Timeout,
     [EnumMember(Value = "failure")] Failure,
-    [EnumMember(Value = "type-unsupported")] TypeUnsupported
+    [EnumMember(Value = "type-unsupported")] TypeUnsupported,
+    [EnumMember(Value = "confirmed-timeout")] ConfirmedTimeout,
+    [EnumMember(Value = "unknown")] Unknown,
+    [EnumMember(Value = "unrated")] Unrated
 }

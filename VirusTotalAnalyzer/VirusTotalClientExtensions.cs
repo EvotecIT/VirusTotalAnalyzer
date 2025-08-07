@@ -12,14 +12,19 @@ public static class VirusTotalClientExtensions
     {
         if (client == null) throw new ArgumentNullException(nameof(client));
 #if NET472
-        using var stream = File.OpenRead(filePath);
-        return client.SubmitFileAsync(stream, Path.GetFileName(filePath), cancellationToken);
+        return ScanFileFrameworkAsync(client, filePath, cancellationToken);
 #else
         return ScanFileInternalAsync(client, filePath, cancellationToken);
 #endif
     }
 
-#if !NET472
+#if NET472
+    private static async Task<AnalysisReport?> ScanFileFrameworkAsync(VirusTotalClient client, string filePath, CancellationToken cancellationToken)
+    {
+        using var stream = File.OpenRead(filePath);
+        return await client.SubmitFileAsync(stream, Path.GetFileName(filePath), cancellationToken).ConfigureAwait(false);
+    }
+#else
     private static async Task<AnalysisReport?> ScanFileInternalAsync(VirusTotalClient client, string filePath, CancellationToken cancellationToken)
     {
         await using var stream = File.OpenRead(filePath);
@@ -39,7 +44,7 @@ public static class VirusTotalClientExtensions
         return client.CreateCommentAsync(resourceType, id, text, cancellationToken);
     }
 
-    public static Task<Vote?> VoteAsync(this VirusTotalClient client, ResourceType resourceType, string id, Verdict verdict, CancellationToken cancellationToken = default)
+    public static Task<Vote?> VoteAsync(this VirusTotalClient client, ResourceType resourceType, string id, VoteVerdict verdict, CancellationToken cancellationToken = default)
     {
         if (client == null) throw new ArgumentNullException(nameof(client));
         return client.CreateVoteAsync(resourceType, id, verdict, cancellationToken);

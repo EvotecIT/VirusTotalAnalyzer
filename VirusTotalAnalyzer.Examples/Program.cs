@@ -10,7 +10,7 @@ using VirusTotalAnalyzer.Models;
 
 Console.WriteLine("VirusTotalAnalyzer example running.");
 
-var sampleJson = "{\"id\":\"abc\",\"type\":\"file\",\"data\":{\"attributes\":{\"md5\":\"demo-md5\",\"sha256\":\"demo-sha\"}}}";
+var sampleJson = "{\"id\":\"abc\",\"type\":\"file\",\"data\":{\"attributes\":{\"md5\":\"demo-md5\",\"sha256\":\"demo-sha\",\"size\":123}}}";
 
 using var httpClient = new HttpClient(new StubHandler(sampleJson))
 {
@@ -19,7 +19,7 @@ using var httpClient = new HttpClient(new StubHandler(sampleJson))
 var client = new VirusTotalClient(httpClient);
 
 var report = await client.GetFileReportAsync("abc");
-Console.WriteLine($"Sample file md5: {report?.Data.Attributes.Md5}");
+Console.WriteLine($"Sample file md5: {report?.Data.Attributes.Md5}, size: {report?.Data.Attributes.Size}");
 
 var analysisJson = "{\"id\":\"analysis\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
 using var submitHttpClient = new HttpClient(new StubHandler(analysisJson))
@@ -71,7 +71,7 @@ using var voteClientHttp = new HttpClient(new StubHandler(voteJson))
     BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
 };
 var voteClientExample = new VirusTotalClient(voteClientHttp);
-var vote = await voteClientExample.VoteAsync(ResourceType.File, "abc", Verdict.Harmless);
+var vote = await voteClientExample.VoteAsync(ResourceType.File, "abc", VoteVerdict.Harmless);
 Console.WriteLine($"Vote verdict: {vote?.Data.Attributes.Verdict}");
 
 var deleteHandler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.NoContent));

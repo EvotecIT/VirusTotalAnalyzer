@@ -32,6 +32,27 @@ public sealed class FileAttributes
     [JsonPropertyName("tags")]
     public List<string> Tags { get; set; } = new();
 
+    [JsonPropertyName("size")]
+    public long Size { get; set; }
+
+    [JsonPropertyName("first_submission_date")]
+    public long FirstSubmissionDate { get; set; }
+
+    [JsonPropertyName("last_submission_date")]
+    public long LastSubmissionDate { get; set; }
+
+    [JsonPropertyName("last_modification_date")]
+    public long LastModificationDate { get; set; }
+
+    [JsonPropertyName("times_submitted")]
+    public int TimesSubmitted { get; set; }
+
+    [JsonPropertyName("meaningful_name")]
+    public string? MeaningfulName { get; set; }
+
+    [JsonPropertyName("names")]
+    public List<string> Names { get; set; } = new();
+
     [JsonPropertyName("last_analysis_stats")]
     public AnalysisStats LastAnalysisStats { get; set; } = new();
 
@@ -46,4 +67,7 @@ public sealed class FileAttributes
 
     [JsonPropertyName("last_analysis_date")]
     public long LastAnalysisDate { get; set; }
+
+    [JsonPropertyName("crowdsourced_verdicts")]
+    public List<CrowdsourcedVerdict> CrowdsourcedVerdicts { get; set; } = new();
 }

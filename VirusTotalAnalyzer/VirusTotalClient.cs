@@ -29,6 +29,7 @@ public sealed class VirusTotalClient
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
         _jsonOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+        _jsonOptions.Converters.Add(new UnixTimestampConverter());
     }
 
     public static VirusTotalClient Create(string apiKey)

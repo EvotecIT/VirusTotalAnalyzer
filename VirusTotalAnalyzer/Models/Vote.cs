@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -18,7 +19,7 @@ public sealed class VoteData
 public sealed class VoteAttributes
 {
     [JsonPropertyName("date")]
-    public long Date { get; set; }
+    public DateTimeOffset Date { get; set; }
 
     [JsonPropertyName("verdict")]
     public VoteVerdict Verdict { get; set; }

@@ -398,4 +398,172 @@ public class VirusTotalClientTests
         Assert.Equal(TimeSpan.FromSeconds(10), ex.RetryAfter);
         Assert.Equal(123, ex.RemainingQuota);
     }
+
+    [Fact]
+    public async Task GetLivehuntNotificationAsync_DeserializesResponse()
+    {
+        var json = "{\"id\":\"ln1\",\"type\":\"livehuntNotification\",\"data\":{\"attributes\":{\"rule_name\":\"r1\"}}}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var notification = await client.GetLivehuntNotificationAsync("ln1");
+
+        Assert.NotNull(notification);
+        Assert.Equal("ln1", notification!.Id);
+        Assert.Equal("r1", notification.Data.Attributes.RuleName);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/livehunt_notifications/ln1", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetLivehuntNotificationAsync_ThrowsApiException()
+    {
+        var errorJson = @"{""error"":{""code"":""NotFoundError"",""message"":""not found""}}";
+        var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/" )
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ApiException>(() => client.GetLivehuntNotificationAsync("ln1"));
+    }
+
+    [Fact]
+    public async Task GetRetrohuntJobAsync_DeserializesResponse()
+    {
+        var json = "{\"id\":\"rj1\",\"type\":\"retrohuntJob\",\"data\":{\"attributes\":{\"status\":\"done\"}}}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var job = await client.GetRetrohuntJobAsync("rj1");
+
+        Assert.NotNull(job);
+        Assert.Equal("rj1", job!.Id);
+        Assert.Equal("done", job.Data.Attributes.Status);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/retrohunt_jobs/rj1", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetRetrohuntJobAsync_ThrowsApiException()
+    {
+        var errorJson = @"{""error"":{""code"":""NotFoundError"",""message"":""not found""}}";
+        var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ApiException>(() => client.GetRetrohuntJobAsync("rj1"));
+    }
+
+    [Fact]
+    public async Task GetRetrohuntNotificationAsync_DeserializesResponse()
+    {
+        var json = "{\"id\":\"rn1\",\"type\":\"retrohuntNotification\",\"data\":{\"attributes\":{\"job_id\":\"j1\"}}}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var notification = await client.GetRetrohuntNotificationAsync("rn1");
+
+        Assert.NotNull(notification);
+        Assert.Equal("rn1", notification!.Id);
+        Assert.Equal("j1", notification.Data.Attributes.JobId);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/retrohunt_notifications/rn1", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetRetrohuntNotificationAsync_ThrowsApiException()
+    {
+        var errorJson = @"{""error"":{""code"":""NotFoundError"",""message"":""not found""}}";
+        var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ApiException>(() => client.GetRetrohuntNotificationAsync("rn1"));
+    }
+
+    [Fact]
+    public async Task GetMonitorItemAsync_DeserializesResponse()
+    {
+        var json = "{\"id\":\"mi1\",\"type\":\"monitorItem\",\"data\":{\"attributes\":{\"path\":\"/tmp\"}}}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var item = await client.GetMonitorItemAsync("mi1");
+
+        Assert.NotNull(item);
+        Assert.Equal("mi1", item!.Id);
+        Assert.Equal("/tmp", item.Data.Attributes.Path);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/monitor/items/mi1", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetMonitorItemAsync_ThrowsApiException()
+    {
+        var errorJson = @"{""error"":{""code"":""NotFoundError"",""message"":""not found""}}";
+        var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ApiException>(() => client.GetMonitorItemAsync("mi1"));
+    }
 }

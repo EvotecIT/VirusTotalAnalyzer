@@ -254,6 +254,54 @@ public sealed class VirusTotalClient
         return await JsonSerializer.DeserializeAsync<Collection>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<LivehuntNotification?> GetLivehuntNotificationAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"{GetPath(ResourceType.LivehuntNotification)}/{id}", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<LivehuntNotification>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<RetrohuntJob?> GetRetrohuntJobAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"{GetPath(ResourceType.RetrohuntJob)}/{id}", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<RetrohuntJob>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<RetrohuntNotification?> GetRetrohuntNotificationAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"{GetPath(ResourceType.RetrohuntNotification)}/{id}", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<RetrohuntNotification>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<MonitorItem?> GetMonitorItemAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"{GetPath(ResourceType.MonitorItem)}/{id}", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<MonitorItem>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task<RelationshipResponse?> GetRelationshipsAsync(ResourceType resourceType, string id, string relationship, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"{GetPath(resourceType)}/{id}/relationships/{relationship}", cancellationToken).ConfigureAwait(false);
@@ -408,10 +456,20 @@ public sealed class VirusTotalClient
             ResourceType.IpAddress => "ip_addresses",
             ResourceType.Domain => "domains",
             ResourceType.Analysis => "analyses",
+            ResourceType.PrivateAnalysis => "private/analyses",
+            ResourceType.Comment => "comments",
+            ResourceType.Vote => "votes",
+            ResourceType.Relationship => "relationships",
+            ResourceType.Search => "intelligence/search",
+            ResourceType.Feed => "feeds",
             ResourceType.Graph => "graphs",
             ResourceType.User => "users",
             ResourceType.Collection => "collections",
             ResourceType.Bundle => "bundles",
+            ResourceType.LivehuntNotification => "livehunt_notifications",
+            ResourceType.RetrohuntJob => "retrohunt_jobs",
+            ResourceType.RetrohuntNotification => "retrohunt_notifications",
+            ResourceType.MonitorItem => "monitor/items",
             _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
 

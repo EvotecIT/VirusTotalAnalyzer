@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -24,7 +25,7 @@ public sealed class IpAddressAttributes
     public int Reputation { get; set; }
 
     [JsonPropertyName("creation_date")]
-    public long CreationDate { get; set; }
+    public DateTimeOffset CreationDate { get; set; }
 
     [JsonPropertyName("tags")]
     public List<string> Tags { get; set; } = new();
@@ -42,5 +43,5 @@ public sealed class IpAddressAttributes
     public Dictionary<string, Verdict> Categories { get; set; } = new();
 
     [JsonPropertyName("last_analysis_date")]
-    public long LastAnalysisDate { get; set; }
+    public DateTimeOffset LastAnalysisDate { get; set; }
 }

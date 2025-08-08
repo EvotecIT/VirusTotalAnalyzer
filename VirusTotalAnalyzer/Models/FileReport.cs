@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -27,7 +28,7 @@ public sealed class FileAttributes
     public int Reputation { get; set; }
 
     [JsonPropertyName("creation_date")]
-    public long CreationDate { get; set; }
+    public DateTimeOffset CreationDate { get; set; }
 
     [JsonPropertyName("tags")]
     public List<string> Tags { get; set; } = new();
@@ -36,13 +37,13 @@ public sealed class FileAttributes
     public long Size { get; set; }
 
     [JsonPropertyName("first_submission_date")]
-    public long FirstSubmissionDate { get; set; }
+    public DateTimeOffset FirstSubmissionDate { get; set; }
 
     [JsonPropertyName("last_submission_date")]
-    public long LastSubmissionDate { get; set; }
+    public DateTimeOffset LastSubmissionDate { get; set; }
 
     [JsonPropertyName("last_modification_date")]
-    public long LastModificationDate { get; set; }
+    public DateTimeOffset LastModificationDate { get; set; }
 
     [JsonPropertyName("times_submitted")]
     public int TimesSubmitted { get; set; }
@@ -66,7 +67,7 @@ public sealed class FileAttributes
     public Dictionary<string, Verdict> Categories { get; set; } = new();
 
     [JsonPropertyName("last_analysis_date")]
-    public long LastAnalysisDate { get; set; }
+    public DateTimeOffset LastAnalysisDate { get; set; }
 
     [JsonPropertyName("crowdsourced_verdicts")]
     public List<CrowdsourcedVerdict> CrowdsourcedVerdicts { get; set; } = new();

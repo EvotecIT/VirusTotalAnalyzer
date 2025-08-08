@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -27,7 +28,7 @@ public sealed class AnalysisAttributes
     public Dictionary<string, AnalysisResult> Results { get; set; } = new();
 
     [JsonPropertyName("date")]
-    public long Date { get; set; }
+    public DateTimeOffset Date { get; set; }
 
     [JsonPropertyName("error")]
     public string? Error { get; set; }

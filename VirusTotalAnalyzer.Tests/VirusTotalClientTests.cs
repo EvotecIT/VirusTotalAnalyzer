@@ -17,12 +17,15 @@ public class VirusTotalClientTests
     {
         var client = VirusTotalClient.Create("demo-key");
 
-        var field = typeof(VirusTotalClient).GetField("_httpClient", BindingFlags.NonPublic | BindingFlags.Instance);
-        var httpClient = Assert.IsType<HttpClient>(field!.GetValue(client)!);
+        var httpField = typeof(VirusTotalClient).GetField("_httpClient", BindingFlags.NonPublic | BindingFlags.Instance);
+        var httpClient = Assert.IsType<HttpClient>(httpField!.GetValue(client)!);
+        var disposeField = typeof(VirusTotalClient).GetField("_disposeClient", BindingFlags.NonPublic | BindingFlags.Instance);
+        var disposeClient = Assert.IsType<bool>(disposeField!.GetValue(client)!);
 
         Assert.Equal(new Uri("https://www.virustotal.com/api/v3/"), httpClient.BaseAddress);
         Assert.True(httpClient.DefaultRequestHeaders.TryGetValues("x-apikey", out var values));
         Assert.Equal("demo-key", Assert.Single(values));
+        Assert.True(disposeClient);
     }
 
     [Fact]

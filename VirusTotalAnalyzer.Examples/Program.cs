@@ -33,5 +33,6 @@ using VirusTotalAnalyzer.Examples;
 // await AddCommentExample.RunAsync();
 // await VoteExample.RunAsync();
 // await DeleteExample.RunAsync();
+// await UsingExistingHttpClientExample.RunAsync();
 
 await Task.CompletedTask;

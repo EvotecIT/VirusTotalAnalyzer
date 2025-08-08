@@ -287,6 +287,95 @@ public class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task WaitForAnalysisCompletionAsync_ReturnsImmediately_WhenCompleted()
+    {
+        var completed = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"completed\"}}}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(completed, Encoding.UTF8, "application/json")
+            });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var report = await client.WaitForAnalysisCompletionAsync("an", TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(1));
+
+        Assert.NotNull(report);
+        Assert.Equal(AnalysisStatus.Completed, report!.Data.Attributes.Status);
+        Assert.Single(handler.Requests);
+    }
+
+    [Fact]
+    public async Task WaitForAnalysisCompletionAsync_ThrowsApiException_OnError()
+    {
+        var error = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"error\",\"error\":\"bad\"}}}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(error, Encoding.UTF8, "application/json")
+            });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<ApiException>(() =>
+            client.WaitForAnalysisCompletionAsync("an", TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(1)));
+
+        Assert.Equal("bad", ex.Message);
+        Assert.Equal("bad", ex.Error?.Message);
+        Assert.Single(handler.Requests);
+    }
+
+    [Fact]
+    public async Task WaitForAnalysisCompletionAsync_ThrowsApiException_OnCancelled()
+    {
+        var cancelled = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"cancelled\",\"error\":\"user cancelled\"}}}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(cancelled, Encoding.UTF8, "application/json")
+            });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<ApiException>(() =>
+            client.WaitForAnalysisCompletionAsync("an", TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(1)));
+
+        Assert.Equal("user cancelled", ex.Message);
+        Assert.Equal("user cancelled", ex.Error?.Message);
+        Assert.Single(handler.Requests);
+    }
+
+    [Fact]
+    public async Task WaitForAnalysisCompletionAsync_ThrowsTimeout_OnStatusTimeout()
+    {
+        var timeout = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"timeout\"}}}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(timeout, Encoding.UTF8, "application/json")
+            });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<TimeoutException>(() =>
+            client.WaitForAnalysisCompletionAsync("an", TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(1)));
+
+        Assert.Single(handler.Requests);
+    }
+
+    [Fact]
     public async Task GetCommentsAsync_DeserializesResponse()
     {
         var json = "{\"data\":[{\"id\":\"c1\",\"type\":\"comment\",\"data\":{\"attributes\":{\"date\":1,\"text\":\"hi\"}}}]}";

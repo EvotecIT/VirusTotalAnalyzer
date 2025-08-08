@@ -121,9 +121,22 @@ public sealed class VirusTotalClient
             cancellationToken.ThrowIfCancellationRequested();
 
             var report = await GetAnalysisAsync(id, cancellationToken).ConfigureAwait(false);
-            if (report?.Data.Attributes.Status == AnalysisStatus.Completed)
+            var status = report?.Data.Attributes.Status;
+            if (status == AnalysisStatus.Completed)
             {
                 return report;
+            }
+
+            var error = report?.Data.Attributes.Error;
+            if (status == AnalysisStatus.Error || status == AnalysisStatus.Cancelled)
+            {
+                var apiError = string.IsNullOrEmpty(error) ? null : new ApiError { Message = error };
+                throw new ApiException(apiError, error);
+            }
+
+            if (status == AnalysisStatus.Timeout)
+            {
+                throw new TimeoutException(error ?? "The analysis request timed out.");
             }
 
             if (DateTimeOffset.UtcNow - start >= timeout)

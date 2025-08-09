@@ -805,6 +805,234 @@ public class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetIpAddressReportAsync_DeserializesResponseAndUsesCorrectPath()
+    {
+        var json = "{\"id\":\"1.1.1.1\",\"type\":\"ipAddress\",\"data\":{\"attributes\":{\"ip_address\":\"1.1.1.1\"}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var report = await client.GetIpAddressReportAsync("1.1.1.1");
+
+        Assert.NotNull(report);
+        Assert.Equal("1.1.1.1", report!.Id);
+        Assert.Equal(ResourceType.IpAddress, report.Type);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/ip_addresses/1.1.1.1", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetDomainReportAsync_DeserializesResponseAndUsesCorrectPath()
+    {
+        var json = "{\"id\":\"example.com\",\"type\":\"domain\",\"data\":{\"attributes\":{\"domain\":\"example.com\"}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var report = await client.GetDomainReportAsync("example.com");
+
+        Assert.NotNull(report);
+        Assert.Equal("example.com", report!.Id);
+        Assert.Equal(ResourceType.Domain, report.Type);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/domains/example.com", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetAnalysisAsync_DeserializesResponseAndUsesCorrectPath()
+    {
+        var json = "{\"id\":\"an1\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var report = await client.GetAnalysisAsync("an1");
+
+        Assert.NotNull(report);
+        Assert.Equal("an1", report!.Id);
+        Assert.Equal(ResourceType.Analysis, report.Type);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/analyses/an1", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetGraphAsync_DeserializesResponseAndUsesCorrectPath()
+    {
+        var json = "{\"id\":\"g1\",\"type\":\"graph\",\"data\":{\"attributes\":{\"name\":\"demo\"}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var graph = await client.GetGraphAsync("g1");
+
+        Assert.NotNull(graph);
+        Assert.Equal("g1", graph!.Id);
+        Assert.Equal(ResourceType.Graph, graph.Type);
+        Assert.Equal("demo", graph.Data.Attributes.Name);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/graphs/g1", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetCollectionAsync_DeserializesResponseAndUsesCorrectPath()
+    {
+        var json = "{\"id\":\"c1\",\"type\":\"collection\",\"data\":{\"attributes\":{\"name\":\"demo\"}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var collection = await client.GetCollectionAsync("c1");
+
+        Assert.NotNull(collection);
+        Assert.Equal("c1", collection!.Id);
+        Assert.Equal(ResourceType.Collection, collection.Type);
+        Assert.Equal("demo", collection.Data.Attributes.Name);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/collections/c1", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetVotesAsync_DeserializesResponseAndUsesCorrectPath()
+    {
+        var json = "{\"data\":[{\"id\":\"v1\",\"type\":\"vote\",\"data\":{\"attributes\":{\"date\":1,\"verdict\":\"malicious\"}}}]}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var votes = await client.GetVotesAsync(ResourceType.File, "abc");
+
+        Assert.NotNull(votes);
+        Assert.Single(votes!);
+        Assert.Equal("v1", votes[0].Id);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/votes", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetFeedAsync_DeserializesResponseAndUsesCorrectPath()
+    {
+        var json = "{\"data\":[{\"id\":\"f1\",\"type\":\"file\"}]}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var feed = await client.GetFeedAsync(ResourceType.File);
+
+        Assert.NotNull(feed);
+        Assert.Single(feed!.Data);
+        Assert.Equal("f1", feed.Data[0].Id);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/feeds/files", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetRelationshipsAsync_DeserializesResponseAndUsesCorrectPath()
+    {
+        var json = "{\"data\":[{\"id\":\"r1\",\"type\":\"file\"}]}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var relationships = await client.GetRelationshipsAsync(ResourceType.File, "abc", "comments");
+
+        Assert.NotNull(relationships);
+        Assert.Single(relationships!.Data);
+        Assert.Equal("r1", relationships.Data[0].Id);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/relationships/comments", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task ReanalyzeFileAsync_UsesFilePath()
+    {
+        var json = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var report = await client.ReanalyzeFileAsync("abc");
+
+        Assert.NotNull(report);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/analyse", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task ReanalyzeUrlAsync_UsesUrlPath()
+    {
+        var json = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var report = await client.ReanalyzeUrlAsync("def");
+
+        Assert.NotNull(report);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/urls/def/analyse", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
     public async Task ListRetrohuntJobsAsync_PagesThroughResults()
     {
         var first = "{\"data\":[{\"id\":\"j1\",\"type\":\"retrohuntJob\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}],\"meta\":{\"cursor\":\"abc\"}}";

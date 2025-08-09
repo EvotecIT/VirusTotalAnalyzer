@@ -136,6 +136,19 @@ public sealed class VirusTotalClient : IDisposable
             .ConfigureAwait(false);
     }
 
+    public async Task<PrivateAnalysis?> GetPrivateAnalysisAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"private/analyses/{id}", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<PrivateAnalysis>(stream, _jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     public async Task<AnalysisReport?> WaitForAnalysisCompletionAsync(
         string id,
         TimeSpan timeout,
@@ -453,6 +466,34 @@ public sealed class VirusTotalClient : IDisposable
     public Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, CancellationToken cancellationToken = default)
         => SubmitFileAsync(stream, fileName, AnalysisType.File, null, cancellationToken);
 
+    public async Task<PrivateAnalysis?> SubmitPrivateFileAsync(
+        Stream stream,
+        string fileName,
+        string? password = null,
+        CancellationToken cancellationToken = default)
+    {
+        var builder = new MultipartFormDataBuilder(stream, fileName);
+        using var content = builder.Build();
+        using var request = new HttpRequestMessage(HttpMethod.Post, "private/analyses")
+        {
+            Content = content
+        };
+        if (!string.IsNullOrEmpty(password))
+        {
+            request.Headers.Add("password", password);
+        }
+        using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var respStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var respStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<PrivateAnalysis>(respStream, _jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+
     public async Task<AnalysisReport?> ReanalyzeHashAsync(string hash, AnalysisType analysisType = AnalysisType.File, CancellationToken cancellationToken = default)
     {
         var path = $"{GetPath(analysisType)}/{hash}/analyse";
@@ -499,6 +540,7 @@ public sealed class VirusTotalClient : IDisposable
         {
             AnalysisType.File => "files",
             AnalysisType.Url => "urls",
+            AnalysisType.PrivateFile => "private/files",
             _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
 

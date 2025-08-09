@@ -48,6 +48,34 @@ public class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task DownloadFileAsync_UsesCorrectPathAndReturnsStream()
+    {
+        var trackingStream = new TrackingStream(new byte[] { 1, 2, 3 });
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(trackingStream)
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var stream = await client.DownloadFileAsync("abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/download", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.False(trackingStream.Disposed);
+#if NETFRAMEWORK
+        stream.Dispose();
+#else
+        await stream.DisposeAsync();
+#endif
+        Assert.True(trackingStream.Disposed);
+    }
+
+    [Fact]
     public async Task GetUrlReportAsync_DeserializesResponse()
     {
         var json = "{\"id\":\"def\",\"type\":\"url\",\"data\":{\"attributes\":{\"url\":\"https://example.com\"}}}";

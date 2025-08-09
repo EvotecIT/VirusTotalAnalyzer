@@ -84,6 +84,17 @@ public sealed class VirusTotalClient : IDisposable
             .ConfigureAwait(false);
     }
 
+    public async Task<Stream> DownloadFileAsync(string id, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync($"files/{id}/download", HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        return await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+    }
+
     public async Task<UrlReport?> GetUrlReportAsync(string id, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"urls/{id}", cancellationToken).ConfigureAwait(false);

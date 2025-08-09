@@ -7,6 +7,9 @@ public sealed class FeedResponse
 {
     [JsonPropertyName("data")]
     public List<FeedItem> Data { get; set; } = new();
+
+    [JsonPropertyName("meta")]
+    public PaginationMetadata? Meta { get; set; }
 }
 
 public sealed class FeedItem

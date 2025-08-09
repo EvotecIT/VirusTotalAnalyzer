@@ -454,10 +454,18 @@ public sealed class VirusTotalClient : IDisposable
         return await JsonSerializer.DeserializeAsync<RelationshipResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<SearchResponse?> SearchAsync(string query, CancellationToken cancellationToken = default)
+    public async Task<SearchResponse?> SearchAsync(string query, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
     {
-        var encoded = Uri.EscapeDataString(query);
-        using var response = await _httpClient.GetAsync($"intelligence/search?query={encoded}", cancellationToken).ConfigureAwait(false);
+        var sb = new StringBuilder($"intelligence/search?query={Uri.EscapeDataString(query)}");
+        if (limit.HasValue)
+        {
+            sb.Append("&limit=").Append(limit.Value);
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            sb.Append("&cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(sb.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -467,9 +475,20 @@ public sealed class VirusTotalClient : IDisposable
         return await JsonSerializer.DeserializeAsync<SearchResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<FeedResponse?> GetFeedAsync(ResourceType resourceType, CancellationToken cancellationToken = default)
+    public async Task<FeedResponse?> GetFeedAsync(ResourceType resourceType, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"feeds/{GetPath(resourceType)}", cancellationToken).ConfigureAwait(false);
+        var path = new StringBuilder($"feeds/{GetPath(resourceType)}");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append(hasQuery ? '&' : '?').Append("limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);

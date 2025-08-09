@@ -117,6 +117,57 @@ public class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task AddCommentAsync_TextForwardsToCreateCommentAsync()
+    {
+        var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""data"":{""attributes"":{""date"":1,""text"":""hello""}}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var comment = await client.AddCommentAsync(ResourceType.File, "abc", "hello");
+
+        Assert.NotNull(comment);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/comments", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Contains("\"text\":\"hello\"", handler.Content);
+    }
+
+    [Fact]
+    public async Task AddCommentAsync_RequestForwardsToCreateCommentAsync()
+    {
+        var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""data"":{""attributes"":{""date"":1,""text"":""hello""}}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+        var request = new CreateCommentRequest
+        {
+            Data = new CreateCommentData
+            {
+                Attributes = new CreateCommentAttributes { Text = "hello" }
+            }
+        };
+
+        var comment = await client.AddCommentAsync(ResourceType.File, "abc", request);
+
+        Assert.NotNull(comment);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/comments", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Contains("\"text\":\"hello\"", handler.Content);
+    }
+
+    [Fact]
     public async Task CreateVoteAsync_PostsVerdict()
     {
         var json = @"{""data"":{""id"":""v1"",""type"":""vote"",""data"":{""attributes"":{""date"":1,""verdict"":""malicious""}}}}";
@@ -139,6 +190,57 @@ public class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task VoteAsync_VerdictForwardsToCreateVoteAsync()
+    {
+        var json = @"{""data"":{""id"":""v1"",""type"":""vote"",""data"":{""attributes"":{""date"":1,""verdict"":""malicious""}}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var vote = await client.VoteAsync(ResourceType.File, "abc", VoteVerdict.Malicious);
+
+        Assert.NotNull(vote);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/votes", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Contains("\"verdict\":\"malicious\"", handler.Content);
+    }
+
+    [Fact]
+    public async Task VoteAsync_RequestForwardsToCreateVoteAsync()
+    {
+        var json = @"{""data"":{""id"":""v1"",""type"":""vote"",""data"":{""attributes"":{""date"":1,""verdict"":""malicious""}}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+        var request = new CreateVoteRequest
+        {
+            Data = new CreateVoteData
+            {
+                Attributes = new CreateVoteAttributes { Verdict = VoteVerdict.Malicious }
+            }
+        };
+
+        var vote = await client.VoteAsync(ResourceType.File, "abc", request);
+
+        Assert.NotNull(vote);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/votes", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Contains("\"verdict\":\"malicious\"", handler.Content);
+    }
+
+    [Fact]
     public async Task DeleteItemAsync_UsesDelete()
     {
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.NoContent));
@@ -149,6 +251,23 @@ public class VirusTotalClientTests
         var client = new VirusTotalClient(httpClient);
 
         await client.DeleteItemAsync(ResourceType.File, "abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal(HttpMethod.Delete, handler.Request!.Method);
+        Assert.Equal("/api/v3/files/abc", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_ForwardsToDeleteItemAsync()
+    {
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.NoContent));
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.DeleteAsync(ResourceType.File, "abc");
 
         Assert.NotNull(handler.Request);
         Assert.Equal(HttpMethod.Delete, handler.Request!.Method);
@@ -272,6 +391,30 @@ public class VirusTotalClientTests
         Assert.Equal(HttpMethod.Post, request.Method);
         Assert.Equal("/api/v3/urls", request.RequestUri!.AbsolutePath);
         Assert.Equal("application/x-www-form-urlencoded", request.Content!.Headers.ContentType!.MediaType);
+        Assert.Equal("url=https%3A%2F%2Fexample.com", handler.Content);
+    }
+
+    [Fact]
+    public async Task ScanUrlAsync_PostsToUrlsAndReturnsReport()
+    {
+        var json = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}"; 
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var report = await client.ScanUrlAsync("https://example.com");
+
+        Assert.NotNull(report);
+        Assert.Equal("an", report!.Id);
+        Assert.NotNull(handler.Request);
+        Assert.Equal(HttpMethod.Post, handler.Request!.Method);
+        Assert.Equal("/api/v3/urls", handler.Request!.RequestUri!.AbsolutePath);
         Assert.Equal("url=https%3A%2F%2Fexample.com", handler.Content);
     }
 

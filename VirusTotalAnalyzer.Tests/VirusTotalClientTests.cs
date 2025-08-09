@@ -773,4 +773,64 @@ public class VirusTotalClientTests
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/private/files/abc/analyse", handler.Request!.RequestUri!.AbsolutePath);
     }
+
+    [Fact]
+    public async Task ListLivehuntNotificationsAsync_PagesThroughResults()
+    {
+        var first = "{\"data\":[{\"id\":\"n1\",\"type\":\"livehuntNotification\",\"data\":{\"attributes\":{\"rule_name\":\"r1\"}}}],\"meta\":{\"cursor\":\"abc\"}}";
+        var second = "{\"data\":[{\"id\":\"n2\",\"type\":\"livehuntNotification\",\"data\":{\"attributes\":{\"rule_name\":\"r2\"}}}]}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(first, Encoding.UTF8, "application/json")
+            },
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(second, Encoding.UTF8, "application/json")
+            });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var notifications = await client.ListLivehuntNotificationsAsync(limit: 1);
+
+        Assert.Equal(2, notifications.Count);
+        Assert.Equal("n1", notifications[0].Id);
+        Assert.Equal("n2", notifications[1].Id);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains("limit=1", handler.Requests[0].RequestUri!.Query);
+        Assert.Contains("cursor=abc", handler.Requests[1].RequestUri!.Query);
+    }
+
+    [Fact]
+    public async Task ListRetrohuntJobsAsync_PagesThroughResults()
+    {
+        var first = "{\"data\":[{\"id\":\"j1\",\"type\":\"retrohuntJob\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}],\"meta\":{\"cursor\":\"abc\"}}";
+        var second = "{\"data\":[{\"id\":\"j2\",\"type\":\"retrohuntJob\",\"data\":{\"attributes\":{\"status\":\"done\"}}}]}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(first, Encoding.UTF8, "application/json")
+            },
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(second, Encoding.UTF8, "application/json")
+            });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var jobs = await client.ListRetrohuntJobsAsync(limit: 1);
+
+        Assert.Equal(2, jobs.Count);
+        Assert.Equal("j1", jobs[0].Id);
+        Assert.Equal("j2", jobs[1].Id);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains("limit=1", handler.Requests[0].RequestUri!.Query);
+        Assert.Contains("cursor=abc", handler.Requests[1].RequestUri!.Query);
+    }
 }

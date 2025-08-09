@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Reflection;
 using VirusTotalAnalyzer;
@@ -566,6 +567,29 @@ public class VirusTotalClientTests
 
         Assert.NotNull(report);
         Assert.Equal(AnalysisStatus.Completed, report!.Data.Attributes.Status);
+        Assert.Single(handler.Requests);
+    }
+
+    [Fact]
+    public async Task WaitForAnalysisCompletionAsync_ThrowsOnCancellation()
+    {
+        var queued = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(queued, Encoding.UTF8, "application/json")
+            });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        using var cts = new CancellationTokenSource(100);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            client.WaitForAnalysisCompletionAsync("an", TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(1), cts.Token));
+
         Assert.Single(handler.Requests);
     }
 

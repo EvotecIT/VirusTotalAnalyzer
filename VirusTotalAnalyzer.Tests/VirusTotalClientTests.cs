@@ -364,6 +364,48 @@ public class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task SubmitFileAsync_PostsDirectlyToFiles_ForSmallFiles()
+    {
+        var analysisJson = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(analysisJson, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var path = System.IO.Path.GetTempFileName();
+#if NETFRAMEWORK
+        System.IO.File.WriteAllText(path, "demo");
+        var stream = System.IO.File.OpenRead(path);
+#else
+        await System.IO.File.WriteAllTextAsync(path, "demo");
+        var stream = System.IO.File.OpenRead(path);
+#endif
+        try
+        {
+            var report = await client.SubmitFileAsync(stream, "demo.bin", AnalysisType.File, "pass");
+
+            Assert.NotNull(report);
+            Assert.NotNull(handler.Request);
+            Assert.Equal("/api/v3/files", handler.Request!.RequestUri!.AbsolutePath);
+            Assert.True(handler.Request.Headers.Contains("password"));
+        }
+        finally
+        {
+#if NETFRAMEWORK
+            stream.Dispose();
+#else
+            await stream.DisposeAsync();
+#endif
+            System.IO.File.Delete(path);
+        }
+    }
+
+    [Fact]
     public async Task SubmitFileAsync_UsesUploadUrlForLargeFiles()
     {
         var uploadJson = "{\"data\":\"https://upload.example/upload\"}";

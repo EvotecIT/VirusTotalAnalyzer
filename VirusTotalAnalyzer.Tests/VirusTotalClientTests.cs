@@ -658,4 +658,28 @@ public class VirusTotalClientTests
 
         await Assert.ThrowsAsync<ApiException>(() => client.GetMonitorItemAsync("mi1"));
     }
+
+    [Fact]
+    public async Task GetBundleAsync_DeserializesResponseAndUsesCorrectPath()
+    {
+        var json = "{\"id\":\"b1\",\"type\":\"bundle\",\"data\":{\"attributes\":{\"name\":\"Demo\",\"files\":[{\"id\":\"f1\",\"type\":\"file\"}]}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var bundle = await client.GetBundleAsync("b1");
+
+        Assert.NotNull(bundle);
+        Assert.Equal("b1", bundle!.Id);
+        Assert.Equal(ResourceType.Bundle, bundle.Type);
+        Assert.Equal("Demo", bundle.Data.Attributes.Name);
+        Assert.Single(bundle.Data.Attributes.Files);
+        Assert.Equal("/api/v3/bundles/b1", handler.Request!.RequestUri!.AbsolutePath);
+    }
 }

@@ -296,6 +296,18 @@ public sealed class VirusTotalClient : IDisposable
         return await JsonSerializer.DeserializeAsync<Collection>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<Bundle?> GetBundleAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"bundles/{id}", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<Bundle>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task<LivehuntNotification?> GetLivehuntNotificationAsync(string id, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"{GetPath(ResourceType.LivehuntNotification)}/{id}", cancellationToken).ConfigureAwait(false);

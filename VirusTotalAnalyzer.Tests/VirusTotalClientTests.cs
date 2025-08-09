@@ -833,4 +833,128 @@ public class VirusTotalClientTests
         Assert.Contains("limit=1", handler.Requests[0].RequestUri!.Query);
         Assert.Contains("cursor=abc", handler.Requests[1].RequestUri!.Query);
     }
+
+    [Fact]
+    public async Task GetFileBehaviorAsync_DeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"b1\",\"type\":\"analysis\",\"attributes\":{\"processes\":[{\"name\":\"proc1\"}]}}]}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var behavior = await client.GetFileBehaviorAsync("abc");
+
+        Assert.NotNull(behavior);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/behavior", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("b1", behavior!.Data[0].Id);
+        Assert.Equal("proc1", behavior.Data[0].Attributes.Processes[0].Name);
+    }
+
+    [Fact]
+    public async Task GetFileBehaviorAsync_ThrowsApiException()
+    {
+        var errorJson = @"{""error"":{""code"":""NotFoundError"",""message"":""not found""}}";
+        var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetFileBehaviorAsync("abc"));
+        Assert.Equal("not found", ex.Message);
+        Assert.Equal("NotFoundError", ex.Error?.Code);
+    }
+
+    [Fact]
+    public async Task GetFileBehaviorSummaryAsync_DeserializesResponse()
+    {
+        var json = "{\"data\":{\"tags\":[\"network\"]}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var summary = await client.GetFileBehaviorSummaryAsync("abc");
+
+        Assert.NotNull(summary);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/behavior_summary", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Contains("network", summary!.Data.Tags);
+    }
+
+    [Fact]
+    public async Task GetFileBehaviorSummaryAsync_ThrowsApiException()
+    {
+        var errorJson = @"{""error"":{""code"":""NotFoundError"",""message"":""not found""}}";
+        var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ApiException>(() => client.GetFileBehaviorSummaryAsync("abc"));
+    }
+
+    [Fact]
+    public async Task GetFileNetworkTrafficAsync_DeserializesResponse()
+    {
+        var json = "{\"data\":{\"tcp\":[{\"dst\":\"1.2.3.4\",\"port\":80}]}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var traffic = await client.GetFileNetworkTrafficAsync("abc");
+
+        Assert.NotNull(traffic);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/network-traffic", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("1.2.3.4", traffic!.Data.Tcp[0].Destination);
+        Assert.Equal(80, traffic.Data.Tcp[0].Port);
+    }
+
+    [Fact]
+    public async Task GetFileNetworkTrafficAsync_ThrowsApiException()
+    {
+        var errorJson = @"{""error"":{""code"":""NotFoundError"",""message"":""not found""}}";
+        var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ApiException>(() => client.GetFileNetworkTrafficAsync("abc"));
+    }
 }

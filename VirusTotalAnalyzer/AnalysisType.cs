@@ -6,5 +6,6 @@ namespace VirusTotalAnalyzer;
 public enum AnalysisType
 {
     File,
-    Url
+    Url,
+    PrivateFile
 }

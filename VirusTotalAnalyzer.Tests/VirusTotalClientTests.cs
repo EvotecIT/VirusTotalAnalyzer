@@ -682,4 +682,67 @@ public class VirusTotalClientTests
         Assert.Single(bundle.Data.Attributes.Files);
         Assert.Equal("/api/v3/bundles/b1", handler.Request!.RequestUri!.AbsolutePath);
     }
+
+    [Fact]
+    public async Task SubmitPrivateFileAsync_PostsToPrivateAnalyses()
+    {
+        var json = "{\"id\":\"pa\",\"type\":\"privateAnalysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        using var ms = new System.IO.MemoryStream(new byte[1]);
+        var report = await client.SubmitPrivateFileAsync(ms, "demo.bin", "pass");
+
+        Assert.NotNull(report);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/private/analyses", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.True(handler.Request.Headers.Contains("password"));
+    }
+
+    [Fact]
+    public async Task GetPrivateAnalysisAsync_DeserializesResponse()
+    {
+        var json = "{\"id\":\"pa\",\"type\":\"privateAnalysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var handler = new StubHandler(json);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var analysis = await client.GetPrivateAnalysisAsync("pa");
+
+        Assert.NotNull(analysis);
+        Assert.Equal("pa", analysis!.Id);
+        Assert.Equal(ResourceType.PrivateAnalysis, analysis.Type);
+        Assert.Equal(AnalysisStatus.Queued, analysis.Data.Attributes.Status);
+    }
+
+    [Fact]
+    public async Task ReanalyzeHashAsync_UsesPrivateFilePath()
+    {
+        var json = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var report = await client.ReanalyzeHashAsync("abc", AnalysisType.PrivateFile);
+
+        Assert.NotNull(report);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/private/files/abc/analyse", handler.Request!.RequestUri!.AbsolutePath);
+    }
 }

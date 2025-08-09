@@ -34,5 +34,7 @@ using VirusTotalAnalyzer.Examples;
 // await VoteExample.RunAsync();
 // await DeleteExample.RunAsync();
 // await UsingExistingHttpClientExample.RunAsync();
+// await ListLivehuntNotificationsExample.RunAsync();
+// await ListRetrohuntJobsExample.RunAsync();
 
 await Task.CompletedTask;

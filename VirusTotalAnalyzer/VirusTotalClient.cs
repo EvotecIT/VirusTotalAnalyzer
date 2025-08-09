@@ -344,6 +344,37 @@ public sealed class VirusTotalClient : IDisposable
         return await JsonSerializer.DeserializeAsync<LivehuntNotification>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<IReadOnlyList<LivehuntNotification>> ListLivehuntNotificationsAsync(int limit = 10, CancellationToken cancellationToken = default)
+    {
+        var results = new List<LivehuntNotification>();
+        string? cursor = null;
+
+        do
+        {
+            var url = $"intelligence/hunting_notifications?limit={limit}";
+            if (!string.IsNullOrEmpty(cursor))
+            {
+                url += $"&cursor={Uri.EscapeDataString(cursor)}";
+            }
+            using var response = await _httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+            var page = await JsonSerializer.DeserializeAsync<LivehuntNotificationsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            if (page?.Data != null)
+            {
+                results.AddRange(page.Data);
+            }
+            cursor = page?.Meta?.Cursor;
+        }
+        while (!string.IsNullOrEmpty(cursor));
+
+        return results;
+    }
+
     public async Task<RetrohuntJob?> GetRetrohuntJobAsync(string id, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"{GetPath(ResourceType.RetrohuntJob)}/{id}", cancellationToken).ConfigureAwait(false);
@@ -354,6 +385,37 @@ public sealed class VirusTotalClient : IDisposable
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
         return await JsonSerializer.DeserializeAsync<RetrohuntJob>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<IReadOnlyList<RetrohuntJob>> ListRetrohuntJobsAsync(int limit = 10, CancellationToken cancellationToken = default)
+    {
+        var results = new List<RetrohuntJob>();
+        string? cursor = null;
+
+        do
+        {
+            var url = $"intelligence/retrohunt_jobs?limit={limit}";
+            if (!string.IsNullOrEmpty(cursor))
+            {
+                url += $"&cursor={Uri.EscapeDataString(cursor)}";
+            }
+            using var response = await _httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+            var page = await JsonSerializer.DeserializeAsync<RetrohuntJobsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            if (page?.Data != null)
+            {
+                results.AddRange(page.Data);
+            }
+            cursor = page?.Meta?.Cursor;
+        }
+        while (!string.IsNullOrEmpty(cursor));
+
+        return results;
     }
 
     public async Task<RetrohuntNotification?> GetRetrohuntNotificationAsync(string id, CancellationToken cancellationToken = default)

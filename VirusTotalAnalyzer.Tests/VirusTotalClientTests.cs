@@ -446,6 +446,78 @@ public class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task SearchAsync_BuildsQueryWithLimitAndCursor()
+    {
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"data\":[]}", Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.SearchAsync("demo query", limit: 10, cursor: "abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/intelligence/search", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("query=demo%20query&limit=10&cursor=abc", handler.Request!.RequestUri!.Query.TrimStart('?'));
+    }
+
+    [Fact]
+    public async Task SearchAsync_DeserializesCursor()
+    {
+        var json = "{\"data\":[],\"meta\":{\"cursor\":\"next\"}}";
+        var handler = new StubHandler(json);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var response = await client.SearchAsync("demo query");
+
+        Assert.Equal("next", response?.Meta?.Cursor);
+    }
+
+    [Fact]
+    public async Task GetFeedAsync_BuildsQueryWithLimitAndCursor()
+    {
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"data\":[]}", Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.GetFeedAsync(ResourceType.File, limit: 20, cursor: "xyz");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/feeds/files", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("limit=20&cursor=xyz", handler.Request!.RequestUri!.Query.TrimStart('?'));
+    }
+
+    [Fact]
+    public async Task GetFeedAsync_DeserializesCursor()
+    {
+        var json = "{\"data\":[],\"meta\":{\"cursor\":\"next\"}}";
+        var handler = new StubHandler(json);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var feed = await client.GetFeedAsync(ResourceType.File);
+
+        Assert.Equal("next", feed?.Meta?.Cursor);
+    }
+
+    [Fact]
     public async Task ScanFileAsync_UsesExtensionHelper()
     {
         var analysisJson = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";

@@ -7,6 +7,9 @@ public sealed class SearchResponse
 {
     [JsonPropertyName("data")]
     public List<SearchResult> Data { get; set; } = new();
+
+    [JsonPropertyName("meta")]
+    public PaginationMetadata? Meta { get; set; }
 }
 
 public sealed class SearchResult

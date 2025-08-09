@@ -18,9 +18,11 @@ internal sealed class TrackingStream : MemoryStream
         base.Dispose(disposing);
     }
 
+#if !NETFRAMEWORK
     public override ValueTask DisposeAsync()
     {
         Disposed = true;
         return base.DisposeAsync();
     }
+#endif
 }

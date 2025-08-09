@@ -76,6 +76,29 @@ public class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task DownloadFileAsync_ThrowsApiException()
+    {
+        var errorJson = @"{""error"":{""code"":""NotFoundError"",""message"":""not found""}}";
+        var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<ApiException>(async () => await client.DownloadFileAsync("abc"));
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/download", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("NotFoundError", ex.Error?.Code);
+        Assert.Equal("not found", ex.Message);
+    }
+
+    [Fact]
     public async Task GetUrlReportAsync_DeserializesResponse()
     {
         var json = "{\"id\":\"def\",\"type\":\"url\",\"data\":{\"attributes\":{\"url\":\"https://example.com\"}}}";
@@ -92,6 +115,28 @@ public class VirusTotalClientTests
         Assert.Equal("def", report!.Id);
         Assert.Equal(ResourceType.Url, report.Type);
         Assert.Equal("https://example.com", report.Data.Attributes.Url);
+    }
+
+    [Fact]
+    public async Task GetUrlReportAsync_ThrowsApiException()
+    {
+        var errorJson = @"{""error"":{""code"":""NotFoundError"",""message"":""not found""}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetUrlReportAsync("def"));
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/urls/def", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("NotFoundError", ex.Error?.Code);
+        Assert.Equal("not found", ex.Message);
     }
 
     [Fact]
@@ -943,6 +988,28 @@ public class VirusTotalClientTests
         Assert.Equal(ResourceType.Analysis, report.Type);
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/analyses/an1", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetAnalysisAsync_ThrowsApiException()
+    {
+        var errorJson = @"{""error"":{""code"":""NotFoundError"",""message"":""not found""}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetAnalysisAsync("an1"));
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/analyses/an1", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("NotFoundError", ex.Error?.Code);
+        Assert.Equal("not found", ex.Message);
     }
 
     [Fact]

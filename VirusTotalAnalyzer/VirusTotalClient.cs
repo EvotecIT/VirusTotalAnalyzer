@@ -185,6 +185,17 @@ public sealed partial class VirusTotalClient : IDisposable
 #endif
     }
 
+    public async Task<Stream> DownloadPcapAsync(string analysisId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync($"analyses/{analysisId}/pcap", HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        return await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+    }
+
     /// <summary>
     /// Releases resources used by the client.
     /// </summary>

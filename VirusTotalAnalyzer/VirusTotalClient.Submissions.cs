@@ -1,0 +1,147 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
+using VirusTotalAnalyzer.Models;
+
+namespace VirusTotalAnalyzer;
+
+public sealed partial class VirusTotalClient
+{
+    public async Task<Uri?> GetUploadUrlAsync(CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync("files/upload_url", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        var result = await JsonSerializer.DeserializeAsync<UploadUrlResponse>(stream, _jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+        if (result is null || string.IsNullOrEmpty(result.Data))
+        {
+            return null;
+        }
+        return new Uri(result.Data);
+    }
+
+    public async Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, AnalysisType analysisType = AnalysisType.File, string? password = null, CancellationToken cancellationToken = default)
+    {
+        if (analysisType != AnalysisType.File)
+        {
+            throw new ArgumentOutOfRangeException(nameof(analysisType));
+        }
+
+        string requestUrl = "files";
+        if (stream.CanSeek && stream.Length > 33554432)
+        {
+            var uploadUrl = await GetUploadUrlAsync(cancellationToken).ConfigureAwait(false);
+            if (uploadUrl is null)
+            {
+                throw new InvalidOperationException("Upload URL was not provided by the API.");
+            }
+            requestUrl = uploadUrl.ToString();
+        }
+
+        var builder = new MultipartFormDataBuilder(stream, fileName);
+        using var content = builder.Build();
+        using var request = new HttpRequestMessage(HttpMethod.Post, requestUrl)
+        {
+            Content = content
+        };
+        if (!string.IsNullOrEmpty(password))
+        {
+            request.Headers.Add("password", password);
+        }
+        using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var respStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var respStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<AnalysisReport>(respStream, _jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, CancellationToken cancellationToken = default)
+        => SubmitFileAsync(stream, fileName, AnalysisType.File, null, cancellationToken);
+
+    public async Task<PrivateAnalysis?> SubmitPrivateFileAsync(
+        Stream stream,
+        string fileName,
+        string? password = null,
+        CancellationToken cancellationToken = default)
+    {
+        var builder = new MultipartFormDataBuilder(stream, fileName);
+        using var content = builder.Build();
+        using var request = new HttpRequestMessage(HttpMethod.Post, "private/analyses")
+        {
+            Content = content
+        };
+        if (!string.IsNullOrEmpty(password))
+        {
+            request.Headers.Add("password", password);
+        }
+        using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var respStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var respStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<PrivateAnalysis>(respStream, _jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+
+    public async Task<AnalysisReport?> ReanalyzeHashAsync(string hash, AnalysisType analysisType = AnalysisType.File, CancellationToken cancellationToken = default)
+    {
+        var path = $"{GetPath(analysisType)}/{hash}/analyse";
+        using var response = await _httpClient.PostAsync(path, content: null, cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<AnalysisReport>(stream, _jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public Task<AnalysisReport?> ReanalyzeFileAsync(string hash, CancellationToken cancellationToken = default)
+        => ReanalyzeHashAsync(hash, AnalysisType.File, cancellationToken);
+
+    public Task<AnalysisReport?> ReanalyzeUrlAsync(string id, CancellationToken cancellationToken = default)
+        => ReanalyzeHashAsync(id, AnalysisType.Url, cancellationToken);
+
+    public async Task<AnalysisReport?> SubmitUrlAsync(string url, AnalysisType analysisType = AnalysisType.Url, CancellationToken cancellationToken = default)
+    {
+        if (analysisType != AnalysisType.Url)
+        {
+            throw new ArgumentOutOfRangeException(nameof(analysisType));
+        }
+        using var content = new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("url", url) });
+        using var response = await _httpClient.PostAsync("urls", content, cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<AnalysisReport>(stream, _jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public Task<AnalysisReport?> SubmitUrlAsync(string url, CancellationToken cancellationToken = default)
+        => SubmitUrlAsync(url, AnalysisType.Url, cancellationToken);
+
+}}

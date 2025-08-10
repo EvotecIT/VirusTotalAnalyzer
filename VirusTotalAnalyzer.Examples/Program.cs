@@ -40,5 +40,6 @@ using VirusTotalAnalyzer.Examples;
 // await ListLivehuntNotificationsExample.RunAsync();
 // await DownloadLivehuntNotificationFileExample.RunAsync();
 // await ListRetrohuntJobsExample.RunAsync();
+// await StartRetrohuntJobExample.RunAsync();
 
 await Task.CompletedTask;

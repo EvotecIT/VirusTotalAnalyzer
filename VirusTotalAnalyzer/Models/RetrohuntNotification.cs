@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace VirusTotalAnalyzer.Models;
@@ -18,4 +19,13 @@ public sealed class RetrohuntNotificationAttributes
 {
     [JsonPropertyName("job_id")]
     public string JobId { get; set; } = string.Empty;
+}
+
+public sealed class RetrohuntNotificationsResponse
+{
+    [JsonPropertyName("data")]
+    public List<RetrohuntNotification> Data { get; set; } = new();
+
+    [JsonPropertyName("meta")]
+    public Meta? Meta { get; set; }
 }

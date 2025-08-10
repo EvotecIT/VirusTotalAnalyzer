@@ -373,6 +373,72 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task CreateRetrohuntJobAsync_SerializesRequestAndDeserializesResponse()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"data\":{\"id\":\"rj1\",\"type\":\"retrohuntJob\",\"attributes\":{\"status\":\"queued\"}}}", Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+        var request = new RetrohuntJobRequest();
+        request.Data.Attributes.Rules = "rule";
+
+        var job = await client.CreateRetrohuntJobAsync(request);
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal(HttpMethod.Post, handler.Request!.Method);
+        Assert.Equal("/api/v3/intelligence/retrohunt_jobs", handler.Request.RequestUri!.AbsolutePath);
+        Assert.Contains("\"rules\":\"rule\"", handler.Content);
+        Assert.Equal("rj1", job!.Id);
+    }
+
+    [Fact]
+    public async Task DeleteRetrohuntJobAsync_UsesDelete()
+    {
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.NoContent));
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.DeleteRetrohuntJobAsync("rj1");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal(HttpMethod.Delete, handler.Request!.Method);
+        Assert.Equal("/api/v3/intelligence/retrohunt_jobs/rj1", handler.Request.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task ListRetrohuntNotificationsAsync_PagesThroughResults()
+    {
+        var first = "{\"data\":[{\"id\":\"n1\",\"type\":\"retrohuntNotification\",\"data\":{\"attributes\":{\"job_id\":\"j1\"}}}],\"meta\":{\"cursor\":\"abc\"}}";
+        var second = "{\"data\":[{\"id\":\"n2\",\"type\":\"retrohuntNotification\",\"data\":{\"attributes\":{\"job_id\":\"j2\"}}}]}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(first, Encoding.UTF8, "application/json") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(second, Encoding.UTF8, "application/json") });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var notifications = await client.ListRetrohuntNotificationsAsync(limit: 1);
+
+        Assert.Equal(2, notifications.Count);
+        Assert.Equal("n1", notifications[0].Id);
+        Assert.Equal("n2", notifications[1].Id);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains("limit=1", handler.Requests[0].RequestUri!.Query);
+        Assert.Contains("cursor=abc", handler.Requests[1].RequestUri!.Query);
+    }
+
+    [Fact]
     public async Task GetIpAddressReportAsync_DeserializesResponseAndUsesCorrectPath()
     {
         var json = "{\"id\":\"1.1.1.1\",\"type\":\"ipAddress\",\"data\":{\"attributes\":{\"ip_address\":\"1.1.1.1\"}}}";

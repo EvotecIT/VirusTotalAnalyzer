@@ -21,6 +21,12 @@ public sealed class RetrohuntJobAttributes
     public string Status { get; set; } = string.Empty;
 }
 
+public sealed class RetrohuntJobResponse
+{
+    [JsonPropertyName("data")]
+    public RetrohuntJob? Data { get; set; }
+}
+
 public sealed class RetrohuntJobsResponse
 {
     [JsonPropertyName("data")]

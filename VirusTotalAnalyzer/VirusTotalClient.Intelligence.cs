@@ -256,6 +256,4 @@ public sealed partial class VirusTotalClient
 #endif
         return await JsonSerializer.DeserializeAsync<FeedResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
-
-
-}}
+}

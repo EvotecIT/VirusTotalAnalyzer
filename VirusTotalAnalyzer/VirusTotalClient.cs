@@ -13,6 +13,17 @@ using VirusTotalAnalyzer.Models;
 
 namespace VirusTotalAnalyzer;
 
+/// <summary>
+/// Client for the VirusTotal v3 API.
+/// </summary>
+/// <remarks>
+/// <para>Use <see cref="Create(string)"/> for a self-contained client:</para>
+/// <code>using var client = VirusTotalClient.Create("YOUR_API_KEY");</code>
+/// <para>
+/// When providing an existing <see cref="HttpClient"/>, specify whether the client should
+/// dispose it by setting the <c>disposeClient</c> parameter in the constructor.
+/// </para>
+/// </remarks>
 public sealed partial class VirusTotalClient : IDisposable
 {
     private readonly HttpClient _httpClient;
@@ -20,6 +31,19 @@ public sealed partial class VirusTotalClient : IDisposable
     private readonly bool _disposeClient;
     private bool _disposed;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VirusTotalClient"/> class using an existing
+    /// <see cref="HttpClient"/>.
+    /// </summary>
+    /// <param name="httpClient">The <see cref="HttpClient"/> to use for requests.</param>
+    /// <param name="disposeClient">
+    /// Set to <see langword="true"/> to dispose <paramref name="httpClient"/> when this instance
+    /// is disposed.
+    /// </param>
+    /// <remarks>
+    /// Pass <paramref name="disposeClient"/> as <see langword="false"/> when the lifetime of the
+    /// provided <paramref name="httpClient"/> is managed externally.
+    /// </remarks>
     public VirusTotalClient(HttpClient httpClient, bool disposeClient = false)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
@@ -32,6 +56,11 @@ public sealed partial class VirusTotalClient : IDisposable
         _jsonOptions.Converters.Add(new UnixTimestampConverter());
     }
 
+    /// <summary>
+    /// Creates a new <see cref="VirusTotalClient"/> configured with the specified API key.
+    /// </summary>
+    /// <param name="apiKey">The API key used for authenticated requests.</param>
+    /// <returns>A <see cref="VirusTotalClient"/> that owns its underlying <see cref="HttpClient"/>.</returns>
     public static VirusTotalClient Create(string apiKey)
     {
         if (string.IsNullOrWhiteSpace(apiKey)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(apiKey));
@@ -134,6 +163,9 @@ public sealed partial class VirusTotalClient : IDisposable
         throw new ApiException(error);
     }
 
+    /// <summary>
+    /// Releases resources used by the client.
+    /// </summary>
     public void Dispose()
     {
         if (_disposed)

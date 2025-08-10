@@ -15,9 +15,6 @@ namespace VirusTotalAnalyzer;
 
 public sealed partial class VirusTotalClient
 {
-        }
-    }
-
     public async Task<IReadOnlyList<Comment>?> GetCommentsAsync(ResourceType resourceType, string id, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"{GetPath(resourceType)}/{id}/comments", cancellationToken).ConfigureAwait(false);
@@ -107,5 +104,4 @@ public sealed partial class VirusTotalClient
 #endif
         return await JsonSerializer.DeserializeAsync<User>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
-
-}}
+}

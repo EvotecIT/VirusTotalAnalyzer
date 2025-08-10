@@ -155,6 +155,4 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.DeleteAsync($"bundles/{id}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
-
-
-}}
+}

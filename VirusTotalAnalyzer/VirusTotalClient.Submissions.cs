@@ -143,5 +143,4 @@ public sealed partial class VirusTotalClient
 
     public Task<AnalysisReport?> SubmitUrlAsync(string url, CancellationToken cancellationToken = default)
         => SubmitUrlAsync(url, AnalysisType.Url, cancellationToken);
-
-}}
+}

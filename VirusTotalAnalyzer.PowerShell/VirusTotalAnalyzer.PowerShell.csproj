@@ -7,5 +7,6 @@
   <ItemGroup>
     <ProjectReference Include="../VirusTotalAnalyzer/VirusTotalAnalyzer.csproj" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
+    <PackageReference Include="PowerShellStandard.Library" Version="5.1.0" />
   </ItemGroup>
 </Project>

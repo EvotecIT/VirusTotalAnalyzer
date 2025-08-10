@@ -62,5 +62,8 @@ public enum ResourceType
     RetrohuntNotification,
 
     [EnumMember(Value = "monitor_item")]
-    MonitorItem
+    MonitorItem,
+
+    [EnumMember(Value = "intelligence_hunting_ruleset")]
+    IntelligenceHuntingRuleset
 }

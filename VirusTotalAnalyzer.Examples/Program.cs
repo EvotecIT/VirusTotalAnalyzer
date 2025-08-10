@@ -38,6 +38,7 @@ using VirusTotalAnalyzer.Examples;
 // await DeleteExample.RunAsync();
 // await UsingExistingHttpClientExample.RunAsync();
 // await ListLivehuntNotificationsExample.RunAsync();
+// await DownloadLivehuntNotificationFileExample.RunAsync();
 // await ListRetrohuntJobsExample.RunAsync();
 
 await Task.CompletedTask;

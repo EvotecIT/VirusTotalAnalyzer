@@ -100,6 +100,57 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task DownloadLivehuntNotificationFileAsync_UsesCorrectPathAndReturnsStream()
+    {
+        var trackingStream = new TrackingStream(new byte[] { 1, 2, 3 });
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(trackingStream)
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var stream = await client.DownloadLivehuntNotificationFileAsync("abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/intelligence/hunting_notification_files/abc", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.False(trackingStream.Disposed);
+#if NETFRAMEWORK
+        stream.Dispose();
+#else
+        await stream.DisposeAsync();
+#endif
+        Assert.True(trackingStream.Disposed);
+    }
+
+    [Fact]
+    public async Task DownloadLivehuntNotificationFileAsync_ThrowsApiException()
+    {
+        var errorJson = @"{""error"":{""code"":""NotFoundError"",""message"":""not found""}}";
+        var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<ApiException>(async () => await client.DownloadLivehuntNotificationFileAsync("abc"));
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/intelligence/hunting_notification_files/abc", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("NotFoundError", ex.Error?.Code);
+        Assert.Equal("not found", ex.Message);
+    }
+
+    [Fact]
     public async Task GetUrlReportAsync_DeserializesResponse()
     {
         var json = "{\"id\":\"def\",\"type\":\"url\",\"data\":{\"attributes\":{\"url\":\"https://example.com\"}}}";

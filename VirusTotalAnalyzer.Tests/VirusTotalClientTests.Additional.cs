@@ -36,6 +36,50 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetUserPrivilegesAsync_DeserializesResponse()
+    {
+        var json = @"{""data"":{""can_download_file"":{""allowed"":true},""can_view_graph"":{""allowed"":false}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var privileges = await client.GetUserPrivilegesAsync("user1");
+
+        Assert.NotNull(privileges);
+        Assert.True(privileges!.Data["can_download_file"].Allowed);
+        Assert.False(privileges.Data["can_view_graph"].Allowed);
+        Assert.Equal("/api/v3/users/user1/privileges", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetUserQuotaAsync_DeserializesResponse()
+    {
+        var json = @"{""data"":{""api_requests_daily"":{""allowed"":100,""used"":10}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var quota = await client.GetUserQuotaAsync("user1");
+
+        Assert.NotNull(quota);
+        Assert.Equal(100, quota!.Data["api_requests_daily"].Allowed);
+        Assert.Equal(10, quota.Data["api_requests_daily"].Used);
+        Assert.Equal("/api/v3/users/user1/quotas", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
     public async Task GetUploadUrlAsync_ReturnsUri()
     {
         var json = "{\"data\":\"https://upload.example/upload\"}";

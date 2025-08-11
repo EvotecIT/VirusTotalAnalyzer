@@ -16,6 +16,7 @@ using VirusTotalAnalyzer.Examples;
 // await CreateVoteExample.RunAsync();
 // await DeleteItemExample.RunAsync();
 // await GetUserExample.RunAsync();
+// await GetUserQuotaExample.RunAsync();
 // await GetGraphExample.RunAsync();
 // await GetCollectionExample.RunAsync();
 // await CreateGraphExample.RunAsync();

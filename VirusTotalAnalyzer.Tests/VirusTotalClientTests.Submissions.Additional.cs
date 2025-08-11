@@ -230,6 +230,48 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetVoteAsync_DeserializesResponseAndUsesCorrectPath()
+    {
+        var json = @"{""data"":{""id"":""v1"",""type"":""vote"",""data"":{""attributes"":{""date"":1,""verdict"":""malicious""}}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var vote = await client.GetVoteAsync("v1");
+
+        Assert.NotNull(vote);
+        Assert.Equal("v1", vote!.Id);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/votes/v1", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetVoteAsync_ThrowsApiException()
+    {
+        var errorJson = @"{""error"":{""code"":""NotFoundError"",""message"":""not found""}}";
+        var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetVoteAsync("v1"));
+        Assert.Equal("not found", ex.Message);
+        Assert.Equal("NotFoundError", ex.Error?.Code);
+    }
+
+    [Fact]
     public async Task GetFeedAsync_DeserializesResponseAndUsesCorrectPath()
     {
         var json = "{\"data\":[{\"id\":\"f1\",\"type\":\"file\"}]}";

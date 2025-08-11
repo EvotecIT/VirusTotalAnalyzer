@@ -447,6 +447,48 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetCommentAsync_DeserializesResponseAndUsesCorrectPath()
+    {
+        var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""data"":{""attributes"":{""date"":1,""text"":""hello""}}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var comment = await client.GetCommentAsync("c1");
+
+        Assert.NotNull(comment);
+        Assert.Equal("c1", comment!.Id);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/comments/c1", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetCommentAsync_ThrowsApiException()
+    {
+        var errorJson = @"{""error"":{""code"":""NotFoundError"",""message"":""not found""}}";
+        var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetCommentAsync("c1"));
+        Assert.Equal("not found", ex.Message);
+        Assert.Equal("NotFoundError", ex.Error?.Code);
+    }
+
+    [Fact]
     public async Task SearchAsync_UsesCorrectPath()
     {
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)

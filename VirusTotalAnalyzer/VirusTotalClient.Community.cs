@@ -104,4 +104,28 @@ public sealed partial class VirusTotalClient
 #endif
         return await JsonSerializer.DeserializeAsync<User>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
+
+    public async Task<UserPrivileges?> GetUserPrivilegesAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"users/{id}/privileges", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<UserPrivileges>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<UserQuota?> GetUserQuotaAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"users/{id}/quotas", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<UserQuota>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+    }
 }

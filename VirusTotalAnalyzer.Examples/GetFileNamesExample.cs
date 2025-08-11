@@ -11,10 +11,14 @@ public static class GetFileNamesExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var names = await client.GetFileNamesAsync("44d88612fea8a8f36de82e1278abb02f");
-            foreach (var name in names?.Data ?? [])
+            var (names, cursor) = await client.GetFileNamesAsync("44d88612fea8a8f36de82e1278abb02f");
+            foreach (var name in names)
             {
                 Console.WriteLine($"{name.Id} (first seen: {name.Attributes.Date:u})");
+            }
+            if (cursor != null)
+            {
+                Console.WriteLine($"More names available. Next cursor: {cursor}");
             }
         }
         catch (ApiException ex)

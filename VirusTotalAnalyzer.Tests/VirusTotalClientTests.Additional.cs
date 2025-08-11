@@ -400,7 +400,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetCommentsAsync_DeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"c1\",\"type\":\"comment\",\"data\":{\"attributes\":{\"date\":1,\"text\":\"hi\"}}}]}";
+        var json = "{\"data\":[{\"id\":\"c1\",\"type\":\"comment\",\"data\":{\"attributes\":{\"date\":1,\"text\":\"hi\"}}}],\"meta\":{}}";
         var handler = new StubHandler(json);
         var httpClient = new HttpClient(handler)
         {
@@ -408,12 +408,42 @@ public partial class VirusTotalClientTests
         };
         var client = new VirusTotalClient(httpClient);
 
-        var comments = await client.GetCommentsAsync(ResourceType.File, "abc");
+        var page = await client.GetCommentsAsync(ResourceType.File, "abc");
 
-        Assert.NotNull(comments);
-        Assert.Single(comments);
-        Assert.Equal("c1", comments![0].Id);
-        Assert.Equal("hi", comments[0].Data.Attributes.Text);
+        Assert.NotNull(page);
+        Assert.Single(page!.Data);
+        Assert.Equal("c1", page.Data[0].Id);
+        Assert.Equal("hi", page.Data[0].Data.Attributes.Text);
+    }
+
+    [Fact]
+    public async Task GetCommentsAsync_PaginatesThroughResults()
+    {
+        var first = "{\"data\":[{\"id\":\"c1\",\"type\":\"comment\",\"data\":{\"attributes\":{\"date\":1,\"text\":\"hi\"}}}],\"meta\":{\"cursor\":\"abc\"}}";
+        var second = "{\"data\":[{\"id\":\"c2\",\"type\":\"comment\",\"data\":{\"attributes\":{\"date\":2,\"text\":\"bye\"}}}]}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(first, Encoding.UTF8, "application/json")
+            },
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(second, Encoding.UTF8, "application/json")
+            });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var page1 = await client.GetCommentsAsync(ResourceType.File, "abc", limit: 1);
+        var page2 = await client.GetCommentsAsync(ResourceType.File, "abc", cursor: page1!.Meta!.Cursor);
+
+        Assert.Equal("c1", page1!.Data[0].Id);
+        Assert.Equal("c2", page2!.Data[0].Id);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains("limit=1", handler.Requests[0].RequestUri!.Query);
+        Assert.Contains("cursor=abc", handler.Requests[1].RequestUri!.Query);
     }
 
     [Fact]

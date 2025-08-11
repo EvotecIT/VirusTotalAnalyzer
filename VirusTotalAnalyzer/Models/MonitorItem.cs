@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace VirusTotalAnalyzer.Models;
@@ -19,15 +18,6 @@ public sealed class MonitorItemAttributes
 {
     [JsonPropertyName("path")]
     public string Path { get; set; } = string.Empty;
-}
-
-public sealed class MonitorItemsResponse
-{
-    [JsonPropertyName("data")]
-    public List<MonitorItem> Data { get; set; } = new();
-
-    [JsonPropertyName("meta")]
-    public Meta? Meta { get; set; }
 }
 
 public sealed class CreateMonitorItemRequest

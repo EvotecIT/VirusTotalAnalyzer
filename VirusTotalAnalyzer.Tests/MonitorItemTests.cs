@@ -24,11 +24,35 @@ public class MonitorItemTests
         };
         var client = new VirusTotalClient(httpClient);
 
-        var items = await client.ListMonitorItemsAsync();
+        var response = await client.ListMonitorItemsAsync();
 
-        Assert.NotNull(items);
+        Assert.NotNull(response);
+        Assert.Single(response.Data);
         Assert.Equal(HttpMethod.Get, handler.Request!.Method);
         Assert.Equal("/api/v3/monitor/items", handler.Request.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task ListMonitorItemsAsync_WithPaginationParameters_AppendsToUrlAndReturnsCursor()
+    {
+        var json = "{\"data\":[],\"meta\":{\"cursor\":\"next_cursor\"}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var response = await client.ListMonitorItemsAsync(limit: 10, cursor: "abc");
+
+        Assert.NotNull(response);
+        Assert.Equal("next_cursor", response.NextCursor);
+        Assert.Equal(HttpMethod.Get, handler.Request!.Method);
+        Assert.Equal("/api/v3/monitor/items", handler.Request.RequestUri!.AbsolutePath);
+        Assert.Equal("?limit=10&cursor=abc", handler.Request.RequestUri.Query);
     }
 
     [Fact]

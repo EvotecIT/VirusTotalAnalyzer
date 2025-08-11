@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -12,17 +11,27 @@ namespace VirusTotalAnalyzer;
 
 public sealed partial class VirusTotalClient
 {
-    public async Task<IReadOnlyList<MonitorItem>?> ListMonitorItemsAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResponse<MonitorItem>?> ListMonitorItemsAsync(int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync("monitor/items", cancellationToken).ConfigureAwait(false);
+        var path = new StringBuilder("monitor/items");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
-        var result = await JsonSerializer.DeserializeAsync<MonitorItemsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-        return result?.Data;
+        return await JsonSerializer.DeserializeAsync<PagedResponse<MonitorItem>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<MonitorItem?> CreateMonitorItemAsync(CreateMonitorItemRequest request, CancellationToken cancellationToken = default)

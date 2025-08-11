@@ -19,9 +19,12 @@ public static class CreateMonitorItemExample
             Console.WriteLine(item?.Id);
 
             var items = await client.ListMonitorItemsAsync();
-            foreach (var i in items)
+            if (items != null)
             {
-                Console.WriteLine(i.Id);
+                foreach (var i in items.Data)
+                {
+                    Console.WriteLine(i.Id);
+                }
             }
 
             if (item != null)

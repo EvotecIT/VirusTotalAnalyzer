@@ -288,6 +288,14 @@ public sealed partial class VirusTotalClient
 
     public async Task<FeedResponse?> GetFeedAsync(ResourceType resourceType, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
     {
+        if (resourceType != ResourceType.File &&
+            resourceType != ResourceType.Url &&
+            resourceType != ResourceType.Domain &&
+            resourceType != ResourceType.IpAddress)
+        {
+            throw new ArgumentOutOfRangeException(nameof(resourceType));
+        }
+
         var path = new StringBuilder($"feeds/{GetPath(resourceType)}");
         var hasQuery = false;
         if (limit.HasValue)

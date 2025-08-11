@@ -538,4 +538,17 @@ public partial class VirusTotalClientTests
         Assert.Equal("next", feed?.Meta?.Cursor);
     }
 
+    [Fact]
+    public async Task GetFeedAsync_ThrowsForUnsupportedResourceType()
+    {
+        var handler = new StubHandler("{\"data\":[]}");
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => client.GetFeedAsync(ResourceType.Analysis));
+    }
+
 }

@@ -179,7 +179,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetVotesAsync_DeserializesResponseAndUsesCorrectPath()
     {
-        var json = "{\"data\":[{\"id\":\"v1\",\"type\":\"vote\",\"data\":{\"attributes\":{\"date\":1,\"verdict\":\"malicious\"}}}]}";
+        var json = "{\"data\":[{\"id\":\"v1\",\"type\":\"vote\",\"data\":{\"attributes\":{\"date\":1,\"verdict\":\"malicious\"}}}],\"meta\":{}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -190,13 +190,43 @@ public partial class VirusTotalClientTests
         };
         var client = new VirusTotalClient(httpClient);
 
-        var votes = await client.GetVotesAsync(ResourceType.File, "abc");
+        var page = await client.GetVotesAsync(ResourceType.File, "abc");
 
-        Assert.NotNull(votes);
-        Assert.Single(votes!);
-        Assert.Equal("v1", votes[0].Id);
+        Assert.NotNull(page);
+        Assert.Single(page!.Data);
+        Assert.Equal("v1", page.Data[0].Id);
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/files/abc/votes", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetVotesAsync_PaginatesThroughResults()
+    {
+        var first = "{\"data\":[{\"id\":\"v1\",\"type\":\"vote\",\"data\":{\"attributes\":{\"date\":1,\"verdict\":\"malicious\"}}}],\"meta\":{\"cursor\":\"abc\"}}";
+        var second = "{\"data\":[{\"id\":\"v2\",\"type\":\"vote\",\"data\":{\"attributes\":{\"date\":2,\"verdict\":\"harmless\"}}}]}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(first, Encoding.UTF8, "application/json")
+            },
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(second, Encoding.UTF8, "application/json")
+            });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var page1 = await client.GetVotesAsync(ResourceType.File, "abc", limit: 1);
+        var page2 = await client.GetVotesAsync(ResourceType.File, "abc", cursor: page1!.Meta!.Cursor);
+
+        Assert.Equal("v1", page1!.Data[0].Id);
+        Assert.Equal("v2", page2!.Data[0].Id);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains("limit=1", handler.Requests[0].RequestUri!.Query);
+        Assert.Contains("cursor=abc", handler.Requests[1].RequestUri!.Query);
     }
 
     [Fact]

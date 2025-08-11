@@ -29,6 +29,9 @@ public sealed class CommentsResponse
 {
     [JsonPropertyName("data")]
     public List<Comment> Data { get; set; } = new();
+
+    [JsonPropertyName("meta")]
+    public PaginationMetadata? Meta { get; set; }
 }
 
 public sealed class CommentResponse

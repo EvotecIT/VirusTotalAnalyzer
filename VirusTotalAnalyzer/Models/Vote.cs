@@ -29,6 +29,9 @@ public sealed class VotesResponse
 {
     [JsonPropertyName("data")]
     public List<Vote> Data { get; set; } = new();
+
+    [JsonPropertyName("meta")]
+    public PaginationMetadata? Meta { get; set; }
 }
 
 public sealed class VoteResponse

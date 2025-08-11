@@ -472,6 +472,49 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetFilePeInfoAsync_DeserializesResponseAndUsesCorrectPath()
+    {
+        var json = "{\"data\":{\"attributes\":{\"imphash\":\"abcd\",\"machine_type\":\"x86\",\"sections\":[{\"name\":\".text\"}]}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var info = await client.GetFilePeInfoAsync("abc");
+
+        Assert.NotNull(info);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/pe_info", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("abcd", info!.Data.Attributes.Imphash);
+        Assert.Equal("x86", info.Data.Attributes.MachineType);
+        Assert.Single(info.Data.Attributes.Sections);
+        Assert.Equal(".text", info.Data.Attributes.Sections[0].Name);
+    }
+
+    [Fact]
+    public async Task GetFilePeInfoAsync_ThrowsApiException()
+    {
+        var errorJson = "{\"error\":{\"code\":\"NotFoundError\",\"message\":\"not found\"}}";
+        var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ApiException>(() => client.GetFilePeInfoAsync("abc"));
+    }
+
+    [Fact]
     public async Task GetFileNamesAsync_DeserializesResponseAndUsesCorrectPath()
     {
         var json = "{\"data\":[{\"id\":\"a.exe\",\"type\":\"file_name\",\"attributes\":{\"date\":1672444800}}]}";

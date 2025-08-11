@@ -106,6 +106,58 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
+    public async Task<IReadOnlyList<UrlSummary>?> GetFileContactedUrlsAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"files/{id}/contacted_urls", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        var result = await JsonSerializer.DeserializeAsync<UrlSummariesResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return result?.Data;
+    }
+
+    public async Task<IReadOnlyList<DomainSummary>?> GetFileContactedDomainsAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"files/{id}/contacted_domains", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        var result = await JsonSerializer.DeserializeAsync<DomainSummariesResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return result?.Data;
+    }
+
+    public async Task<IReadOnlyList<IpAddressSummary>?> GetFileContactedIpsAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"files/{id}/contacted_ips", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        var result = await JsonSerializer.DeserializeAsync<IpAddressSummariesResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return result?.Data;
+    }
+
+    public async Task<IReadOnlyList<FileReport>?> GetFileReferrerFilesAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"files/{id}/referrer_files", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        var result = await JsonSerializer.DeserializeAsync<FileReportsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return result?.Data;
+    }
+
     public async Task<Stream> DownloadFileAsync(string id, CancellationToken cancellationToken = default)
     {
         var response = await _httpClient.GetAsync($"files/{id}/download", HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);

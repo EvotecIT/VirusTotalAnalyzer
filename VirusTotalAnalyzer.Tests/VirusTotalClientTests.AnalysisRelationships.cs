@@ -1,0 +1,109 @@
+using System;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using VirusTotalAnalyzer.Models;
+using Xunit;
+
+namespace VirusTotalAnalyzer.Tests;
+
+public partial class VirusTotalClientTests
+{
+    [Fact]
+    public async Task GetFileContactedUrlsAsync_UsesCorrectPathAndDeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"u1\",\"type\":\"url\",\"data\":{\"attributes\":{\"url\":\"https://example.com\"}}}]}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var urls = await client.GetFileContactedUrlsAsync("abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/contacted_urls", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.NotNull(urls);
+        Assert.Single(urls!);
+        Assert.Equal("https://example.com", urls[0].Data.Attributes.Url);
+    }
+
+    [Fact]
+    public async Task GetFileContactedDomainsAsync_UsesCorrectPathAndDeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"d1\",\"type\":\"domain\",\"data\":{\"attributes\":{\"domain\":\"example.com\"}}}]}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var domains = await client.GetFileContactedDomainsAsync("abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/contacted_domains", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.NotNull(domains);
+        Assert.Single(domains!);
+        Assert.Equal("example.com", domains[0].Data.Attributes.Domain);
+    }
+
+    [Fact]
+    public async Task GetFileContactedIpsAsync_UsesCorrectPathAndDeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"i1\",\"type\":\"ipAddress\",\"data\":{\"attributes\":{\"ip_address\":\"1.2.3.4\"}}}]}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var ips = await client.GetFileContactedIpsAsync("abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/contacted_ips", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.NotNull(ips);
+        Assert.Single(ips!);
+        Assert.Equal("1.2.3.4", ips[0].Data.Attributes.IpAddress);
+    }
+
+    [Fact]
+    public async Task GetFileReferrerFilesAsync_UsesCorrectPathAndDeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"f1\",\"type\":\"file\",\"data\":{\"attributes\":{\"md5\":\"abc\"}}}]}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var files = await client.GetFileReferrerFilesAsync("abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/referrer_files", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.NotNull(files);
+        Assert.Single(files!);
+        Assert.Equal("abc", files[0].Data.Attributes.Md5);
+    }
+}
+

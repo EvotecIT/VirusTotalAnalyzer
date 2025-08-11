@@ -72,3 +72,13 @@ public sealed class FileAttributes
     [JsonPropertyName("crowdsourced_verdicts")]
     public List<CrowdsourcedVerdict> CrowdsourcedVerdicts { get; set; } = new();
 }
+
+public sealed class FileReportsResponse
+{
+    [JsonPropertyName("data")]
+    public List<FileReport> Data { get; set; } = new();
+
+    [JsonPropertyName("meta")]
+    public PaginationMetadata? Meta { get; set; }
+}
+

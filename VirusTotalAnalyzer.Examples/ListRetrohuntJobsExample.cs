@@ -11,11 +11,12 @@ public static class ListRetrohuntJobsExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var jobs = await client.ListRetrohuntJobsAsync();
-            foreach (var job in jobs)
+            var page = await client.ListRetrohuntJobsAsync(fetchAll: false);
+            foreach (var job in page.Data)
             {
                 Console.WriteLine(job.Id);
             }
+            Console.WriteLine($"Next cursor: {page.NextCursor}");
         }
         catch (RateLimitExceededException ex)
         {

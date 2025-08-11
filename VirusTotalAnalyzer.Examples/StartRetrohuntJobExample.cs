@@ -26,11 +26,12 @@ public static class StartRetrohuntJobExample
             }
             while (current != null && current.Data.Attributes.Status != "done");
 
-            var notifications = await client.ListRetrohuntNotificationsAsync();
-            foreach (var n in notifications)
+            var page = await client.ListRetrohuntNotificationsAsync(fetchAll: false);
+            foreach (var n in page.Data)
             {
                 Console.WriteLine($"Notification {n.Id} from job {n.Data.Attributes.JobId}");
             }
+            Console.WriteLine($"Next cursor: {page.NextCursor}");
         }
         catch (RateLimitExceededException ex)
         {

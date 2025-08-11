@@ -27,17 +27,17 @@ public sealed partial class VirusTotalClient
         return await JsonSerializer.DeserializeAsync<LivehuntNotification>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<IReadOnlyList<LivehuntNotification>> ListLivehuntNotificationsAsync(int limit = 10, CancellationToken cancellationToken = default)
+    public async Task<Page<LivehuntNotification>> ListLivehuntNotificationsAsync(int limit = 10, string? cursor = null, bool fetchAll = true, CancellationToken cancellationToken = default)
     {
         var results = new List<LivehuntNotification>();
-        string? cursor = null;
+        var nextCursor = cursor;
 
         do
         {
             var url = $"intelligence/hunting_notifications?limit={limit}";
-            if (!string.IsNullOrEmpty(cursor))
+            if (!string.IsNullOrEmpty(nextCursor))
             {
-                url += $"&cursor={Uri.EscapeDataString(cursor)}";
+                url += $"&cursor={Uri.EscapeDataString(nextCursor)}";
             }
             using var response = await _httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
             await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
@@ -51,11 +51,15 @@ public sealed partial class VirusTotalClient
             {
                 results.AddRange(page.Data);
             }
-            cursor = page?.Meta?.Cursor;
+            nextCursor = page?.Meta?.Cursor;
+            if (!fetchAll)
+            {
+                break;
+            }
         }
-        while (!string.IsNullOrEmpty(cursor));
+        while (!string.IsNullOrEmpty(nextCursor));
 
-        return results;
+        return new Page<LivehuntNotification>(results, nextCursor);
     }
 
     public async Task<RetrohuntJob?> GetRetrohuntJobAsync(string id, CancellationToken cancellationToken = default)
@@ -70,17 +74,17 @@ public sealed partial class VirusTotalClient
         return await JsonSerializer.DeserializeAsync<RetrohuntJob>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<IReadOnlyList<RetrohuntJob>> ListRetrohuntJobsAsync(int limit = 10, CancellationToken cancellationToken = default)
+    public async Task<Page<RetrohuntJob>> ListRetrohuntJobsAsync(int limit = 10, string? cursor = null, bool fetchAll = true, CancellationToken cancellationToken = default)
     {
         var results = new List<RetrohuntJob>();
-        string? cursor = null;
+        var nextCursor = cursor;
 
         do
         {
             var url = $"intelligence/retrohunt_jobs?limit={limit}";
-            if (!string.IsNullOrEmpty(cursor))
+            if (!string.IsNullOrEmpty(nextCursor))
             {
-                url += $"&cursor={Uri.EscapeDataString(cursor)}";
+                url += $"&cursor={Uri.EscapeDataString(nextCursor)}";
             }
             using var response = await _httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
             await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
@@ -94,11 +98,15 @@ public sealed partial class VirusTotalClient
             {
                 results.AddRange(page.Data);
             }
-            cursor = page?.Meta?.Cursor;
+            nextCursor = page?.Meta?.Cursor;
+            if (!fetchAll)
+            {
+                break;
+            }
         }
-        while (!string.IsNullOrEmpty(cursor));
+        while (!string.IsNullOrEmpty(nextCursor));
 
-        return results;
+        return new Page<RetrohuntJob>(results, nextCursor);
     }
 
     public async Task<RetrohuntJob?> CreateRetrohuntJobAsync(RetrohuntJobRequest request, CancellationToken cancellationToken = default)
@@ -134,17 +142,17 @@ public sealed partial class VirusTotalClient
         return await JsonSerializer.DeserializeAsync<RetrohuntNotification>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<IReadOnlyList<RetrohuntNotification>> ListRetrohuntNotificationsAsync(int limit = 10, CancellationToken cancellationToken = default)
+    public async Task<Page<RetrohuntNotification>> ListRetrohuntNotificationsAsync(int limit = 10, string? cursor = null, bool fetchAll = true, CancellationToken cancellationToken = default)
     {
         var results = new List<RetrohuntNotification>();
-        string? cursor = null;
+        var nextCursor = cursor;
 
         do
         {
             var url = $"intelligence/retrohunt_notifications?limit={limit}";
-            if (!string.IsNullOrEmpty(cursor))
+            if (!string.IsNullOrEmpty(nextCursor))
             {
-                url += $"&cursor={Uri.EscapeDataString(cursor)}";
+                url += $"&cursor={Uri.EscapeDataString(nextCursor)}";
             }
             using var response = await _httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
             await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
@@ -158,11 +166,15 @@ public sealed partial class VirusTotalClient
             {
                 results.AddRange(page.Data);
             }
-            cursor = page?.Meta?.Cursor;
+            nextCursor = page?.Meta?.Cursor;
+            if (!fetchAll)
+            {
+                break;
+            }
         }
-        while (!string.IsNullOrEmpty(cursor));
+        while (!string.IsNullOrEmpty(nextCursor));
 
-        return results;
+        return new Page<RetrohuntNotification>(results, nextCursor);
     }
 
     public async Task<MonitorItem?> GetMonitorItemAsync(string id, CancellationToken cancellationToken = default)

@@ -11,11 +11,12 @@ public static class ListLivehuntNotificationsExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var notifications = await client.ListLivehuntNotificationsAsync();
-            foreach (var notification in notifications)
+            var page = await client.ListLivehuntNotificationsAsync(fetchAll: false);
+            foreach (var notification in page.Data)
             {
                 Console.WriteLine(notification.Id);
             }
+            Console.WriteLine($"Next cursor: {page.NextCursor}");
         }
         catch (RateLimitExceededException ex)
         {

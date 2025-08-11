@@ -364,12 +364,37 @@ public partial class VirusTotalClientTests
 
         var notifications = await client.ListLivehuntNotificationsAsync(limit: 1);
 
-        Assert.Equal(2, notifications.Count);
-        Assert.Equal("n1", notifications[0].Id);
-        Assert.Equal("n2", notifications[1].Id);
+        Assert.Equal(2, notifications.Data.Count);
+        Assert.Null(notifications.NextCursor);
+        Assert.Equal("n1", notifications.Data[0].Id);
+        Assert.Equal("n2", notifications.Data[1].Id);
         Assert.Equal(2, handler.Requests.Count);
         Assert.Contains("limit=1", handler.Requests[0].RequestUri!.Query);
         Assert.Contains("cursor=abc", handler.Requests[1].RequestUri!.Query);
+    }
+
+    [Fact]
+    public async Task ListLivehuntNotificationsAsync_SinglePage()
+    {
+        var first = "{\"data\":[{\"id\":\"n1\",\"type\":\"livehuntNotification\",\"data\":{\"attributes\":{\"rule_name\":\"r1\"}}}],\"meta\":{\"cursor\":\"abc\"}}"; 
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(first, Encoding.UTF8, "application/json")
+            });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var page = await client.ListLivehuntNotificationsAsync(limit: 1, fetchAll: false);
+
+        Assert.Single(page.Data);
+        Assert.Equal("n1", page.Data[0].Id);
+        Assert.Equal("abc", page.NextCursor);
+        Assert.Single(handler.Requests);
+        Assert.Contains("limit=1", handler.Requests[0].RequestUri!.Query);
     }
 
     [Fact]

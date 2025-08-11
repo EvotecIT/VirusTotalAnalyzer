@@ -467,7 +467,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetFileNamesAsync_ThrowsApiException()
     {
-        var errorJson = @"{\"error\":{\"code\":\"NotFoundError\",\"message\":\"not found\"}}";
+        var errorJson = "{\"error\":{\"code\":\"NotFoundError\",\"message\":\"not found\"}}";
         var response = new HttpResponseMessage(HttpStatusCode.NotFound)
         {
             Content = new StringContent(errorJson, Encoding.UTF8, "application/json")

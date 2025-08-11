@@ -67,4 +67,65 @@ public static class VirusTotalClientExtensions
         if (client == null) throw new ArgumentNullException(nameof(client));
         return client.DeleteItemAsync(resourceType, id, cancellationToken);
     }
+
+    /// <summary>
+    /// Executes an operation and automatically retries when a <see cref="RateLimitExceededException"/> is thrown.
+    /// Retries up to <paramref name="maxRetries"/> times, waiting for the server-supplied delay when available,
+    /// otherwise using <paramref name="defaultRetryDelay"/> (one second if not specified).
+    /// </summary>
+    public static async Task<T?> ExecuteWithRateLimitRetryAsync<T>(this VirusTotalClient client, Func<VirusTotalClient, Task<T?>> operation, int maxRetries = 3, TimeSpan? defaultRetryDelay = null, CancellationToken cancellationToken = default)
+    {
+        if (client == null) throw new ArgumentNullException(nameof(client));
+        if (operation == null) throw new ArgumentNullException(nameof(operation));
+        var attempts = 0;
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                return await operation(client).ConfigureAwait(false);
+            }
+            catch (RateLimitExceededException ex) when (attempts < maxRetries)
+            {
+                attempts++;
+                var delay = ex.RetryAfter ?? defaultRetryDelay ?? TimeSpan.FromSeconds(1);
+#if NET472
+                await Task.Delay(delay).ConfigureAwait(false);
+#else
+                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+#endif
+            }
+        }
+    }
+
+    /// <summary>
+    /// Executes an operation and automatically retries when a <see cref="RateLimitExceededException"/> is thrown.
+    /// Retries up to <paramref name="maxRetries"/> times, waiting for the server-supplied delay when available,
+    /// otherwise using <paramref name="defaultRetryDelay"/> (one second if not specified).
+    /// </summary>
+    public static async Task ExecuteWithRateLimitRetryAsync(this VirusTotalClient client, Func<VirusTotalClient, Task> operation, int maxRetries = 3, TimeSpan? defaultRetryDelay = null, CancellationToken cancellationToken = default)
+    {
+        if (client == null) throw new ArgumentNullException(nameof(client));
+        if (operation == null) throw new ArgumentNullException(nameof(operation));
+        var attempts = 0;
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                await operation(client).ConfigureAwait(false);
+                return;
+            }
+            catch (RateLimitExceededException ex) when (attempts < maxRetries)
+            {
+                attempts++;
+                var delay = ex.RetryAfter ?? defaultRetryDelay ?? TimeSpan.FromSeconds(1);
+#if NET472
+                await Task.Delay(delay).ConfigureAwait(false);
+#else
+                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+#endif
+            }
+        }
+    }
 }

@@ -265,7 +265,7 @@ public sealed partial class VirusTotalClient
         return await JsonSerializer.DeserializeAsync<RelationshipResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<SearchResponse?> SearchAsync(string query, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
+    public async Task<SearchResponse?> SearchAsync(string query, int? limit = null, string? cursor = null, string? order = null, string? descriptor = null, CancellationToken cancellationToken = default)
     {
         var sb = new StringBuilder($"intelligence/search?query={Uri.EscapeDataString(query)}");
         if (limit.HasValue)
@@ -275,6 +275,14 @@ public sealed partial class VirusTotalClient
         if (!string.IsNullOrEmpty(cursor))
         {
             sb.Append("&cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        if (!string.IsNullOrEmpty(order))
+        {
+            sb.Append("&order=").Append(Uri.EscapeDataString(order));
+        }
+        if (!string.IsNullOrEmpty(descriptor))
+        {
+            sb.Append("&descriptor=").Append(Uri.EscapeDataString(descriptor));
         }
         using var response = await _httpClient.GetAsync(sb.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);

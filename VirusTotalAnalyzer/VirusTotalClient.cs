@@ -163,6 +163,19 @@ public sealed partial class VirusTotalClient : IDisposable
         throw new ApiException(error);
     }
 
+    public async Task<FileNamesResponse?> GetFileNamesAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"files/{id}/names", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<FileNamesResponse>(stream, _jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     public async Task<Stream> DownloadLivehuntNotificationFileAsync(string id, CancellationToken cancellationToken = default)
     {
         var response = await _httpClient.GetAsync($"intelligence/hunting_notification_files/{id}", HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);

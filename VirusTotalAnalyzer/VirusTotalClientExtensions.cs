@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using VirusTotalAnalyzer.Models;
@@ -8,6 +9,19 @@ namespace VirusTotalAnalyzer;
 
 public static class VirusTotalClientExtensions
 {
+    public static string GetUrlId(string url)
+    {
+        if (url == null) throw new ArgumentNullException(nameof(url));
+
+        var uri = new Uri(url, UriKind.Absolute);
+        var canonical = uri.GetComponents(UriComponents.AbsoluteUri, UriFormat.SafeUnescaped);
+        var bytes = Encoding.UTF8.GetBytes(canonical);
+        return Convert.ToBase64String(bytes)
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
+    }
+
     public static Task<AnalysisReport?> ScanFileAsync(this VirusTotalClient client, string filePath, CancellationToken cancellationToken = default)
     {
         if (client == null) throw new ArgumentNullException(nameof(client));

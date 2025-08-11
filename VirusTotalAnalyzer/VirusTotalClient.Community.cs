@@ -15,6 +15,19 @@ namespace VirusTotalAnalyzer;
 
 public sealed partial class VirusTotalClient
 {
+    public async Task<Comment?> GetCommentAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"{GetPath(ResourceType.Comment)}/{id}", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        var result = await JsonSerializer.DeserializeAsync<CommentResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return result?.Data;
+    }
+
     public async Task<CommentsResponse?> GetCommentsAsync(ResourceType resourceType, string id, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
     {
         var path = new StringBuilder($"{GetPath(resourceType)}/{id}/comments");
@@ -36,6 +49,19 @@ public sealed partial class VirusTotalClient
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
         return await JsonSerializer.DeserializeAsync<CommentsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<Vote?> GetVoteAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"{GetPath(ResourceType.Vote)}/{id}", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        var result = await JsonSerializer.DeserializeAsync<VoteResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return result?.Data;
     }
 
     public async Task<VotesResponse?> GetVotesAsync(ResourceType resourceType, string id, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)

@@ -11,11 +11,11 @@ public static class SearchExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var response = await client.SearchAsync("type:file", limit: 10);
+            var response = await client.SearchAsync("type:file", limit: 10, order: "last_analysis_date", descriptor: "asc");
             Console.WriteLine(response?.Data.Count);
             if (!string.IsNullOrEmpty(response?.Meta?.Cursor))
             {
-                var nextPage = await client.SearchAsync("type:file", cursor: response.Meta.Cursor);
+                var nextPage = await client.SearchAsync("type:file", cursor: response.Meta.Cursor, order: "last_analysis_date", descriptor: "asc");
                 Console.WriteLine(nextPage?.Data.Count);
             }
         }

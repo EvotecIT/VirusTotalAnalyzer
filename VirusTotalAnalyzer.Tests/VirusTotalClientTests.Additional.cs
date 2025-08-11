@@ -487,6 +487,26 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task SearchAsync_BuildsQueryWithOrderAndDescriptor()
+    {
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"data\":[]}", Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.SearchAsync("demo query", order: "last_analysis_date", descriptor: "asc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/intelligence/search", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("query=demo%20query&order=last_analysis_date&descriptor=asc", handler.Request!.RequestUri!.Query.TrimStart('?'));
+    }
+
+    [Fact]
     public async Task SearchAsync_DeserializesCursor()
     {
         var json = "{\"data\":[],\"meta\":{\"cursor\":\"next\"}}";

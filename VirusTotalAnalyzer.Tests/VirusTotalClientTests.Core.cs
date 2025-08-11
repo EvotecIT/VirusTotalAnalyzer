@@ -294,6 +294,30 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetUrlReportAsync_WithUrl_ComputesIdentifier()
+    {
+        var url = new Uri("https://example.com");
+        var id = VirusTotalClientExtensions.GetUrlId(url.ToString());
+        var json = $"{{\"id\":\"{id}\",\"type\":\"url\"}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var report = await client.GetUrlReportAsync(url);
+
+        Assert.NotNull(report);
+        Assert.Equal(id, report!.Id);
+        Assert.NotNull(handler.Request);
+        Assert.Equal($"/api/v3/urls/{id}", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
     public async Task CreateCommentAsync_PostsComment()
     {
         var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""data"":{""attributes"":{""date"":1,""text"":""hello""}}}}";

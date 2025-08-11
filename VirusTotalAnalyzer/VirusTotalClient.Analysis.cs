@@ -91,6 +91,12 @@ public sealed partial class VirusTotalClient
             .ConfigureAwait(false);
     }
 
+    public Task<UrlReport?> GetUrlReportAsync(Uri url, CancellationToken cancellationToken = default)
+    {
+        if (url == null) throw new ArgumentNullException(nameof(url));
+        return GetUrlReportAsync(VirusTotalClientExtensions.GetUrlId(url.ToString()), cancellationToken);
+    }
+
     public async Task<IpAddressReport?> GetIpAddressReportAsync(string id, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"ip_addresses/{id}", cancellationToken).ConfigureAwait(false);

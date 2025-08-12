@@ -12,9 +12,15 @@ public static class DownloadPcapExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
+#if NET472
+            using var stream = await client.DownloadPcapAsync("ANALYSIS_ID");
+            using var file = File.Create("analysis.pcap");
+            await stream.CopyToAsync(file);
+#else
             await using var stream = await client.DownloadPcapAsync("ANALYSIS_ID");
             await using var file = File.Create("analysis.pcap");
             await stream.CopyToAsync(file);
+#endif
         }
         catch (RateLimitExceededException ex)
         {

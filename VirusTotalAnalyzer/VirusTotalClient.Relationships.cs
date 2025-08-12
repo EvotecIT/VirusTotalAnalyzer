@@ -9,6 +9,9 @@ namespace VirusTotalAnalyzer;
 
 public sealed partial class VirusTotalClient
 {
+    public Task<IReadOnlyList<Submission>?> GetFileSubmissionsAsync(string id, CancellationToken cancellationToken = default)
+        => GetSubmissionsAsync(ResourceType.File, id, cancellationToken);
+
     public Task<IReadOnlyList<Resolution>?> GetDomainResolutionsAsync(string id, CancellationToken cancellationToken = default)
         => GetResolutionsAsync(ResourceType.Domain, id, cancellationToken);
 

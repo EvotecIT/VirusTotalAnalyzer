@@ -12,9 +12,15 @@ public static class DownloadLivehuntNotificationFileExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
+#if NET472
+            using var stream = await client.DownloadLivehuntNotificationFileAsync("notification-file-id");
+            using var file = File.Create("notification_file.bin");
+            await stream.CopyToAsync(file);
+#else
             await using var stream = await client.DownloadLivehuntNotificationFileAsync("notification-file-id");
             await using var file = File.Create("notification_file.bin");
             await stream.CopyToAsync(file);
+#endif
         }
         catch (RateLimitExceededException ex)
         {

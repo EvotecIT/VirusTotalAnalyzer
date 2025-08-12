@@ -1,26 +1,18 @@
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using VirusTotalAnalyzer.Models;
 
 namespace VirusTotalAnalyzer.Examples;
 
-public static class DownloadFileExample
+public static class GetFileSubmissionsExample
 {
     public static async Task RunAsync()
     {
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-#if NET472
-            using var stream = await client.DownloadFileAsync("44d88612fea8a8f36de82e1278abb02f");
-            using var file = File.Create("downloaded_file.bin");
-            await stream.CopyToAsync(file);
-#else
-            await using var stream = await client.DownloadFileAsync("44d88612fea8a8f36de82e1278abb02f");
-            await using var file = File.Create("downloaded_file.bin");
-            await stream.CopyToAsync(file);
-#endif
+            var submissions = await client.GetFileSubmissionsAsync("44d88612fea8a8f36de82e1278abb02f");
+            Console.WriteLine(submissions?.Count);
         }
         catch (RateLimitExceededException ex)
         {

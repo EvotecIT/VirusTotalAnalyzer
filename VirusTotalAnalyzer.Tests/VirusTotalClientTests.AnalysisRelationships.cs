@@ -105,5 +105,20 @@ public partial class VirusTotalClientTests
         Assert.Single(files!);
         Assert.Equal("abc", files[0].Data.Attributes.Md5);
     }
+
+    [Fact]
+    public async Task WaitForAnalysisCompletionAsync_HandlesNullData_ThrowsTimeout()
+    {
+        var json = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":null}";
+        var handler = new StubHandler(json);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<TimeoutException>(() =>
+            client.WaitForAnalysisCompletionAsync("an", TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(10)));
+    }
 }
 

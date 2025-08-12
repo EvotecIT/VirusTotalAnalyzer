@@ -652,6 +652,30 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetFileClassificationAsync_DeserializesResponseAndUsesCorrectPath()
+    {
+        var json = "{\"data\":{\"id\":\"f1\",\"type\":\"file\",\"attributes\":{\"popular_threat_name\":\"Trojan\",\"popular_threat_category\":\"malware\",\"suggested_threat_label\":\"malicious\"}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var classification = await client.GetFileClassificationAsync("abc");
+
+        Assert.NotNull(classification);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/classification", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("Trojan", classification!.Data.Attributes.PopularThreatName);
+        Assert.Equal("malware", classification.Data.Attributes.PopularThreatCategory);
+        Assert.Equal("malicious", classification.Data.Attributes.SuggestedThreatLabel);
+    }
+
+    [Fact]
     public async Task GetFileStringsAsync_DeserializesResponseAndUsesCorrectPath()
     {
         var json = "{\"data\":[\"s1\",\"s2\"]}";

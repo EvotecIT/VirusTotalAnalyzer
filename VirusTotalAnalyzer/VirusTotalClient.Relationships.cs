@@ -28,6 +28,9 @@ public sealed partial class VirusTotalClient
     public Task<IReadOnlyList<UrlSummary>?> GetDomainUrlsAsync(string id, CancellationToken cancellationToken = default)
         => GetDomainRelationshipsAsync<DomainUrlsResponse, UrlSummary>(id, "urls", r => r.Data, cancellationToken);
 
+    public Task<IReadOnlyList<DnsRecord>?> GetDomainDnsRecordsAsync(string id, CancellationToken cancellationToken = default)
+        => GetDomainRelationshipsAsync<DnsRecordsResponse, DnsRecord>(id, "dns_records", r => r.Data, cancellationToken);
+
     public Task<IReadOnlyList<Resolution>?> GetIpAddressResolutionsAsync(string id, CancellationToken cancellationToken = default)
         => GetResolutionsAsync(ResourceType.IpAddress, id, cancellationToken);
 

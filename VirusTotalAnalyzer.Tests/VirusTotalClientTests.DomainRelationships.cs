@@ -81,4 +81,30 @@ public partial class VirusTotalClientTests
         Assert.Single(urls!);
         Assert.Equal("http://example.com/", urls[0].Data.Attributes.Url);
     }
+
+    [Fact]
+    public async Task GetDomainDnsRecordsAsync_UsesCorrectPathAndDeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"d1\",\"type\":\"dns_record\",\"data\":{\"attributes\":{\"type\":\"A\",\"value\":\"1.2.3.4\",\"ttl\":300}}}]}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var records = await client.GetDomainDnsRecordsAsync("example.com");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/domains/example.com/dns_records", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.NotNull(records);
+        Assert.Single(records!);
+        Assert.Equal("A", records[0].Data.Attributes.RecordType);
+        Assert.Equal("1.2.3.4", records[0].Data.Attributes.Value);
+        Assert.Equal(300, records[0].Data.Attributes.Ttl);
+    }
 }

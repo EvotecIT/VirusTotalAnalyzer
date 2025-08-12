@@ -298,13 +298,13 @@ public sealed partial class VirusTotalClient
             cancellationToken.ThrowIfCancellationRequested();
 
             var report = await GetAnalysisAsync(id, cancellationToken).ConfigureAwait(false);
-            var status = report?.Data.Attributes.Status;
+            var status = report?.Data?.Attributes?.Status;
             if (status == AnalysisStatus.Completed)
             {
                 return report;
             }
 
-            var error = report?.Data.Attributes.Error;
+            var error = report?.Data?.Attributes?.Error;
             if (status == AnalysisStatus.Error || status == AnalysisStatus.Cancelled)
             {
                 var apiError = string.IsNullOrEmpty(error) ? null : new ApiError { Message = error };

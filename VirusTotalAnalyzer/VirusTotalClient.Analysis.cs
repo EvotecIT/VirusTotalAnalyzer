@@ -80,6 +80,20 @@ public sealed partial class VirusTotalClient
             .ConfigureAwait(false);
     }
 
+    public async Task<FileClassification?> GetFileClassificationAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"files/{id}/classification", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<FileClassification>(stream, _jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+
     public async Task<IReadOnlyList<CrowdsourcedYaraResult>?> GetCrowdsourcedYaraResultsAsync(string id, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"files/{id}/crowdsourced_yara_results", cancellationToken).ConfigureAwait(false);

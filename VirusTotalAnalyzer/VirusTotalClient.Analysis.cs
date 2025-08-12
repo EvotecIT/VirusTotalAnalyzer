@@ -201,6 +201,19 @@ public sealed partial class VirusTotalClient
             .ConfigureAwait(false);
     }
 
+    public async Task<IpWhois?> GetIpAddressWhoisAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"ip_addresses/{id}/whois", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<IpWhois>(stream, _jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     public async Task<DomainReport?> GetDomainReportAsync(string id, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"domains/{id}", cancellationToken).ConfigureAwait(false);
@@ -211,6 +224,19 @@ public sealed partial class VirusTotalClient
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
         return await JsonSerializer.DeserializeAsync<DomainReport>(stream, _jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<DomainWhois?> GetDomainWhoisAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"domains/{id}/whois", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<DomainWhois>(stream, _jsonOptions, cancellationToken)
             .ConfigureAwait(false);
     }
 

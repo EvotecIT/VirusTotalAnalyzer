@@ -106,6 +106,54 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetDomainWhoisAsync_DeserializesResponseAndUsesCorrectPath()
+    {
+        var json = "{\"id\":\"example.com\",\"type\":\"domain\",\"data\":{\"attributes\":{\"whois\":\"domain whois\"}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var whois = await client.GetDomainWhoisAsync("example.com");
+
+        Assert.NotNull(whois);
+        Assert.Equal("example.com", whois!.Id);
+        Assert.Equal(ResourceType.Domain, whois.Type);
+        Assert.Equal("domain whois", whois.Data.Attributes.Whois);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/domains/example.com/whois", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetIpAddressWhoisAsync_DeserializesResponseAndUsesCorrectPath()
+    {
+        var json = "{\"id\":\"1.1.1.1\",\"type\":\"ipAddress\",\"data\":{\"attributes\":{\"whois\":\"ip whois\"}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var whois = await client.GetIpAddressWhoisAsync("1.1.1.1");
+
+        Assert.NotNull(whois);
+        Assert.Equal("1.1.1.1", whois!.Id);
+        Assert.Equal(ResourceType.IpAddress, whois.Type);
+        Assert.Equal("ip whois", whois.Data.Attributes.Whois);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/ip_addresses/1.1.1.1/whois", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
     public async Task GetAnalysisAsync_DeserializesResponseAndUsesCorrectPath()
     {
         var json = "{\"id\":\"an1\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";

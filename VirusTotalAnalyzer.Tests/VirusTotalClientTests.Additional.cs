@@ -102,6 +102,28 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetFileDownloadUrlAsync_ReturnsUri()
+    {
+        var json = "{\"data\":\"https://download.example/file\"}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var uri = await client.GetFileDownloadUrlAsync("abc");
+
+        Assert.NotNull(uri);
+        Assert.Equal("https://download.example/file", uri!.ToString());
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/download_url", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
     public async Task SubmitFileAsync_PostsDirectlyToFiles_ForSmallFiles()
     {
         var analysisJson = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";

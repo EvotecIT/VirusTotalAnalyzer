@@ -27,6 +27,8 @@ using VirusTotalAnalyzer.Examples;
 // await SearchExample.RunAsync();
 // await GetFeedExample.RunAsync();
 // await GetUploadUrlExample.RunAsync();
+// await GetFileDownloadUrlExample.RunAsync();
+// await DownloadFileExample.RunAsync();
 // await SubmitFileExample.RunAsync();
 // await SubmitFileSimpleExample.RunAsync();
 // await ReanalyzeHashExample.RunAsync();

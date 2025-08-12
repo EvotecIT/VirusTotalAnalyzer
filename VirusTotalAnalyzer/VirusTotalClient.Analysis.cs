@@ -158,6 +158,24 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
+    public async Task<Uri?> GetFileDownloadUrlAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"files/{id}/download_url", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        var result = await JsonSerializer.DeserializeAsync<DownloadUrlResponse>(stream, _jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+        if (result is null || string.IsNullOrEmpty(result.Data))
+        {
+            return null;
+        }
+        return new Uri(result.Data);
+    }
+
     public async Task<Stream> DownloadFileAsync(string id, CancellationToken cancellationToken = default)
     {
         var response = await _httpClient.GetAsync($"files/{id}/download", HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);

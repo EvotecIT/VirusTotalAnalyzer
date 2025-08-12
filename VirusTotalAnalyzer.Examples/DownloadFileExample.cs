@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 using VirusTotalAnalyzer.Models;
 
@@ -12,12 +13,19 @@ public static class DownloadFileExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
+            var url = await client.GetFileDownloadUrlAsync("44d88612fea8a8f36de82e1278abb02f");
+            if (url is null)
+            {
+                Console.WriteLine("Download URL was not provided.");
+                return;
+            }
+            using var httpClient = new HttpClient();
 #if NET472
-            using var stream = await client.DownloadFileAsync("44d88612fea8a8f36de82e1278abb02f");
+            using var stream = await httpClient.GetStreamAsync(url);
             using var file = File.Create("downloaded_file.bin");
             await stream.CopyToAsync(file);
 #else
-            await using var stream = await client.DownloadFileAsync("44d88612fea8a8f36de82e1278abb02f");
+            await using var stream = await httpClient.GetStreamAsync(url);
             await using var file = File.Create("downloaded_file.bin");
             await stream.CopyToAsync(file);
 #endif

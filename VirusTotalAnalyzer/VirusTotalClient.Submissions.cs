@@ -40,18 +40,33 @@ public sealed partial class VirusTotalClient
             throw new ArgumentOutOfRangeException(nameof(analysisType));
         }
 
+        Stream uploadStream = stream;
+        bool disposeUploadStream = false;
+        if (!stream.CanSeek)
+        {
+            var buffer = new MemoryStream();
+            await stream.CopyToAsync(buffer, 81920, cancellationToken).ConfigureAwait(false);
+            buffer.Position = 0;
+            uploadStream = buffer;
+            disposeUploadStream = true;
+        }
+
         string requestUrl = "files";
-        if (stream.CanSeek && stream.Length > 33554432)
+        if (uploadStream.CanSeek && uploadStream.Length > 33554432)
         {
             var uploadUrl = await GetUploadUrlAsync(cancellationToken).ConfigureAwait(false);
             if (uploadUrl is null)
             {
+                if (disposeUploadStream)
+                {
+                    uploadStream.Dispose();
+                }
                 throw new InvalidOperationException("Upload URL was not provided by the API.");
             }
             requestUrl = uploadUrl.ToString();
         }
 
-        var builder = new MultipartFormDataBuilder(stream, fileName);
+        var builder = new MultipartFormDataBuilder(uploadStream, fileName);
         using var content = builder.Build();
         using var request = new HttpRequestMessage(HttpMethod.Post, requestUrl)
         {
@@ -68,8 +83,18 @@ public sealed partial class VirusTotalClient
 #else
         await using var respStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<AnalysisReport>(respStream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
+        try
+        {
+            return await JsonSerializer.DeserializeAsync<AnalysisReport>(respStream, _jsonOptions, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            if (disposeUploadStream)
+            {
+                uploadStream.Dispose();
+            }
+        }
     }
 
     public Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, CancellationToken cancellationToken = default)

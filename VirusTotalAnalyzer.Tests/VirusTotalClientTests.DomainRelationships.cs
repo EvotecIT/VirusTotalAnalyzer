@@ -1,0 +1,84 @@
+using System;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using VirusTotalAnalyzer.Models;
+using Xunit;
+
+namespace VirusTotalAnalyzer.Tests;
+
+public partial class VirusTotalClientTests
+{
+    [Fact]
+    public async Task GetDomainSubdomainsAsync_UsesCorrectPathAndDeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"d1\",\"type\":\"domain\",\"data\":{\"attributes\":{\"domain\":\"sub.example.com\"}}}]}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var subdomains = await client.GetDomainSubdomainsAsync("example.com");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/domains/example.com/subdomains", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.NotNull(subdomains);
+        Assert.Single(subdomains!);
+        Assert.Equal("sub.example.com", subdomains[0].Data.Attributes.Domain);
+    }
+
+    [Fact]
+    public async Task GetDomainSiblingsAsync_UsesCorrectPathAndDeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"d1\",\"type\":\"domain\",\"data\":{\"attributes\":{\"domain\":\"sibling.com\"}}}]}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var siblings = await client.GetDomainSiblingsAsync("example.com");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/domains/example.com/siblings", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.NotNull(siblings);
+        Assert.Single(siblings!);
+        Assert.Equal("sibling.com", siblings[0].Data.Attributes.Domain);
+    }
+
+    [Fact]
+    public async Task GetDomainUrlsAsync_UsesCorrectPathAndDeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"u1\",\"type\":\"url\",\"data\":{\"attributes\":{\"url\":\"http://example.com/\"}}}]}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var urls = await client.GetDomainUrlsAsync("example.com");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/domains/example.com/urls", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.NotNull(urls);
+        Assert.Single(urls!);
+        Assert.Equal("http://example.com/", urls[0].Data.Attributes.Url);
+    }
+}

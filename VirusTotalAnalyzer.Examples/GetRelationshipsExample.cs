@@ -11,7 +11,7 @@ public static class GetRelationshipsExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var response = await client.GetRelationshipsAsync(ResourceType.File, "file-id", "comments");
+            var response = await client.GetRelationshipsAsync(ResourceType.File, "file-id", "comments", limit: 10);
             Console.WriteLine(response?.Data.Count);
         }
         catch (RateLimitExceededException ex)

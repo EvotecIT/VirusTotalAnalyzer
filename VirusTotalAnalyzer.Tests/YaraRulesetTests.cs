@@ -119,5 +119,52 @@ public class YaraRulesetTests
         Assert.Equal(HttpMethod.Delete, handler.Request!.Method);
         Assert.Equal("/api/v3/intelligence/hunting_rulesets/rs1", handler.Request.RequestUri!.AbsolutePath);
     }
+
+    [Fact]
+    public async Task GetYaraRulesetOwnerAsync_UsesCorrectPathAndDeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"u1\",\"type\":\"user\"}]}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var owner = await client.GetYaraRulesetOwnerAsync("rs1");
+
+        Assert.NotNull(owner);
+        Assert.Equal("u1", owner!.Id);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/intelligence/hunting_rulesets/rs1/relationships/owner", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetYaraRulesetEditorsAsync_UsesCorrectPathAndBuildsQuery()
+    {
+        var json = "{\"data\":[{\"id\":\"u1\",\"type\":\"user\"},{\"id\":\"u2\",\"type\":\"user\"}]}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var editors = await client.GetYaraRulesetEditorsAsync("rs1", limit: 10, cursor: "abc");
+
+        Assert.NotNull(editors);
+        Assert.Equal(2, editors!.Count);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/intelligence/hunting_rulesets/rs1/relationships/editors", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("limit=10&cursor=abc", handler.Request.RequestUri!.Query.TrimStart('?'));
+    }
 }
 

@@ -266,6 +266,18 @@ public sealed partial class VirusTotalClient
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<Relationship?> GetYaraRulesetOwnerAsync(string id, CancellationToken cancellationToken = default)
+    {
+        var response = await GetRelationshipsAsync(ResourceType.IntelligenceHuntingRuleset, id, "owner", cancellationToken: cancellationToken).ConfigureAwait(false);
+        return response?.Data.FirstOrDefault();
+    }
+
+    public async Task<IReadOnlyList<Relationship>?> GetYaraRulesetEditorsAsync(string id, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
+    {
+        var response = await GetRelationshipsAsync(ResourceType.IntelligenceHuntingRuleset, id, "editors", limit, cursor, cancellationToken).ConfigureAwait(false);
+        return response?.Data;
+    }
+
     public async Task<RelationshipResponse?> GetRelationshipsAsync(ResourceType resourceType, string id, string relationship, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
     {
         var sb = new StringBuilder($"{GetPath(resourceType)}/{id}/relationships/{relationship}");

@@ -8,12 +8,15 @@ public sealed class UrlReport
 {
     public string Id { get; set; } = string.Empty;
     public ResourceType Type { get; set; }
-    public UrlData Data { get; set; } = new();
+
+    [JsonPropertyName("attributes")]
+    public UrlAttributes Attributes { get; set; } = new();
 }
 
-public sealed class UrlData
+public sealed class UrlReportResponse
 {
-    public UrlAttributes Attributes { get; set; } = new();
+    [JsonPropertyName("data")]
+    public UrlReport Data { get; set; } = new();
 }
 
 public sealed class UrlAttributes

@@ -24,7 +24,8 @@ public sealed partial class VirusTotalClient
 #else
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<LivehuntNotification>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        var result = await JsonSerializer.DeserializeAsync<LivehuntNotificationResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return result?.Data;
     }
 
     public async Task<Page<LivehuntNotification>> ListLivehuntNotificationsAsync(int limit = 10, string? cursor = null, bool fetchAll = true, CancellationToken cancellationToken = default)

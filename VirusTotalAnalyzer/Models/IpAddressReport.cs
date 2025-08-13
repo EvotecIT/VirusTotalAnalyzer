@@ -8,12 +8,15 @@ public sealed class IpAddressReport
 {
     public string Id { get; set; } = string.Empty;
     public ResourceType Type { get; set; }
-    public IpAddressData Data { get; set; } = new();
+
+    [JsonPropertyName("attributes")]
+    public IpAddressAttributes Attributes { get; set; } = new();
 }
 
-public sealed class IpAddressData
+public sealed class IpAddressReportResponse
 {
-    public IpAddressAttributes Attributes { get; set; } = new();
+    [JsonPropertyName("data")]
+    public IpAddressReport Data { get; set; } = new();
 }
 
 public sealed class IpAddressAttributes

@@ -52,7 +52,7 @@ public sealed partial class VirusTotalClient : IDisposable
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
-        _jsonOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+        _jsonOptions.Converters.Add(new JsonStringEnumMemberConverter());
         _jsonOptions.Converters.Add(new UnixTimestampConverter());
     }
 

@@ -8,12 +8,15 @@ public sealed class FileReport
 {
     public string Id { get; set; } = string.Empty;
     public ResourceType Type { get; set; }
-    public FileData Data { get; set; } = new();
+
+    [JsonPropertyName("attributes")]
+    public FileAttributes Attributes { get; set; } = new();
 }
 
-public sealed class FileData
+public sealed class FileReportResponse
 {
-    public FileAttributes Attributes { get; set; } = new();
+    [JsonPropertyName("data")]
+    public FileReport Data { get; set; } = new();
 }
 
 public sealed class FileAttributes

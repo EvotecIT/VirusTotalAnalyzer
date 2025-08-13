@@ -24,8 +24,9 @@ public sealed partial class VirusTotalClient
 #else
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<FileReport>(stream, _jsonOptions, cancellationToken)
+        var result = await JsonSerializer.DeserializeAsync<FileReportResponse>(stream, _jsonOptions, cancellationToken)
             .ConfigureAwait(false);
+        return result?.Data;
     }
 
     public async Task<FileBehavior?> GetFileBehaviorAsync(string id, CancellationToken cancellationToken = default)
@@ -275,8 +276,9 @@ public sealed partial class VirusTotalClient
 #else
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<UrlReport>(stream, _jsonOptions, cancellationToken)
+        var result = await JsonSerializer.DeserializeAsync<UrlReportResponse>(stream, _jsonOptions, cancellationToken)
             .ConfigureAwait(false);
+        return result?.Data;
     }
 
     public Task<UrlReport?> GetUrlReportAsync(Uri url, CancellationToken cancellationToken = default)
@@ -333,8 +335,9 @@ public sealed partial class VirusTotalClient
 #else
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<IpAddressReport>(stream, _jsonOptions, cancellationToken)
+        var result = await JsonSerializer.DeserializeAsync<IpAddressReportResponse>(stream, _jsonOptions, cancellationToken)
             .ConfigureAwait(false);
+        return result?.Data;
     }
 
     public async Task<IpWhois?> GetIpAddressWhoisAsync(string id, CancellationToken cancellationToken = default)
@@ -359,8 +362,9 @@ public sealed partial class VirusTotalClient
 #else
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<DomainReport>(stream, _jsonOptions, cancellationToken)
+        var result = await JsonSerializer.DeserializeAsync<DomainReportResponse>(stream, _jsonOptions, cancellationToken)
             .ConfigureAwait(false);
+        return result?.Data;
     }
 
     public async Task<DomainWhois?> GetDomainWhoisAsync(string id, CancellationToken cancellationToken = default)

@@ -52,8 +52,9 @@ public partial class VirusTotalClientTests
     public async Task DownloadFileAsync_UsesCorrectPathAndReturnsStream()
     {
         var trackingStream = new TrackingStream(new byte[] { 1, 2, 3 });
-        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        var response = new TrackingResponseMessage
         {
+            StatusCode = HttpStatusCode.OK,
             Content = new StreamContent(trackingStream)
         };
         var handler = new SingleResponseHandler(response);
@@ -63,17 +64,25 @@ public partial class VirusTotalClientTests
         };
         var client = new VirusTotalClient(httpClient);
 
-        var stream = await client.DownloadFileAsync("abc");
-
-        Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/files/abc/download", handler.Request!.RequestUri!.AbsolutePath);
-        Assert.False(trackingStream.Disposed);
 #if NETFRAMEWORK
-        stream.Dispose();
+        using (var stream = await client.DownloadFileAsync("abc"))
+        {
+            Assert.NotNull(handler.Request);
+            Assert.Equal("/api/v3/files/abc/download", handler.Request!.RequestUri!.AbsolutePath);
+            Assert.False(trackingStream.Disposed);
+            Assert.False(response.Disposed);
+        }
 #else
-        await stream.DisposeAsync();
+        await using (var stream = await client.DownloadFileAsync("abc"))
+        {
+            Assert.NotNull(handler.Request);
+            Assert.Equal("/api/v3/files/abc/download", handler.Request!.RequestUri!.AbsolutePath);
+            Assert.False(trackingStream.Disposed);
+            Assert.False(response.Disposed);
+        }
 #endif
         Assert.True(trackingStream.Disposed);
+        Assert.True(response.Disposed);
     }
 
     [Fact]
@@ -103,8 +112,9 @@ public partial class VirusTotalClientTests
     public async Task DownloadPcapAsync_UsesCorrectPathAndReturnsStream()
     {
         var trackingStream = new TrackingStream(new byte[] { 1, 2, 3 });
-        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        var response = new TrackingResponseMessage
         {
+            StatusCode = HttpStatusCode.OK,
             Content = new StreamContent(trackingStream)
         };
         var handler = new SingleResponseHandler(response);
@@ -114,17 +124,25 @@ public partial class VirusTotalClientTests
         };
         var client = new VirusTotalClient(httpClient);
 
-        var stream = await client.DownloadPcapAsync("abc");
-
-        Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/analyses/abc/pcap", handler.Request!.RequestUri!.AbsolutePath);
-        Assert.False(trackingStream.Disposed);
 #if NETFRAMEWORK
-        stream.Dispose();
+        using (var stream = await client.DownloadPcapAsync("abc"))
+        {
+            Assert.NotNull(handler.Request);
+            Assert.Equal("/api/v3/analyses/abc/pcap", handler.Request!.RequestUri!.AbsolutePath);
+            Assert.False(trackingStream.Disposed);
+            Assert.False(response.Disposed);
+        }
 #else
-        await stream.DisposeAsync();
+        await using (var stream = await client.DownloadPcapAsync("abc"))
+        {
+            Assert.NotNull(handler.Request);
+            Assert.Equal("/api/v3/analyses/abc/pcap", handler.Request!.RequestUri!.AbsolutePath);
+            Assert.False(trackingStream.Disposed);
+            Assert.False(response.Disposed);
+        }
 #endif
         Assert.True(trackingStream.Disposed);
+        Assert.True(response.Disposed);
     }
 
     [Fact]
@@ -154,8 +172,9 @@ public partial class VirusTotalClientTests
     public async Task DownloadRetrohuntNotificationFileAsync_UsesCorrectPathAndReturnsStream()
     {
         var trackingStream = new TrackingStream(new byte[] { 1, 2, 3 });
-        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        var response = new TrackingResponseMessage
         {
+            StatusCode = HttpStatusCode.OK,
             Content = new StreamContent(trackingStream)
         };
         var handler = new SingleResponseHandler(response);
@@ -165,17 +184,25 @@ public partial class VirusTotalClientTests
         };
         var client = new VirusTotalClient(httpClient);
 
-        var stream = await client.DownloadRetrohuntNotificationFileAsync("abc");
-
-        Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/intelligence/retrohunt_notification_files/abc", handler.Request!.RequestUri!.AbsolutePath);
-        Assert.False(trackingStream.Disposed);
 #if NETFRAMEWORK
-        stream.Dispose();
+        using (var stream = await client.DownloadRetrohuntNotificationFileAsync("abc"))
+        {
+            Assert.NotNull(handler.Request);
+            Assert.Equal("/api/v3/intelligence/retrohunt_notification_files/abc", handler.Request!.RequestUri!.AbsolutePath);
+            Assert.False(trackingStream.Disposed);
+            Assert.False(response.Disposed);
+        }
 #else
-        await stream.DisposeAsync();
+        await using (var stream = await client.DownloadRetrohuntNotificationFileAsync("abc"))
+        {
+            Assert.NotNull(handler.Request);
+            Assert.Equal("/api/v3/intelligence/retrohunt_notification_files/abc", handler.Request!.RequestUri!.AbsolutePath);
+            Assert.False(trackingStream.Disposed);
+            Assert.False(response.Disposed);
+        }
 #endif
         Assert.True(trackingStream.Disposed);
+        Assert.True(response.Disposed);
     }
 
     [Fact]

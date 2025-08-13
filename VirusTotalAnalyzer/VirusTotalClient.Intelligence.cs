@@ -302,6 +302,19 @@ public sealed partial class VirusTotalClient
         return await JsonSerializer.DeserializeAsync<RelationshipResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<IReadOnlyList<ThreatCategory>> GetPopularThreatCategoriesAsync(CancellationToken ct = default)
+    {
+        using var response = await _httpClient.GetAsync("intelligence/popular_threat_categories", ct).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, ct).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+#endif
+        var result = await JsonSerializer.DeserializeAsync<ThreatCategoriesResponse>(stream, _jsonOptions, ct).ConfigureAwait(false);
+        return result?.Data ?? new List<ThreatCategory>();
+    }
+
     public async Task<SearchResponse?> SearchAsync(string query, int? limit = null, string? cursor = null, string? order = null, string? descriptor = null, CancellationToken cancellationToken = default)
     {
         var sb = new StringBuilder($"intelligence/search?query={Uri.EscapeDataString(query)}");

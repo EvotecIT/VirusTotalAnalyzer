@@ -4,21 +4,15 @@ using VirusTotalAnalyzer.Models;
 
 namespace VirusTotalAnalyzer.Examples;
 
-public static class GetVotesExample
+public static class GetMonitorEventCommentsExample
 {
     public static async Task RunAsync()
     {
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var first = await client.GetVotesAsync(ResourceType.File, "file-id", limit: 10);
-            Console.WriteLine(first?.Data.Count);
-            var cursor = first?.Meta?.Cursor;
-            if (!string.IsNullOrEmpty(cursor))
-            {
-                var next = await client.GetVotesAsync(ResourceType.File, "file-id", cursor: cursor);
-                Console.WriteLine(next?.Data.Count);
-            }
+            var comments = await client.GetCommentsAsync(ResourceType.MonitorEvent, "monitor-event-id", limit: 10);
+            Console.WriteLine(comments?.Data.Count);
         }
         catch (RateLimitExceededException ex)
         {

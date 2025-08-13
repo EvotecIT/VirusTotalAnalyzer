@@ -103,6 +103,7 @@ public sealed partial class VirusTotalClient : IDisposable
             ResourceType.RetrohuntJob => "retrohunt_jobs",
             ResourceType.RetrohuntNotification => "retrohunt_notifications",
             ResourceType.MonitorItem => "monitor/items",
+            ResourceType.MonitorEvent => "monitor/events",
             ResourceType.IntelligenceHuntingRuleset => "intelligence/hunting_rulesets",
             ResourceType.FileBehaviour => "file-behaviour",
             _ => throw new ArgumentOutOfRangeException(nameof(type))

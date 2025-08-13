@@ -275,6 +275,29 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetUrlLastServingIpAddressAsync_UsesCorrectPathAndDeserializesResponse()
+    {
+        var json = "{\"data\":{\"id\":\"i1\",\"type\":\"ip_address\",\"data\":{\"attributes\":{\"ip_address\":\"1.2.3.4\"}}}}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var ip = await client.GetUrlLastServingIpAddressAsync("abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/urls/abc/last_serving_ip_address", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.NotNull(ip);
+        Assert.Equal("1.2.3.4", ip!.Data.Attributes.IpAddress);
+    }
+
+    [Fact]
     public async Task WaitForAnalysisCompletionAsync_HandlesNullData_ThrowsTimeout()
     {
         var json = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":null}";

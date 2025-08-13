@@ -13,7 +13,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetFileSubmissionsAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"s1\",\"type\":\"submission\",\"data\":{\"attributes\":{\"date\":1}}}]}"; 
+        var json = "{\"data\":[{\"id\":\"s1\",\"type\":\"submission\",\"data\":{\"attributes\":{\"date\":1}}}]}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -32,6 +32,50 @@ public partial class VirusTotalClientTests
         Assert.NotNull(submissions);
         Assert.Single(submissions!);
         Assert.Equal(1, submissions[0].Data.Attributes.Date.ToUnixTimeSeconds());
+    }
+
+    [Fact]
+    public async Task GetUrlSubmissionsAsync_UsesCorrectPathAndDeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"s1\",\"type\":\"submission\",\"data\":{\"attributes\":{\"date\":1}}}]}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var submissions = await client.GetUrlSubmissionsAsync("url-id");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/urls/url-id/submissions", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.NotNull(submissions);
+        Assert.Single(submissions!);
+        Assert.Equal(1, submissions[0].Data.Attributes.Date.ToUnixTimeSeconds());
+    }
+
+    [Fact]
+    public async Task GetUrlSubmissionsAsync_BuildsQueryWithLimitAndCursor()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}", Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.GetUrlSubmissionsAsync("url-id", limit: 10, cursor: "abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("?limit=10&cursor=abc", handler.Request!.RequestUri!.Query);
     }
 
     [Fact]

@@ -392,7 +392,8 @@ public sealed partial class VirusTotalClient
         if (resourceType != ResourceType.File &&
             resourceType != ResourceType.Url &&
             resourceType != ResourceType.Domain &&
-            resourceType != ResourceType.IpAddress)
+            resourceType != ResourceType.IpAddress &&
+            resourceType != ResourceType.FileBehaviour)
         {
             throw new ArgumentOutOfRangeException(nameof(resourceType));
         }

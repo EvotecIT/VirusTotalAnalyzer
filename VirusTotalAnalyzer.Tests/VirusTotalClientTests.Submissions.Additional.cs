@@ -365,6 +365,29 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetFeedAsync_FileBehaviour_DeserializesResponseAndUsesCorrectPath()
+    {
+        var json = "{\"data\":[{\"id\":\"b1\",\"type\":\"file\"}]}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var feed = await client.GetFeedAsync(ResourceType.FileBehaviour);
+
+        Assert.NotNull(feed);
+        Assert.Single(feed!.Data);
+        Assert.Equal("b1", feed.Data[0].Id);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/feeds/file-behaviour", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
     public async Task GetRelationshipsAsync_DeserializesResponseAndUsesCorrectPath()
     {
         var json = "{\"data\":[{\"id\":\"r1\",\"type\":\"file\"}]}";

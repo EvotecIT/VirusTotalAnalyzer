@@ -385,6 +385,27 @@ public partial class VirusTotalClientTests
         Assert.Equal("r1", relationships.Data[0].Id);
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/files/abc/relationships/comments", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal(string.Empty, handler.Request!.RequestUri!.Query);
+    }
+
+    [Fact]
+    public async Task GetRelationshipsAsync_BuildsQueryWithLimitAndCursor()
+    {
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"data\":[]}", Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.GetRelationshipsAsync(ResourceType.File, "abc", "comments", limit: 10, cursor: "abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/relationships/comments", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("limit=10&cursor=abc", handler.Request!.RequestUri!.Query.TrimStart('?'));
     }
 
     [Fact]

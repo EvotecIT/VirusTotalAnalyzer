@@ -15,6 +15,29 @@ namespace VirusTotalAnalyzer;
 
 public sealed partial class VirusTotalClient
 {
+    public async Task<PagedResponse<Graph>?> ListGraphsAsync(int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
+    {
+        var path = new StringBuilder("graphs");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<PagedResponse<Graph>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task<Graph?> GetGraphAsync(string id, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"graphs/{id}", cancellationToken).ConfigureAwait(false);
@@ -62,6 +85,29 @@ public sealed partial class VirusTotalClient
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<PagedResponse<Collection>?> ListCollectionsAsync(int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
+    {
+        var path = new StringBuilder("collections");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<PagedResponse<Collection>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task<Collection?> GetCollectionAsync(string id, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"collections/{id}", cancellationToken).ConfigureAwait(false);
@@ -107,6 +153,29 @@ public sealed partial class VirusTotalClient
     {
         using var response = await _httpClient.DeleteAsync($"collections/{id}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<PagedResponse<Bundle>?> ListBundlesAsync(int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
+    {
+        var path = new StringBuilder("bundles");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<PagedResponse<Bundle>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Bundle?> GetBundleAsync(string id, CancellationToken cancellationToken = default)

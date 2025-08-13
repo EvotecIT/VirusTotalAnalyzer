@@ -54,5 +54,87 @@ public class MonitorEventTests
         Assert.Equal("/api/v3/monitor/events", handler.Request.RequestUri!.AbsolutePath);
         Assert.Equal("?filter=type%3Afoo&limit=10&cursor=abc", handler.Request.RequestUri.Query);
     }
+
+    [Fact]
+    public async Task GetCommentsAsync_OnMonitorEvent_UsesMonitorEventsPath()
+    {
+        var json = "{\"data\":[]}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var comments = await client.GetCommentsAsync(ResourceType.MonitorEvent, "e1");
+
+        Assert.NotNull(comments);
+        Assert.Equal("/api/v3/monitor/events/e1/comments", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task CreateCommentAsync_OnMonitorEvent_UsesMonitorEventsPath()
+    {
+        var json = @"{\"data\":{\"id\":\"c1\",\"type\":\"comment\",\"data\":{\"attributes\":{\"date\":1,\"text\":\"hi\"}}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var comment = await client.CreateCommentAsync(ResourceType.MonitorEvent, "e1", "hi");
+
+        Assert.NotNull(comment);
+        Assert.Equal("/api/v3/monitor/events/e1/comments", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Contains("\"text\":\"hi\"", handler.Content);
+    }
+
+    [Fact]
+    public async Task GetVotesAsync_OnMonitorEvent_UsesMonitorEventsPath()
+    {
+        var json = "{\"data\":[]}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var votes = await client.GetVotesAsync(ResourceType.MonitorEvent, "e1");
+
+        Assert.NotNull(votes);
+        Assert.Equal("/api/v3/monitor/events/e1/votes", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task CreateVoteAsync_OnMonitorEvent_UsesMonitorEventsPath()
+    {
+        var json = @"{\"data\":{\"id\":\"v1\",\"type\":\"vote\",\"data\":{\"attributes\":{\"date\":1,\"verdict\":\"malicious\"}}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var vote = await client.CreateVoteAsync(ResourceType.MonitorEvent, "e1", VoteVerdict.Malicious);
+
+        Assert.NotNull(vote);
+        Assert.Equal("/api/v3/monitor/events/e1/votes", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Contains("\"verdict\":\"malicious\"", handler.Content);
+    }
 }
 

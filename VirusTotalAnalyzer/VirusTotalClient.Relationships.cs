@@ -17,6 +17,13 @@ public sealed partial class VirusTotalClient
         CancellationToken cancellationToken = default)
         => GetSubmissionsAsync(ResourceType.File, id, limit, cursor, cancellationToken);
 
+    public Task<IReadOnlyList<Submission>?> GetUrlSubmissionsAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetSubmissionsAsync(ResourceType.Url, id, limit, cursor, cancellationToken);
+
     public Task<IReadOnlyList<Resolution>?> GetDomainResolutionsAsync(
         string id,
         int? limit = null,

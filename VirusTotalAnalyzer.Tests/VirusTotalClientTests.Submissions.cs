@@ -280,6 +280,28 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task SubmitFileAsync_IncludesPasswordHeader()
+    {
+        var analysisJson = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(analysisJson, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        using var ms = new System.IO.MemoryStream(new byte[1]);
+        var report = await client.SubmitFileAsync(ms, "demo.bin", "pass");
+
+        Assert.NotNull(report);
+        Assert.NotNull(handler.Request);
+        Assert.True(handler.Request!.Headers.Contains("x-virustotal-password"));
+    }
+
+    [Fact]
     public async Task SubmitPrivateFileAsync_PostsToPrivateAnalyses()
     {
         var json = "{\"id\":\"pa\",\"type\":\"private_analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
@@ -299,7 +321,7 @@ public partial class VirusTotalClientTests
         Assert.NotNull(report);
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/private/analyses", handler.Request!.RequestUri!.AbsolutePath);
-        Assert.True(handler.Request.Headers.Contains("password"));
+        Assert.True(handler.Request.Headers.Contains("x-virustotal-password"));
     }
 
     [Fact]

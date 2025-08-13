@@ -33,6 +33,14 @@ public sealed partial class VirusTotalClient
         return new Uri(result.Data);
     }
 
+    /// <summary>
+    /// Submits a file for analysis.
+    /// </summary>
+    /// <param name="stream">The file stream to upload.</param>
+    /// <param name="fileName">The name of the file.</param>
+    /// <param name="password">Optional password for the file; sent via the <c>x-virustotal-password</c> header.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+    /// <returns>An <see cref="AnalysisReport"/> for the submitted file or <see langword="null"/> if the response is empty.</returns>
     public async Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, string? password = null, CancellationToken cancellationToken = default)
     {
 
@@ -70,7 +78,7 @@ public sealed partial class VirusTotalClient
         };
         if (!string.IsNullOrEmpty(password))
         {
-            request.Headers.Add("password", password);
+            request.Headers.Add("x-virustotal-password", password);
         }
         using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
@@ -96,6 +104,14 @@ public sealed partial class VirusTotalClient
     public Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, CancellationToken cancellationToken)
         => SubmitFileAsync(stream, fileName, null, cancellationToken);
 
+    /// <summary>
+    /// Submits a private file for analysis.
+    /// </summary>
+    /// <param name="stream">The file stream to upload.</param>
+    /// <param name="fileName">The name of the file.</param>
+    /// <param name="password">Optional password for the file; sent via the <c>x-virustotal-password</c> header.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+    /// <returns>A <see cref="PrivateAnalysis"/> describing the analysis.</returns>
     public async Task<PrivateAnalysis?> SubmitPrivateFileAsync(
         Stream stream,
         string fileName,
@@ -110,7 +126,7 @@ public sealed partial class VirusTotalClient
         };
         if (!string.IsNullOrEmpty(password))
         {
-            request.Headers.Add("password", password);
+            request.Headers.Add("x-virustotal-password", password);
         }
         using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);

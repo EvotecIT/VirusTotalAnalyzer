@@ -635,4 +635,44 @@ public partial class VirusTotalClientTests
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => client.GetFeedAsync(ResourceType.Analysis));
     }
 
+    [Fact]
+    public async Task GetIocStreamAsync_BuildsQuery()
+    {
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"data\":[]}", Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.GetIocStreamAsync("type:file", limit: 40, descriptorsOnly: true, cursor: "abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/intelligence/ioc_stream", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("filter=type%3Afile&limit=40&descriptors_only=true&cursor=abc", handler.Request!.RequestUri!.Query.TrimStart('?'));
+    }
+
+    [Fact]
+    public async Task GetIocStreamAsync_DeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"abc\",\"type\":\"file\",\"attributes\":{\"md5\":\"demo\"}}],\"meta\":{\"cursor\":\"next\"}}";
+        var handler = new StubHandler(json);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var stream = await client.GetIocStreamAsync("type:file");
+
+        var item = Assert.Single(stream!.Data);
+        Assert.Equal("abc", item.Id);
+        Assert.Equal("file", item.Type);
+        Assert.Equal("demo", item.Attributes!["md5"].GetString());
+        Assert.Equal("next", stream.Meta?.Cursor);
+    }
+
 }

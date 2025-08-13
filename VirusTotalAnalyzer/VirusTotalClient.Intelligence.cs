@@ -319,6 +319,31 @@ public sealed partial class VirusTotalClient
         return await JsonSerializer.DeserializeAsync<SearchResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<IocStreamResponse?> GetIocStreamAsync(string filter, int? limit = null, bool descriptorsOnly = false, string? cursor = null, CancellationToken ct = default)
+    {
+        var sb = new StringBuilder($"intelligence/ioc_stream?filter={Uri.EscapeDataString(filter)}");
+        if (limit.HasValue)
+        {
+            sb.Append("&limit=").Append(limit.Value);
+        }
+        if (descriptorsOnly)
+        {
+            sb.Append("&descriptors_only=true");
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            sb.Append("&cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(sb.ToString(), ct).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, ct).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<IocStreamResponse>(stream, _jsonOptions, ct).ConfigureAwait(false);
+    }
+
     public async Task<FeedResponse?> GetFeedAsync(ResourceType resourceType, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
     {
         if (resourceType != ResourceType.File &&

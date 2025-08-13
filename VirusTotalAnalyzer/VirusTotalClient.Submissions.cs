@@ -171,7 +171,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<AnalysisReport?> ReanalyzeHashAsync(string hash, AnalysisType analysisType = AnalysisType.File, CancellationToken cancellationToken = default)
     {
-        var path = $"{GetPath(analysisType)}/{hash}/analyse";
+        var path = $"{GetPath(analysisType)}/{Uri.EscapeDataString(hash)}/analyse";
         using var response = await _httpClient.PostAsync(path, content: null, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472

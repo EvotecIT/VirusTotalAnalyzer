@@ -17,7 +17,7 @@ public sealed partial class VirusTotalClient
 {
     public async Task<Comment?> GetCommentAsync(string id, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"{GetPath(ResourceType.Comment)}/{id}", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync($"{GetPath(ResourceType.Comment)}/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -30,7 +30,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<CommentsResponse?> GetCommentsAsync(ResourceType resourceType, string id, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
     {
-        var path = new StringBuilder($"{GetPath(resourceType)}/{id}/comments");
+        var path = new StringBuilder($"{GetPath(resourceType)}/{Uri.EscapeDataString(id)}/comments");
         var hasQuery = false;
         if (limit.HasValue)
         {
@@ -53,7 +53,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<Vote?> GetVoteAsync(string id, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"{GetPath(ResourceType.Vote)}/{id}", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync($"{GetPath(ResourceType.Vote)}/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -66,7 +66,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<VotesResponse?> GetVotesAsync(ResourceType resourceType, string id, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
     {
-        var path = new StringBuilder($"{GetPath(resourceType)}/{id}/votes");
+        var path = new StringBuilder($"{GetPath(resourceType)}/{Uri.EscapeDataString(id)}/votes");
         var hasQuery = false;
         if (limit.HasValue)
         {
@@ -99,7 +99,7 @@ public sealed partial class VirusTotalClient
     {
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
-        using var response = await _httpClient.PostAsync($"{GetPath(resourceType)}/{id}/comments", content, cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.PostAsync($"{GetPath(resourceType)}/{Uri.EscapeDataString(id)}/comments", content, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -122,7 +122,7 @@ public sealed partial class VirusTotalClient
     {
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
-        using var response = await _httpClient.PostAsync($"{GetPath(resourceType)}/{id}/votes", content, cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.PostAsync($"{GetPath(resourceType)}/{Uri.EscapeDataString(id)}/votes", content, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -135,13 +135,13 @@ public sealed partial class VirusTotalClient
 
     public async Task DeleteItemAsync(ResourceType resourceType, string id, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.DeleteAsync($"{GetPath(resourceType)}/{id}", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.DeleteAsync($"{GetPath(resourceType)}/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<User?> GetUserAsync(string id, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"users/{id}", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync($"users/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -153,7 +153,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<UserPrivileges?> GetUserPrivilegesAsync(string id, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"users/{id}/privileges", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync($"users/{Uri.EscapeDataString(id)}/privileges", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -165,7 +165,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<UserQuota?> GetUserQuotaAsync(string id, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"users/{id}/quotas", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync($"users/{Uri.EscapeDataString(id)}/quotas", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);

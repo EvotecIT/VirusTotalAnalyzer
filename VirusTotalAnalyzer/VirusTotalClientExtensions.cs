@@ -14,7 +14,23 @@ public static class VirusTotalClientExtensions
         if (url == null) throw new ArgumentNullException(nameof(url));
 
         var uri = new Uri(url, UriKind.Absolute);
-        var canonical = uri.GetComponents(UriComponents.AbsoluteUri, UriFormat.SafeUnescaped);
+        var builder = new UriBuilder(uri)
+        {
+            Fragment = string.Empty
+        };
+
+        if ((builder.Scheme == Uri.UriSchemeHttp && builder.Port == 80) ||
+            (builder.Scheme == Uri.UriSchemeHttps && builder.Port == 443))
+        {
+            builder.Port = -1;
+        }
+
+        if (string.IsNullOrEmpty(builder.Path))
+        {
+            builder.Path = "/";
+        }
+
+        var canonical = builder.Uri.GetComponents(UriComponents.AbsoluteUri, UriFormat.SafeUnescaped);
         var bytes = Encoding.UTF8.GetBytes(canonical);
         return Convert.ToBase64String(bytes)
             .TrimEnd('=')

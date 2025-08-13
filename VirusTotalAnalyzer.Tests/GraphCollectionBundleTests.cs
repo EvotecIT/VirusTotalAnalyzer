@@ -11,6 +11,51 @@ namespace VirusTotalAnalyzer.Tests;
 public class GraphCollectionBundleTests
 {
     [Fact]
+    public async Task ListGraphsAsync_GetsGraphs()
+    {
+        var json = "{\"data\":[{\"id\":\"g1\",\"type\":\"graph\",\"data\":{\"attributes\":{\"name\":\"demo\"}}}]}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var response = await client.ListGraphsAsync();
+
+        Assert.NotNull(response);
+        Assert.Single(response.Data);
+        Assert.Equal(HttpMethod.Get, handler.Request!.Method);
+        Assert.Equal("/api/v3/graphs", handler.Request.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task ListGraphsAsync_WithPaginationParameters_AppendsToUrlAndReturnsCursor()
+    {
+        var json = "{\"data\":[],\"meta\":{\"cursor\":\"next_cursor\"}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var response = await client.ListGraphsAsync(limit: 10, cursor: "abc");
+
+        Assert.NotNull(response);
+        Assert.Equal("next_cursor", response.NextCursor);
+        Assert.Equal(HttpMethod.Get, handler.Request!.Method);
+        Assert.Equal("/api/v3/graphs", handler.Request.RequestUri!.AbsolutePath);
+        Assert.Equal("?limit=10&cursor=abc", handler.Request.RequestUri.Query);
+    }
+
+    [Fact]
     public async Task CreateGraphAsync_PostsGraph()
     {
         var json = "{\"id\":\"g1\",\"type\":\"graph\",\"data\":{\"attributes\":{\"name\":\"demo\"}}}";
@@ -91,6 +136,51 @@ public class GraphCollectionBundleTests
     }
 
     [Fact]
+    public async Task ListCollectionsAsync_GetsCollections()
+    {
+        var json = "{\"data\":[{\"id\":\"c1\",\"type\":\"collection\",\"data\":{\"attributes\":{\"name\":\"demo\"}}}]}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var response = await client.ListCollectionsAsync();
+
+        Assert.NotNull(response);
+        Assert.Single(response.Data);
+        Assert.Equal(HttpMethod.Get, handler.Request!.Method);
+        Assert.Equal("/api/v3/collections", handler.Request.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task ListCollectionsAsync_WithPaginationParameters_AppendsToUrlAndReturnsCursor()
+    {
+        var json = "{\"data\":[],\"meta\":{\"cursor\":\"next_cursor\"}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var response = await client.ListCollectionsAsync(limit: 10, cursor: "abc");
+
+        Assert.NotNull(response);
+        Assert.Equal("next_cursor", response.NextCursor);
+        Assert.Equal(HttpMethod.Get, handler.Request!.Method);
+        Assert.Equal("/api/v3/collections", handler.Request.RequestUri!.AbsolutePath);
+        Assert.Equal("?limit=10&cursor=abc", handler.Request.RequestUri.Query);
+    }
+
+    [Fact]
     public async Task CreateCollectionAsync_PostsCollection()
     {
         var json = "{\"id\":\"c1\",\"type\":\"collection\",\"data\":{\"attributes\":{\"name\":\"demo\"}}}";
@@ -150,6 +240,51 @@ public class GraphCollectionBundleTests
 
         Assert.Equal(HttpMethod.Delete, handler.Request!.Method);
         Assert.Equal("/api/v3/collections/c1", handler.Request.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task ListBundlesAsync_GetsBundles()
+    {
+        var json = "{\"data\":[{\"id\":\"b1\",\"type\":\"bundle\",\"data\":{\"attributes\":{\"name\":\"demo\"}}}]}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var response = await client.ListBundlesAsync();
+
+        Assert.NotNull(response);
+        Assert.Single(response.Data);
+        Assert.Equal(HttpMethod.Get, handler.Request!.Method);
+        Assert.Equal("/api/v3/bundles", handler.Request.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task ListBundlesAsync_WithPaginationParameters_AppendsToUrlAndReturnsCursor()
+    {
+        var json = "{\"data\":[],\"meta\":{\"cursor\":\"next_cursor\"}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var response = await client.ListBundlesAsync(limit: 10, cursor: "abc");
+
+        Assert.NotNull(response);
+        Assert.Equal("next_cursor", response.NextCursor);
+        Assert.Equal(HttpMethod.Get, handler.Request!.Method);
+        Assert.Equal("/api/v3/bundles", handler.Request.RequestUri!.AbsolutePath);
+        Assert.Equal("?limit=10&cursor=abc", handler.Request.RequestUri.Query);
     }
 
     [Fact]

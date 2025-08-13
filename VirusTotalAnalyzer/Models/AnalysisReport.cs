@@ -33,3 +33,12 @@ public sealed class AnalysisAttributes
     [JsonPropertyName("error")]
     public string? Error { get; set; }
 }
+
+public sealed class AnalysisReportsResponse
+{
+    [JsonPropertyName("data")]
+    public List<AnalysisReport> Data { get; set; } = new();
+
+    [JsonPropertyName("meta")]
+    public PaginationMetadata? Meta { get; set; }
+}

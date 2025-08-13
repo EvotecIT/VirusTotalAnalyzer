@@ -287,6 +287,63 @@ public sealed partial class VirusTotalClient
         return GetUrlReportAsync(VirusTotalClientExtensions.GetUrlId(url.ToString()), cancellationToken);
     }
 
+    public async Task<(List<AnalysisReport> Analyses, string? Cursor)> GetUrlAnalysesAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (limit == 0)
+        {
+            return (new List<AnalysisReport>(), cursor);
+        }
+
+        var results = new List<AnalysisReport>();
+        var remaining = limit;
+        var nextCursor = cursor;
+
+        do
+        {
+            var url = new StringBuilder($"urls/{id}/analyses");
+            var hasQuery = false;
+            if (remaining.HasValue)
+            {
+                url.Append("?limit=").Append(remaining.Value);
+                hasQuery = true;
+            }
+            if (!string.IsNullOrEmpty(nextCursor))
+            {
+                url.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(nextCursor));
+            }
+
+            using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+            var page = await JsonSerializer.DeserializeAsync<AnalysisReportsResponse>(stream, _jsonOptions, cancellationToken)
+                .ConfigureAwait(false);
+            if (page != null)
+            {
+                results.AddRange(page.Data);
+                nextCursor = page.Meta?.Cursor;
+                if (remaining.HasValue)
+                {
+                    remaining -= page.Data.Count;
+                }
+            }
+            else
+            {
+                nextCursor = null;
+            }
+        }
+        while (nextCursor != null && (!remaining.HasValue || remaining > 0));
+
+        return (results, nextCursor);
+    }
+
     public async Task<IReadOnlyList<FileReport>?> GetUrlDownloadedFilesAsync(string id, CancellationToken cancellationToken = default)
     {
         using var response = await _httpClient.GetAsync($"urls/{id}/downloaded_files", cancellationToken).ConfigureAwait(false);

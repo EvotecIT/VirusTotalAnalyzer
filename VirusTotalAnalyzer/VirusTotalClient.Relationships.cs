@@ -24,6 +24,27 @@ public sealed partial class VirusTotalClient
         CancellationToken cancellationToken = default)
         => GetSubmissionsAsync(ResourceType.Url, id, limit, cursor, cancellationToken);
 
+    public async Task<IReadOnlyList<Graph>> GetUrlGraphsAsync(string id, CancellationToken cancellationToken = default)
+    {
+        var relationships = await GetRelationshipsAsync(ResourceType.Url, id, "graphs", cancellationToken: cancellationToken).ConfigureAwait(false);
+        if (relationships == null || relationships.Data.Count == 0)
+        {
+            return Array.Empty<Graph>();
+        }
+
+        var graphs = new List<Graph>(relationships.Data.Count);
+        foreach (var relationship in relationships.Data)
+        {
+            var graph = await GetGraphAsync(relationship.Id, cancellationToken).ConfigureAwait(false);
+            if (graph != null)
+            {
+                graphs.Add(graph);
+            }
+        }
+
+        return graphs;
+    }
+
     public Task<IReadOnlyList<Resolution>?> GetDomainResolutionsAsync(
         string id,
         int? limit = null,

@@ -20,6 +20,7 @@ using VirusTotalAnalyzer.Examples;
 // await GetUserExample.RunAsync();
 // await GetUserQuotaExample.RunAsync();
 // await GetGraphExample.RunAsync();
+// await GetUrlGraphsExample.RunAsync();
 // await GetCollectionExample.RunAsync();
 // await CreateGraphExample.RunAsync();
 // await CreateCollectionExample.RunAsync();

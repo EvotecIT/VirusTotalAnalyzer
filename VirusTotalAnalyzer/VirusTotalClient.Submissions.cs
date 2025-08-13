@@ -46,12 +46,19 @@ public sealed partial class VirusTotalClient
 
         Stream uploadStream = stream;
         bool disposeUploadStream = false;
+        string? tempFilePath = null;
         if (!stream.CanSeek)
         {
-            var buffer = new MemoryStream();
-            await stream.CopyToAsync(buffer, 81920, cancellationToken).ConfigureAwait(false);
-            buffer.Position = 0;
-            uploadStream = buffer;
+            tempFilePath = Path.GetTempFileName();
+#if NET472
+            using (var file = File.Create(tempFilePath))
+#else
+            await using (var file = File.Create(tempFilePath))
+#endif
+            {
+                await stream.CopyToAsync(file, 81920, cancellationToken).ConfigureAwait(false);
+            }
+            uploadStream = File.OpenRead(tempFilePath);
             disposeUploadStream = true;
         }
 
@@ -64,6 +71,17 @@ public sealed partial class VirusTotalClient
                 if (disposeUploadStream)
                 {
                     uploadStream.Dispose();
+                    if (tempFilePath is not null)
+                    {
+                        try
+                        {
+                            File.Delete(tempFilePath);
+                        }
+                        catch
+                        {
+                            // ignore
+                        }
+                    }
                 }
                 throw new InvalidOperationException("Upload URL was not provided by the API.");
             }
@@ -97,6 +115,17 @@ public sealed partial class VirusTotalClient
             if (disposeUploadStream)
             {
                 uploadStream.Dispose();
+                if (tempFilePath is not null)
+                {
+                    try
+                    {
+                        File.Delete(tempFilePath);
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }
             }
         }
     }

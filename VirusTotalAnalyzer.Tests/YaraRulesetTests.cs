@@ -23,11 +23,66 @@ public class YaraRulesetTests
         };
         var client = new VirusTotalClient(httpClient);
 
-        var rulesets = await client.ListYaraRulesetsAsync();
+        var page = await client.ListYaraRulesetsAsync();
 
-        var rs = Assert.Single(rulesets!);
+        var rs = Assert.Single(page.Data);
         Assert.Equal("rs1", rs.Id);
         Assert.Equal("demo", rs.Data.Attributes.Name);
+    }
+
+    [Fact]
+    public async Task ListYaraRulesetsAsync_PagesThroughResults()
+    {
+        var first = $"{{\"data\":[{SingleRulesetJson}],\"meta\":{{\"cursor\":\"abc\"}}}}";
+        var second = "{\"data\":[{\"id\":\"rs2\",\"type\":\"intelligence_hunting_ruleset\",\"data\":{\"attributes\":{\"name\":\"demo2\",\"rules\":\"rule2\"}}}]}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(first, Encoding.UTF8, "application/json")
+            },
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(second, Encoding.UTF8, "application/json")
+            });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var page = await client.ListYaraRulesetsAsync(limit: 1);
+
+        Assert.Equal(2, page.Data.Count);
+        Assert.Null(page.NextCursor);
+        Assert.Equal("rs1", page.Data[0].Id);
+        Assert.Equal("rs2", page.Data[1].Id);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains("limit=1", handler.Requests[0].RequestUri!.Query);
+        Assert.Contains("cursor=abc", handler.Requests[1].RequestUri!.Query);
+    }
+
+    [Fact]
+    public async Task ListYaraRulesetsAsync_SinglePage()
+    {
+        var first = $"{{\"data\":[{SingleRulesetJson}],\"meta\":{{\"cursor\":\"abc\"}}}}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(first, Encoding.UTF8, "application/json")
+            });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var page = await client.ListYaraRulesetsAsync(limit: 1, fetchAll: false);
+
+        Assert.Single(page.Data);
+        Assert.Equal("rs1", page.Data[0].Id);
+        Assert.Equal("abc", page.NextCursor);
+        Assert.Single(handler.Requests);
+        Assert.Contains("limit=1", handler.Requests[0].RequestUri!.Query);
     }
 
     [Fact]

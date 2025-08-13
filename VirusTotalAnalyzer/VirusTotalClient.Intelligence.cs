@@ -191,28 +191,45 @@ public sealed partial class VirusTotalClient
         return await JsonSerializer.DeserializeAsync<MonitorItem>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<IReadOnlyList<YaraRuleset>?> ListYaraRulesetsAsync(int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
+    public async Task<Page<YaraRuleset>> ListYaraRulesetsAsync(int? limit = null, string? cursor = null, bool fetchAll = true, CancellationToken cancellationToken = default)
     {
-        var url = new StringBuilder("intelligence/hunting_rulesets");
-        var hasQuery = false;
-        if (limit.HasValue)
+        var results = new List<YaraRuleset>();
+        var nextCursor = cursor;
+
+        do
         {
-            url.Append("?limit=").Append(limit.Value);
-            hasQuery = true;
-        }
-        if (!string.IsNullOrEmpty(cursor))
-        {
-            url.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
-        }
-        using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var url = new StringBuilder("intelligence/hunting_rulesets");
+            var hasQuery = false;
+            if (limit.HasValue)
+            {
+                url.Append("?limit=").Append(limit.Value);
+                hasQuery = true;
+            }
+            if (!string.IsNullOrEmpty(nextCursor))
+            {
+                url.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(nextCursor));
+            }
+            using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
-        var result = await JsonSerializer.DeserializeAsync<YaraRulesetsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-        return result?.Data;
+            var page = await JsonSerializer.DeserializeAsync<YaraRulesetsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            if (page?.Data != null)
+            {
+                results.AddRange(page.Data);
+            }
+            nextCursor = page?.Meta?.Cursor;
+            if (!fetchAll)
+            {
+                break;
+            }
+        }
+        while (!string.IsNullOrEmpty(nextCursor));
+
+        return new Page<YaraRuleset>(results, nextCursor);
     }
 
     public async Task<YaraRuleset?> GetYaraRulesetAsync(string id, CancellationToken cancellationToken = default)

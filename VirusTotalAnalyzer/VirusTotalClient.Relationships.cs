@@ -93,7 +93,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<IReadOnlyList<FileReport>?> GetIpAddressCommunicatingFilesAsync(string id, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"ip_addresses/{id}/communicating_files", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync($"ip_addresses/{Uri.EscapeDataString(id)}/communicating_files", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -106,7 +106,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<IReadOnlyList<FileReport>?> GetIpAddressDownloadedFilesAsync(string id, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"ip_addresses/{id}/downloaded_files", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync($"ip_addresses/{Uri.EscapeDataString(id)}/downloaded_files", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -119,7 +119,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<IReadOnlyList<FileReport>?> GetIpAddressReferrerFilesAsync(string id, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"ip_addresses/{id}/referrer_files", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync($"ip_addresses/{Uri.EscapeDataString(id)}/referrer_files", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -132,7 +132,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<IReadOnlyList<UrlSummary>?> GetIpAddressUrlsAsync(string id, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"ip_addresses/{id}/urls", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync($"ip_addresses/{Uri.EscapeDataString(id)}/urls", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -149,7 +149,7 @@ public sealed partial class VirusTotalClient
         Func<TResponse, List<T>> selector,
         CancellationToken cancellationToken)
     {
-        using var response = await _httpClient.GetAsync($"domains/{id}/{relationship}", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync($"domains/{Uri.EscapeDataString(id)}/{Uri.EscapeDataString(relationship)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -167,7 +167,7 @@ public sealed partial class VirusTotalClient
         string? cursor,
         CancellationToken cancellationToken)
     {
-        var path = new System.Text.StringBuilder($"{GetPath(resourceType)}/{id}/resolutions");
+        var path = new System.Text.StringBuilder($"{GetPath(resourceType)}/{Uri.EscapeDataString(id)}/resolutions");
         var hasQuery = false;
         if (limit.HasValue)
         {
@@ -196,7 +196,7 @@ public sealed partial class VirusTotalClient
         string? cursor,
         CancellationToken cancellationToken)
     {
-        var path = new System.Text.StringBuilder($"{GetPath(resourceType)}/{id}/submissions");
+        var path = new System.Text.StringBuilder($"{GetPath(resourceType)}/{Uri.EscapeDataString(id)}/submissions");
         var hasQuery = false;
         if (limit.HasValue)
         {

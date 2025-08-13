@@ -181,7 +181,7 @@ public sealed partial class VirusTotalClient : IDisposable
 
         do
         {
-            var url = new StringBuilder($"files/{id}/names");
+            var url = new StringBuilder($"files/{Uri.EscapeDataString(id)}/names");
             var hasQuery = false;
             if (remaining.HasValue)
             {
@@ -223,7 +223,7 @@ public sealed partial class VirusTotalClient : IDisposable
 
     public async Task<Stream> DownloadLivehuntNotificationFileAsync(string id, CancellationToken cancellationToken = default)
     {
-        var response = await _httpClient.GetAsync($"intelligence/hunting_notification_files/{id}", HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        var response = await _httpClient.GetAsync($"intelligence/hunting_notification_files/{Uri.EscapeDataString(id)}", HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -234,7 +234,7 @@ public sealed partial class VirusTotalClient : IDisposable
 
     public async Task<Stream> DownloadRetrohuntNotificationFileAsync(string id, CancellationToken cancellationToken = default)
     {
-        var response = await _httpClient.GetAsync($"intelligence/retrohunt_notification_files/{id}", HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        var response = await _httpClient.GetAsync($"intelligence/retrohunt_notification_files/{Uri.EscapeDataString(id)}", HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -245,7 +245,7 @@ public sealed partial class VirusTotalClient : IDisposable
 
     public async Task<Stream> DownloadPcapAsync(string analysisId, CancellationToken cancellationToken = default)
     {
-        var response = await _httpClient.GetAsync($"analyses/{analysisId}/pcap", HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        var response = await _httpClient.GetAsync($"analyses/{Uri.EscapeDataString(analysisId)}/pcap", HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);

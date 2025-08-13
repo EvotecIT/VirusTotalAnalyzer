@@ -80,7 +80,7 @@ public sealed partial class VirusTotalClient
     {
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
-        using var message = new HttpRequestMessage(new HttpMethod("PATCH"), $"monitor/items/{id}") { Content = content };
+        using var message = new HttpRequestMessage(new HttpMethod("PATCH"), $"monitor/items/{Uri.EscapeDataString(id)}") { Content = content };
         using var response = await _httpClient.SendAsync(message, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
@@ -93,7 +93,7 @@ public sealed partial class VirusTotalClient
 
     public async Task DeleteMonitorItemAsync(string id, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.DeleteAsync($"monitor/items/{id}", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.DeleteAsync($"monitor/items/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 }

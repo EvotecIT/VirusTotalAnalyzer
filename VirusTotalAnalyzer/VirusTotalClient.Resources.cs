@@ -40,7 +40,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<Graph?> GetGraphAsync(string id, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"graphs/{id}", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync($"graphs/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -68,7 +68,7 @@ public sealed partial class VirusTotalClient
     {
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
-        using var message = new HttpRequestMessage(new HttpMethod("PATCH"), $"graphs/{id}") { Content = content };
+        using var message = new HttpRequestMessage(new HttpMethod("PATCH"), $"graphs/{Uri.EscapeDataString(id)}") { Content = content };
         using var response = await _httpClient.SendAsync(message, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
@@ -81,7 +81,7 @@ public sealed partial class VirusTotalClient
 
     public async Task DeleteGraphAsync(string id, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.DeleteAsync($"graphs/{id}", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.DeleteAsync($"graphs/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
@@ -96,7 +96,7 @@ public sealed partial class VirusTotalClient
 
     public async Task DeleteGraphCommentAsync(string graphId, string commentId, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.DeleteAsync($"graphs/{graphId}/comments/{commentId}", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.DeleteAsync($"graphs/{Uri.EscapeDataString(graphId)}/comments/{Uri.EscapeDataString(commentId)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
@@ -125,7 +125,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<Collection?> GetCollectionAsync(string id, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"collections/{id}", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync($"collections/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -153,7 +153,7 @@ public sealed partial class VirusTotalClient
     {
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
-        using var message = new HttpRequestMessage(new HttpMethod("PATCH"), $"collections/{id}") { Content = content };
+        using var message = new HttpRequestMessage(new HttpMethod("PATCH"), $"collections/{Uri.EscapeDataString(id)}") { Content = content };
         using var response = await _httpClient.SendAsync(message, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
@@ -166,7 +166,7 @@ public sealed partial class VirusTotalClient
 
     public async Task DeleteCollectionAsync(string id, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.DeleteAsync($"collections/{id}", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.DeleteAsync($"collections/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
@@ -195,7 +195,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<Bundle?> GetBundleAsync(string id, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"bundles/{id}", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync($"bundles/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -223,7 +223,7 @@ public sealed partial class VirusTotalClient
     {
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
-        using var message = new HttpRequestMessage(new HttpMethod("PATCH"), $"bundles/{id}") { Content = content };
+        using var message = new HttpRequestMessage(new HttpMethod("PATCH"), $"bundles/{Uri.EscapeDataString(id)}") { Content = content };
         using var response = await _httpClient.SendAsync(message, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
@@ -236,7 +236,7 @@ public sealed partial class VirusTotalClient
 
     public async Task DeleteBundleAsync(string id, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.DeleteAsync($"bundles/{id}", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.DeleteAsync($"bundles/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 }

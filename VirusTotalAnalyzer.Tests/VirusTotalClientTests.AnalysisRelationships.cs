@@ -107,6 +107,8 @@ public partial class VirusTotalClientTests
         Assert.Equal("abc", files[0].Attributes.Md5);
     }
 
+
+
     [Fact]
     public async Task GetFileDownloadedFilesAsync_UsesCorrectPathAndDeserializesResponse()
     {
@@ -249,6 +251,30 @@ public partial class VirusTotalClientTests
         Assert.NotNull(files);
         Assert.Single(files!);
         Assert.Equal("abc", files[0].Attributes.Md5);
+    }
+
+    [Fact]
+    public async Task GetUrlRedirectingUrlsAsync_UsesCorrectPathAndDeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"u1\",\"type\":\"url\",\"data\":{\"attributes\":{\"url\":\"https://example.com\"}}}]}"; 
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var urls = await client.GetUrlRedirectingUrlsAsync("abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/urls/abc/redirecting_urls", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.NotNull(urls);
+        Assert.Single(urls!);
+        Assert.Equal("https://example.com", urls[0].Data.Attributes.Url);
     }
 
     [Fact]

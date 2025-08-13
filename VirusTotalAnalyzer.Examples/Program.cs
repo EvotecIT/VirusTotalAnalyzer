@@ -50,5 +50,6 @@ using VirusTotalAnalyzer.Examples;
 // await DownloadPcapExample.RunAsync();
 // await ListRetrohuntJobsExample.RunAsync();
 // await StartRetrohuntJobExample.RunAsync();
+// await ListMonitorEventsExample.RunAsync();
 
 await Task.CompletedTask;

@@ -11,6 +11,34 @@ namespace VirusTotalAnalyzer;
 
 public sealed partial class VirusTotalClient
 {
+    public async Task<PagedResponse<MonitorEvent>?> ListMonitorEventsAsync(string? filter = null, int? limit = null, string? cursor = null, CancellationToken ct = default)
+    {
+        var path = new StringBuilder("monitor/events");
+        var hasQuery = false;
+        if (!string.IsNullOrEmpty(filter))
+        {
+            path.Append("?filter=").Append(Uri.EscapeDataString(filter));
+            hasQuery = true;
+        }
+        if (limit.HasValue)
+        {
+            path.Append(hasQuery ? '&' : '?').Append("limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), ct).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, ct).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<PagedResponse<MonitorEvent>>(stream, _jsonOptions, ct).ConfigureAwait(false);
+    }
+
     public async Task<PagedResponse<MonitorItem>?> ListMonitorItemsAsync(int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
     {
         var path = new StringBuilder("monitor/items");

@@ -64,6 +64,9 @@ public enum ResourceType
     [EnumMember(Value = "monitor_item")]
     MonitorItem,
 
+    [EnumMember(Value = "monitor_event")]
+    MonitorEvent,
+
     [EnumMember(Value = "intelligence_hunting_ruleset")]
     IntelligenceHuntingRuleset
 }

@@ -43,6 +43,18 @@ public sealed partial class VirusTotalClient
     /// <returns>An <see cref="AnalysisReport"/> for the submitted file or <see langword="null"/> if the response is empty.</returns>
     public async Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, string? password = null, CancellationToken cancellationToken = default)
     {
+        if (stream is null)
+        {
+            throw new ArgumentNullException(nameof(stream));
+        }
+        if (fileName is null)
+        {
+            throw new ArgumentNullException(nameof(fileName));
+        }
+        if (fileName.Length == 0)
+        {
+            throw new ArgumentException("File name must not be empty.", nameof(fileName));
+        }
 
         Stream uploadStream = stream;
         bool disposeUploadStream = false;
@@ -131,7 +143,21 @@ public sealed partial class VirusTotalClient
     }
 
     public Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, CancellationToken cancellationToken)
-        => SubmitFileAsync(stream, fileName, null, cancellationToken);
+    {
+        if (stream is null)
+        {
+            throw new ArgumentNullException(nameof(stream));
+        }
+        if (fileName is null)
+        {
+            throw new ArgumentNullException(nameof(fileName));
+        }
+        if (fileName.Length == 0)
+        {
+            throw new ArgumentException("File name must not be empty.", nameof(fileName));
+        }
+        return SubmitFileAsync(stream, fileName, null, cancellationToken);
+    }
 
     /// <summary>
     /// Submits a private file for analysis.
@@ -147,6 +173,18 @@ public sealed partial class VirusTotalClient
         string? password = null,
         CancellationToken cancellationToken = default)
     {
+        if (stream is null)
+        {
+            throw new ArgumentNullException(nameof(stream));
+        }
+        if (fileName is null)
+        {
+            throw new ArgumentNullException(nameof(fileName));
+        }
+        if (fileName.Length == 0)
+        {
+            throw new ArgumentException("File name must not be empty.", nameof(fileName));
+        }
         var builder = new MultipartFormDataBuilder(stream, fileName);
         using var content = builder.Build();
         using var request = new HttpRequestMessage(HttpMethod.Post, "private/analyses")
@@ -171,6 +209,14 @@ public sealed partial class VirusTotalClient
 
     public async Task<AnalysisReport?> ReanalyzeHashAsync(string hash, AnalysisType analysisType = AnalysisType.File, CancellationToken cancellationToken = default)
     {
+        if (hash is null)
+        {
+            throw new ArgumentNullException(nameof(hash));
+        }
+        if (hash.Length == 0)
+        {
+            throw new ArgumentException("Hash must not be empty.", nameof(hash));
+        }
         var path = $"{GetPath(analysisType)}/{Uri.EscapeDataString(hash)}/analyse";
         using var response = await _httpClient.PostAsync(path, content: null, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
@@ -184,13 +230,41 @@ public sealed partial class VirusTotalClient
     }
 
     public Task<AnalysisReport?> ReanalyzeFileAsync(string hash, CancellationToken cancellationToken = default)
-        => ReanalyzeHashAsync(hash, AnalysisType.File, cancellationToken);
+    {
+        if (hash is null)
+        {
+            throw new ArgumentNullException(nameof(hash));
+        }
+        if (hash.Length == 0)
+        {
+            throw new ArgumentException("Hash must not be empty.", nameof(hash));
+        }
+        return ReanalyzeHashAsync(hash, AnalysisType.File, cancellationToken);
+    }
 
     public Task<AnalysisReport?> ReanalyzeUrlAsync(string id, CancellationToken cancellationToken = default)
-        => ReanalyzeHashAsync(id, AnalysisType.Url, cancellationToken);
+    {
+        if (id is null)
+        {
+            throw new ArgumentNullException(nameof(id));
+        }
+        if (id.Length == 0)
+        {
+            throw new ArgumentException("Id must not be empty.", nameof(id));
+        }
+        return ReanalyzeHashAsync(id, AnalysisType.Url, cancellationToken);
+    }
 
     public async Task<AnalysisReport?> SubmitUrlAsync(string url, AnalysisType analysisType = AnalysisType.Url, CancellationToken cancellationToken = default)
     {
+        if (url is null)
+        {
+            throw new ArgumentNullException(nameof(url));
+        }
+        if (url.Length == 0)
+        {
+            throw new ArgumentException("URL must not be empty.", nameof(url));
+        }
         if (analysisType != AnalysisType.Url)
         {
             throw new ArgumentOutOfRangeException(nameof(analysisType));
@@ -208,5 +282,15 @@ public sealed partial class VirusTotalClient
     }
 
     public Task<AnalysisReport?> SubmitUrlAsync(string url, CancellationToken cancellationToken = default)
-        => SubmitUrlAsync(url, AnalysisType.Url, cancellationToken);
+    {
+        if (url is null)
+        {
+            throw new ArgumentNullException(nameof(url));
+        }
+        if (url.Length == 0)
+        {
+            throw new ArgumentException("URL must not be empty.", nameof(url));
+        }
+        return SubmitUrlAsync(url, AnalysisType.Url, cancellationToken);
+    }
 }

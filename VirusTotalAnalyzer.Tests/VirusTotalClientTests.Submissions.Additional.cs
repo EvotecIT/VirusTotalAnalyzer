@@ -16,8 +16,8 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task ListRetrohuntNotificationsAsync_PagesThroughResults()
     {
-        var first = "{\"data\":[{\"id\":\"n1\",\"type\":\"retrohuntNotification\",\"data\":{\"attributes\":{\"job_id\":\"j1\"}}}],\"meta\":{\"cursor\":\"abc\"}}";
-        var second = "{\"data\":[{\"id\":\"n2\",\"type\":\"retrohuntNotification\",\"data\":{\"attributes\":{\"job_id\":\"j2\"}}}]}";
+        var first = "{\"data\":[{\"id\":\"n1\",\"type\":\"retrohunt_notification\",\"data\":{\"attributes\":{\"job_id\":\"j1\"}}}],\"meta\":{\"cursor\":\"abc\"}}";
+        var second = "{\"data\":[{\"id\":\"n2\",\"type\":\"retrohunt_notification\",\"data\":{\"attributes\":{\"job_id\":\"j2\"}}}]}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(first, Encoding.UTF8, "application/json") },
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(second, Encoding.UTF8, "application/json") });
@@ -41,7 +41,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task ListRetrohuntNotificationsAsync_SinglePage()
     {
-        var first = "{\"data\":[{\"id\":\"n1\",\"type\":\"retrohuntNotification\",\"data\":{\"attributes\":{\"job_id\":\"j1\"}}}],\"meta\":{\"cursor\":\"abc\"}}";
+        var first = "{\"data\":[{\"id\":\"n1\",\"type\":\"retrohunt_notification\",\"data\":{\"attributes\":{\"job_id\":\"j1\"}}}],\"meta\":{\"cursor\":\"abc\"}}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(first, Encoding.UTF8, "application/json") });
         var httpClient = new HttpClient(handler)
@@ -62,7 +62,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetIpAddressReportAsync_DeserializesResponseAndUsesCorrectPath()
     {
-        var json = "{\"id\":\"1.1.1.1\",\"type\":\"ipAddress\",\"data\":{\"attributes\":{\"ip_address\":\"1.1.1.1\"}}}";
+        var json = "{\"data\":{\"id\":\"1.1.1.1\",\"type\":\"ip_address\",\"attributes\":{\"ip_address\":\"1.1.1.1\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -85,7 +85,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetDomainReportAsync_DeserializesResponseAndUsesCorrectPath()
     {
-        var json = "{\"id\":\"example.com\",\"type\":\"domain\",\"data\":{\"attributes\":{\"domain\":\"example.com\"}}}";
+        var json = "{\"data\":{\"id\":\"example.com\",\"type\":\"domain\",\"attributes\":{\"domain\":\"example.com\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -132,7 +132,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetIpAddressWhoisAsync_DeserializesResponseAndUsesCorrectPath()
     {
-        var json = "{\"id\":\"1.1.1.1\",\"type\":\"ipAddress\",\"data\":{\"attributes\":{\"whois\":\"ip whois\"}}}";
+        var json = "{\"id\":\"1.1.1.1\",\"type\":\"ip_address\",\"data\":{\"attributes\":{\"whois\":\"ip whois\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -453,8 +453,8 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task ListRetrohuntJobsAsync_PagesThroughResults()
     {
-        var first = "{\"data\":[{\"id\":\"j1\",\"type\":\"retrohuntJob\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}],\"meta\":{\"cursor\":\"abc\"}}";
-        var second = "{\"data\":[{\"id\":\"j2\",\"type\":\"retrohuntJob\",\"data\":{\"attributes\":{\"status\":\"done\"}}}]}";
+        var first = "{\"data\":[{\"id\":\"j1\",\"type\":\"retrohunt_job\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}],\"meta\":{\"cursor\":\"abc\"}}";
+        var second = "{\"data\":[{\"id\":\"j2\",\"type\":\"retrohunt_job\",\"data\":{\"attributes\":{\"status\":\"done\"}}}]}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -484,7 +484,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task ListRetrohuntJobsAsync_SinglePage()
     {
-        var first = "{\"data\":[{\"id\":\"j1\",\"type\":\"retrohuntJob\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}],\"meta\":{\"cursor\":\"abc\"}}";
+        var first = "{\"data\":[{\"id\":\"j1\",\"type\":\"retrohunt_job\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}],\"meta\":{\"cursor\":\"abc\"}}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {

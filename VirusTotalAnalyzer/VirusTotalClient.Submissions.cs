@@ -36,10 +36,6 @@ public sealed partial class VirusTotalClient
     /// <param name="password">Password for password-protected files. Sent via the <c>x-virustotal-password</c> header.</param>
     public async Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, AnalysisType analysisType = AnalysisType.File, string? password = null, CancellationToken cancellationToken = default)
     {
-        if (analysisType != AnalysisType.File)
-        {
-            throw new ArgumentOutOfRangeException(nameof(analysisType));
-        }
 
         Stream uploadStream = stream;
         bool disposeUploadStream = false;
@@ -99,8 +95,8 @@ public sealed partial class VirusTotalClient
         }
     }
 
-    public Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, CancellationToken cancellationToken = default)
-        => SubmitFileAsync(stream, fileName, AnalysisType.File, null, cancellationToken);
+    public Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, CancellationToken cancellationToken)
+        => SubmitFileAsync(stream, fileName, null, cancellationToken);
 
     /// <param name="password">Password for password-protected files. Sent via the <c>x-virustotal-password</c> header.</param>
     public async Task<PrivateAnalysis?> SubmitPrivateFileAsync(

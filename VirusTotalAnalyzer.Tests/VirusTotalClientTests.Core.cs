@@ -32,7 +32,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetFileReportAsync_DeserializesResponse()
     {
-        var json = "{\"id\":\"abc\",\"type\":\"file\",\"data\":{\"attributes\":{\"md5\":\"demo\"}}}";
+        var json = "{\"data\":{\"id\":\"abc\",\"type\":\"file\",\"attributes\":{\"md5\":\"demo\"}}}";
         var handler = new StubHandler(json);
         var httpClient = new HttpClient(handler)
         {
@@ -45,7 +45,7 @@ public partial class VirusTotalClientTests
         Assert.NotNull(report);
         Assert.Equal("abc", report!.Id);
         Assert.Equal(ResourceType.File, report.Type);
-        Assert.Equal("demo", report.Data.Attributes.Md5);
+        Assert.Equal("demo", report.Attributes.Md5);
     }
 
     [Fact]
@@ -255,7 +255,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetUrlReportAsync_DeserializesResponse()
     {
-        var json = "{\"id\":\"def\",\"type\":\"url\",\"data\":{\"attributes\":{\"url\":\"https://example.com\"}}}";
+        var json = "{\"data\":{\"id\":\"def\",\"type\":\"url\",\"attributes\":{\"url\":\"https://example.com\"}}}";
         var handler = new StubHandler(json);
         var httpClient = new HttpClient(handler)
         {
@@ -268,7 +268,7 @@ public partial class VirusTotalClientTests
         Assert.NotNull(report);
         Assert.Equal("def", report!.Id);
         Assert.Equal(ResourceType.Url, report.Type);
-        Assert.Equal("https://example.com", report.Data.Attributes.Url);
+        Assert.Equal("https://example.com", report.Attributes.Url);
     }
 
     [Fact]
@@ -298,7 +298,7 @@ public partial class VirusTotalClientTests
     {
         var url = new Uri("https://example.com");
         var id = VirusTotalClientExtensions.GetUrlId(url.ToString());
-        var json = $"{{\"id\":\"{id}\",\"type\":\"url\"}}";
+        var json = $"{{\"data\":{{\"id\":\"{id}\",\"type\":\"url\"}}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")

@@ -7,12 +7,15 @@ public sealed class LivehuntNotification
 {
     public string Id { get; set; } = string.Empty;
     public ResourceType Type { get; set; }
-    public LivehuntNotificationData Data { get; set; } = new();
+
+    [JsonPropertyName("attributes")]
+    public LivehuntNotificationAttributes Attributes { get; set; } = new();
 }
 
-public sealed class LivehuntNotificationData
+public sealed class LivehuntNotificationResponse
 {
-    public LivehuntNotificationAttributes Attributes { get; set; } = new();
+    [JsonPropertyName("data")]
+    public LivehuntNotification Data { get; set; } = new();
 }
 
 public sealed class LivehuntNotificationAttributes

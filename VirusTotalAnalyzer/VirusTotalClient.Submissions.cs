@@ -33,6 +33,7 @@ public sealed partial class VirusTotalClient
         return new Uri(result.Data);
     }
 
+    /// <param name="password">Password for password-protected files. Sent via the <c>x-virustotal-password</c> header.</param>
     public async Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, AnalysisType analysisType = AnalysisType.File, string? password = null, CancellationToken cancellationToken = default)
     {
         if (analysisType != AnalysisType.File)
@@ -74,7 +75,8 @@ public sealed partial class VirusTotalClient
         };
         if (!string.IsNullOrEmpty(password))
         {
-            request.Headers.Add("password", password);
+            // Use the documented header name for password-protected files.
+            request.Headers.Add("x-virustotal-password", password);
         }
         using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
@@ -100,6 +102,7 @@ public sealed partial class VirusTotalClient
     public Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, CancellationToken cancellationToken = default)
         => SubmitFileAsync(stream, fileName, AnalysisType.File, null, cancellationToken);
 
+    /// <param name="password">Password for password-protected files. Sent via the <c>x-virustotal-password</c> header.</param>
     public async Task<PrivateAnalysis?> SubmitPrivateFileAsync(
         Stream stream,
         string fileName,
@@ -114,7 +117,8 @@ public sealed partial class VirusTotalClient
         };
         if (!string.IsNullOrEmpty(password))
         {
-            request.Headers.Add("password", password);
+            // Use the documented header name for password-protected files.
+            request.Headers.Add("x-virustotal-password", password);
         }
         using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);

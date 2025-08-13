@@ -11,7 +11,7 @@ public static class GetIpAddressResolutionsExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var resolutions = await client.GetIpAddressResolutionsAsync("1.2.3.4");
+            var resolutions = await client.GetIpAddressResolutionsAsync("1.2.3.4", limit: 10);
             Console.WriteLine(resolutions?.Count);
         }
         catch (RateLimitExceededException ex)

@@ -11,7 +11,7 @@ public static class GetFileSubmissionsExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var submissions = await client.GetFileSubmissionsAsync("44d88612fea8a8f36de82e1278abb02f");
+            var submissions = await client.GetFileSubmissionsAsync("44d88612fea8a8f36de82e1278abb02f", limit: 10);
             Console.WriteLine(submissions?.Count);
         }
         catch (RateLimitExceededException ex)

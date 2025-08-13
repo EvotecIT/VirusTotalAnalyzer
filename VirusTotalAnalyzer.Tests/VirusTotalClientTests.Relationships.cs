@@ -59,6 +59,26 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetDomainResolutionsAsync_BuildsQueryWithLimitAndCursor()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}", Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.GetDomainResolutionsAsync("example.com", limit: 10, cursor: "abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("?limit=10&cursor=abc", handler.Request!.RequestUri!.Query);
+    }
+
+    [Fact]
     public async Task GetDomainSubmissionsAsync_UsesCorrectPathAndDeserializesResponse()
     {
         var json = "{\"data\":[{\"id\":\"s1\",\"type\":\"submission\",\"data\":{\"attributes\":{\"date\":1}}}]}";
@@ -128,6 +148,26 @@ public partial class VirusTotalClientTests
         Assert.NotNull(submissions);
         Assert.Single(submissions!);
         Assert.Equal(1, submissions[0].Data.Attributes.Date.ToUnixTimeSeconds());
+    }
+
+    [Fact]
+    public async Task GetIpAddressSubmissionsAsync_BuildsQueryWithLimitAndCursor()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}", Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.GetIpAddressSubmissionsAsync("1.2.3.4", limit: 10, cursor: "abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("?limit=10&cursor=abc", handler.Request!.RequestUri!.Query);
     }
 
     [Fact]

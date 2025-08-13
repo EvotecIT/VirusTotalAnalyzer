@@ -11,7 +11,7 @@ public static class GetDomainResolutionsExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var resolutions = await client.GetDomainResolutionsAsync("example.com");
+            var resolutions = await client.GetDomainResolutionsAsync("example.com", limit: 10);
             Console.WriteLine(resolutions?.Count);
         }
         catch (RateLimitExceededException ex)

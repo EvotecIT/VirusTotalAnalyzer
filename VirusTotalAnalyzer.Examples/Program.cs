@@ -27,6 +27,7 @@ using VirusTotalAnalyzer.Examples;
 // await ListGraphsExample.RunAsync();
 // await ListCollectionsExample.RunAsync();
 // await ListBundlesExample.RunAsync();
+// await GraphCommentsExample.RunAsync();
 // await GetRelationshipsExample.RunAsync();
 // await SearchExample.RunAsync();
 // await GetFeedExample.RunAsync();

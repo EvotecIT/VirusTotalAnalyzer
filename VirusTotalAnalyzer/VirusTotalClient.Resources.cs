@@ -85,6 +85,21 @@ public sealed partial class VirusTotalClient
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
+    public Task<CommentsResponse?> GetGraphCommentsAsync(string id, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
+        => GetCommentsAsync(ResourceType.Graph, id, limit, cursor, cancellationToken);
+
+    public Task<Comment?> AddGraphCommentAsync(string id, string text, CancellationToken cancellationToken = default)
+        => CreateCommentAsync(ResourceType.Graph, id, text, cancellationToken);
+
+    public Task<Comment?> AddGraphCommentAsync(string id, CreateCommentRequest request, CancellationToken cancellationToken = default)
+        => CreateCommentAsync(ResourceType.Graph, id, request, cancellationToken);
+
+    public async Task DeleteGraphCommentAsync(string graphId, string commentId, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.DeleteAsync($"graphs/{graphId}/comments/{commentId}", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task<PagedResponse<Collection>?> ListCollectionsAsync(int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
     {
         var path = new StringBuilder("collections");

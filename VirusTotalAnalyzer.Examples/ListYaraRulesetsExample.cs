@@ -11,14 +11,12 @@ public static class ListYaraRulesetsExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var rulesets = await client.ListYaraRulesetsAsync();
-            if (rulesets != null)
+            var page = await client.ListYaraRulesetsAsync(fetchAll: false);
+            foreach (var rs in page.Data)
             {
-                foreach (var rs in rulesets)
-                {
-                    Console.WriteLine($"{rs.Id}: {rs.Data.Attributes.Name}");
-                }
+                Console.WriteLine($"{rs.Id}: {rs.Data.Attributes.Name}");
             }
+            Console.WriteLine($"Next cursor: {page.NextCursor}");
         }
         catch (RateLimitExceededException ex)
         {

@@ -25,10 +25,14 @@ public sealed class GetVtYaraRulesetCommand : PSCmdlet
         using var client = VirusTotalClient.Create(ApiKey);
         if (string.IsNullOrEmpty(Id))
         {
-            var rulesets = client.ListYaraRulesetsAsync(Limit, Cursor).GetAwaiter().GetResult();
-            if (rulesets != null)
+            var page = client.ListYaraRulesetsAsync(Limit, Cursor, fetchAll: false).GetAwaiter().GetResult();
+            if (page != null)
             {
-                WriteObject(rulesets, true);
+                WriteObject(page.Data, true);
+                if (!string.IsNullOrEmpty(page.NextCursor))
+                {
+                    WriteVerbose($"Next cursor: {page.NextCursor}");
+                }
             }
         }
         else

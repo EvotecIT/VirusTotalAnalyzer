@@ -13,7 +13,7 @@ public class MonitorItemTests
     [Fact]
     public async Task ListMonitorItemsAsync_GetsItems()
     {
-        var json = "{\"data\":[{\"id\":\"m1\",\"type\":\"monitorItem\",\"data\":{\"attributes\":{\"path\":\"/foo\"}}}]}";
+        var json = "{\"data\":[{\"id\":\"m1\",\"type\":\"monitor_item\",\"data\":{\"attributes\":{\"path\":\"/foo\"}}}]}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -58,7 +58,7 @@ public class MonitorItemTests
     [Fact]
     public async Task CreateMonitorItemAsync_PostsItem()
     {
-        var json = "{\"id\":\"m1\",\"type\":\"monitorItem\",\"data\":{\"attributes\":{\"path\":\"/foo\"}}}";
+        var json = "{\"id\":\"m1\",\"type\":\"monitor_item\",\"data\":{\"attributes\":{\"path\":\"/foo\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -81,7 +81,7 @@ public class MonitorItemTests
     [Fact]
     public async Task UpdateMonitorItemAsync_PatchesItem()
     {
-        var json = "{\"id\":\"m1\",\"type\":\"monitorItem\",\"data\":{\"attributes\":{\"path\":\"/bar\"}}}";
+        var json = "{\"id\":\"m1\",\"type\":\"monitor_item\",\"data\":{\"attributes\":{\"path\":\"/bar\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")

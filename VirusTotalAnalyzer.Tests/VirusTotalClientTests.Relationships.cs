@@ -133,7 +133,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetIpAddressCommunicatingFilesAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"f1\",\"type\":\"file\",\"data\":{\"attributes\":{\"md5\":\"abc\"}}}]}";
+        var json = "{\"data\":[{\"id\":\"f1\",\"type\":\"file\",\"attributes\":{\"md5\":\"abc\"}}]}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -151,6 +151,6 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/ip_addresses/1.2.3.4/communicating_files", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(files);
         Assert.Single(files!);
-        Assert.Equal("abc", files[0].Data.Attributes.Md5);
+        Assert.Equal("abc", files[0].Attributes.Md5);
     }
 }

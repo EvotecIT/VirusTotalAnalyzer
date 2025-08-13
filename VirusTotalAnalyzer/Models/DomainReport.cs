@@ -8,12 +8,15 @@ public sealed class DomainReport
 {
     public string Id { get; set; } = string.Empty;
     public ResourceType Type { get; set; }
-    public DomainData Data { get; set; } = new();
+
+    [JsonPropertyName("attributes")]
+    public DomainAttributes Attributes { get; set; } = new();
 }
 
-public sealed class DomainData
+public sealed class DomainReportResponse
 {
-    public DomainAttributes Attributes { get; set; } = new();
+    [JsonPropertyName("data")]
+    public DomainReport Data { get; set; } = new();
 }
 
 public sealed class DomainAttributes

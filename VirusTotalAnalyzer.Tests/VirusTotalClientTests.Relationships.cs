@@ -129,4 +129,28 @@ public partial class VirusTotalClientTests
         Assert.Single(submissions!);
         Assert.Equal(1, submissions[0].Data.Attributes.Date.ToUnixTimeSeconds());
     }
+
+    [Fact]
+    public async Task GetIpAddressCommunicatingFilesAsync_UsesCorrectPathAndDeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"f1\",\"type\":\"file\",\"data\":{\"attributes\":{\"md5\":\"abc\"}}}]}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var files = await client.GetIpAddressCommunicatingFilesAsync("1.2.3.4");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/ip_addresses/1.2.3.4/communicating_files", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.NotNull(files);
+        Assert.Single(files!);
+        Assert.Equal("abc", files[0].Data.Attributes.Md5);
+    }
 }

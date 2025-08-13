@@ -107,4 +107,52 @@ public partial class VirusTotalClientTests
         Assert.Equal("1.2.3.4", records[0].Data.Attributes.Value);
         Assert.Equal(300, records[0].Data.Attributes.Ttl);
     }
+
+    [Fact]
+    public async Task GetDomainReferrerFilesAsync_UsesCorrectPathAndDeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"f1\",\"type\":\"file\",\"data\":{\"attributes\":{\"md5\":\"abc\"}}}]}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var files = await client.GetDomainReferrerFilesAsync("example.com");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/domains/example.com/referrer_files", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.NotNull(files);
+        Assert.Single(files!);
+        Assert.Equal("abc", files[0].Data.Attributes.Md5);
+    }
+
+    [Fact]
+    public async Task GetDomainDownloadedFilesAsync_UsesCorrectPathAndDeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"f1\",\"type\":\"file\",\"data\":{\"attributes\":{\"md5\":\"abc\"}}}]}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var files = await client.GetDomainDownloadedFilesAsync("example.com");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/domains/example.com/downloaded_files", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.NotNull(files);
+        Assert.Single(files!);
+        Assert.Equal("abc", files[0].Data.Attributes.Md5);
+    }
 }

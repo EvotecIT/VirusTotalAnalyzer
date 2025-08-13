@@ -31,11 +31,30 @@ public sealed partial class VirusTotalClient
     public Task<IReadOnlyList<DnsRecord>?> GetDomainDnsRecordsAsync(string id, CancellationToken cancellationToken = default)
         => GetDomainRelationshipsAsync<DnsRecordsResponse, DnsRecord>(id, "dns_records", r => r.Data, cancellationToken);
 
+    public Task<IReadOnlyList<FileReport>?> GetDomainReferrerFilesAsync(string id, CancellationToken cancellationToken = default)
+        => GetDomainRelationshipsAsync<FileReportsResponse, FileReport>(id, "referrer_files", r => r.Data, cancellationToken);
+
+    public Task<IReadOnlyList<FileReport>?> GetDomainDownloadedFilesAsync(string id, CancellationToken cancellationToken = default)
+        => GetDomainRelationshipsAsync<FileReportsResponse, FileReport>(id, "downloaded_files", r => r.Data, cancellationToken);
+
     public Task<IReadOnlyList<Resolution>?> GetIpAddressResolutionsAsync(string id, CancellationToken cancellationToken = default)
         => GetResolutionsAsync(ResourceType.IpAddress, id, cancellationToken);
 
     public Task<IReadOnlyList<Submission>?> GetIpAddressSubmissionsAsync(string id, CancellationToken cancellationToken = default)
         => GetSubmissionsAsync(ResourceType.IpAddress, id, cancellationToken);
+
+    public async Task<IReadOnlyList<FileReport>?> GetIpAddressCommunicatingFilesAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"ip_addresses/{id}/communicating_files", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        var result = await JsonSerializer.DeserializeAsync<FileReportsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return result?.Data;
+    }
 
     private async Task<IReadOnlyList<T>?> GetDomainRelationshipsAsync<TResponse, T>(
         string id,

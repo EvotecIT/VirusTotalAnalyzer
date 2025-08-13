@@ -670,9 +670,32 @@ public partial class VirusTotalClientTests
 
         var item = Assert.Single(stream!.Data);
         Assert.Equal("abc", item.Id);
-        Assert.Equal("file", item.Type);
-        Assert.Equal("demo", item.Attributes!["md5"].GetString());
-        Assert.Equal("next", stream.Meta?.Cursor);
+       Assert.Equal("file", item.Type);
+       Assert.Equal("demo", item.Attributes!["md5"].GetString());
+       Assert.Equal("next", stream.Meta?.Cursor);
+    }
+
+    [Fact]
+    public async Task GetPopularThreatCategoriesAsync_UsesCorrectPathAndDeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"malware\",\"type\":\"popular_threat_category\",\"attributes\":{\"count\":1234}}]}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var categories = await client.GetPopularThreatCategoriesAsync();
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/intelligence/popular_threat_categories", handler.Request!.RequestUri!.AbsolutePath);
+        var category = Assert.Single(categories);
+        Assert.Equal("malware", category.Id);
+        Assert.Equal(1234, category.Attributes.Count);
     }
 
 }

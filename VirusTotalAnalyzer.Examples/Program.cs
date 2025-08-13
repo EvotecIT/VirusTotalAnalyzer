@@ -6,6 +6,7 @@ using VirusTotalAnalyzer.Examples;
 // await GetFileReportExample.RunAsync();
 // await GetUrlReportExample.RunAsync();
 // await GetUrlReportFromUrlExample.RunAsync();
+// await GetUrlRelationshipsExample.RunAsync();
 // await GetIpAddressReportExample.RunAsync();
 // await GetDomainReportExample.RunAsync();
 // await GetAnalysisExample.RunAsync();

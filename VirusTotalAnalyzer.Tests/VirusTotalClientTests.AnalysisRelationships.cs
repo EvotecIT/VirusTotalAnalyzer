@@ -203,6 +203,78 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetUrlDownloadedFilesAsync_UsesCorrectPathAndDeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"f1\",\"type\":\"file\",\"data\":{\"attributes\":{\"md5\":\"abc\"}}}]}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var files = await client.GetUrlDownloadedFilesAsync("abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/urls/abc/downloaded_files", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.NotNull(files);
+        Assert.Single(files!);
+        Assert.Equal("abc", files[0].Data.Attributes.Md5);
+    }
+
+    [Fact]
+    public async Task GetUrlReferrerFilesAsync_UsesCorrectPathAndDeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"f1\",\"type\":\"file\",\"data\":{\"attributes\":{\"md5\":\"abc\"}}}]}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var files = await client.GetUrlReferrerFilesAsync("abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/urls/abc/referrer_files", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.NotNull(files);
+        Assert.Single(files!);
+        Assert.Equal("abc", files[0].Data.Attributes.Md5);
+    }
+
+    [Fact]
+    public async Task GetUrlContactedIpsAsync_UsesCorrectPathAndDeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"i1\",\"type\":\"ipAddress\",\"data\":{\"attributes\":{\"ip_address\":\"1.2.3.4\"}}}]}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var ips = await client.GetUrlContactedIpsAsync("abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/urls/abc/contacted_ips", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.NotNull(ips);
+        Assert.Single(ips!);
+        Assert.Equal("1.2.3.4", ips[0].Data.Attributes.IpAddress);
+    }
+
+    [Fact]
     public async Task WaitForAnalysisCompletionAsync_HandlesNullData_ThrowsTimeout()
     {
         var json = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":null}";

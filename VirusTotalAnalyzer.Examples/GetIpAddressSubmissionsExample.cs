@@ -11,7 +11,7 @@ public static class GetIpAddressSubmissionsExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var submissions = await client.GetIpAddressSubmissionsAsync("1.2.3.4");
+            var submissions = await client.GetIpAddressSubmissionsAsync("1.2.3.4", limit: 10);
             Console.WriteLine(submissions?.Count);
         }
         catch (RateLimitExceededException ex)

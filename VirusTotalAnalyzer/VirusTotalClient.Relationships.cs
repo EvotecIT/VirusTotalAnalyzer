@@ -10,14 +10,26 @@ namespace VirusTotalAnalyzer;
 
 public sealed partial class VirusTotalClient
 {
-    public Task<IReadOnlyList<Submission>?> GetFileSubmissionsAsync(string id, CancellationToken cancellationToken = default)
-        => GetSubmissionsAsync(ResourceType.File, id, cancellationToken);
+    public Task<IReadOnlyList<Submission>?> GetFileSubmissionsAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetSubmissionsAsync(ResourceType.File, id, limit, cursor, cancellationToken);
 
-    public Task<IReadOnlyList<Resolution>?> GetDomainResolutionsAsync(string id, CancellationToken cancellationToken = default)
-        => GetResolutionsAsync(ResourceType.Domain, id, cancellationToken);
+    public Task<IReadOnlyList<Resolution>?> GetDomainResolutionsAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetResolutionsAsync(ResourceType.Domain, id, limit, cursor, cancellationToken);
 
-    public Task<IReadOnlyList<Submission>?> GetDomainSubmissionsAsync(string id, CancellationToken cancellationToken = default)
-        => GetSubmissionsAsync(ResourceType.Domain, id, cancellationToken);
+    public Task<IReadOnlyList<Submission>?> GetDomainSubmissionsAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetSubmissionsAsync(ResourceType.Domain, id, limit, cursor, cancellationToken);
 
     public Task<IReadOnlyList<DomainSummary>?> GetDomainSubdomainsAsync(string id, CancellationToken cancellationToken = default)
         => GetDomainRelationshipsAsync<DomainSubdomainsResponse, DomainSummary>(id, "subdomains", r => r.Data, cancellationToken);
@@ -37,11 +49,19 @@ public sealed partial class VirusTotalClient
     public Task<IReadOnlyList<FileReport>?> GetDomainDownloadedFilesAsync(string id, CancellationToken cancellationToken = default)
         => GetDomainRelationshipsAsync<FileReportsResponse, FileReport>(id, "downloaded_files", r => r.Data, cancellationToken);
 
-    public Task<IReadOnlyList<Resolution>?> GetIpAddressResolutionsAsync(string id, CancellationToken cancellationToken = default)
-        => GetResolutionsAsync(ResourceType.IpAddress, id, cancellationToken);
+    public Task<IReadOnlyList<Resolution>?> GetIpAddressResolutionsAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetResolutionsAsync(ResourceType.IpAddress, id, limit, cursor, cancellationToken);
 
-    public Task<IReadOnlyList<Submission>?> GetIpAddressSubmissionsAsync(string id, CancellationToken cancellationToken = default)
-        => GetSubmissionsAsync(ResourceType.IpAddress, id, cancellationToken);
+    public Task<IReadOnlyList<Submission>?> GetIpAddressSubmissionsAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetSubmissionsAsync(ResourceType.IpAddress, id, limit, cursor, cancellationToken);
 
     public async Task<IReadOnlyList<FileReport>?> GetIpAddressCommunicatingFilesAsync(string id, CancellationToken cancellationToken = default)
     {
@@ -112,9 +132,25 @@ public sealed partial class VirusTotalClient
         return result == null ? null : selector(result);
     }
 
-    private async Task<IReadOnlyList<Resolution>?> GetResolutionsAsync(ResourceType resourceType, string id, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<Resolution>?> GetResolutionsAsync(
+        ResourceType resourceType,
+        string id,
+        int? limit,
+        string? cursor,
+        CancellationToken cancellationToken)
     {
-        using var response = await _httpClient.GetAsync($"{GetPath(resourceType)}/{id}/resolutions", cancellationToken).ConfigureAwait(false);
+        var path = new System.Text.StringBuilder($"{GetPath(resourceType)}/{id}/resolutions");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -125,9 +161,25 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    private async Task<IReadOnlyList<Submission>?> GetSubmissionsAsync(ResourceType resourceType, string id, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<Submission>?> GetSubmissionsAsync(
+        ResourceType resourceType,
+        string id,
+        int? limit,
+        string? cursor,
+        CancellationToken cancellationToken)
     {
-        using var response = await _httpClient.GetAsync($"{GetPath(resourceType)}/{id}/submissions", cancellationToken).ConfigureAwait(false);
+        var path = new System.Text.StringBuilder($"{GetPath(resourceType)}/{id}/submissions");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);

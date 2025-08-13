@@ -11,7 +11,7 @@ public static class GetDomainSubmissionsExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var submissions = await client.GetDomainSubmissionsAsync("example.com");
+            var submissions = await client.GetDomainSubmissionsAsync("example.com", limit: 10);
             Console.WriteLine(submissions?.Count);
         }
         catch (RateLimitExceededException ex)

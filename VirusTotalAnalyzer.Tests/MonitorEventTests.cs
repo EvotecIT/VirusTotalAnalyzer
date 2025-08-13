@@ -78,7 +78,7 @@ public class MonitorEventTests
     [Fact]
     public async Task CreateCommentAsync_OnMonitorEvent_UsesMonitorEventsPath()
     {
-        var json = @"{\"data\":{\"id\":\"c1\",\"type\":\"comment\",\"data\":{\"attributes\":{\"date\":1,\"text\":\"hi\"}}}}";
+        var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""data"":{""attributes"":{""date"":1,""text"":""hi""}}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -119,7 +119,7 @@ public class MonitorEventTests
     [Fact]
     public async Task CreateVoteAsync_OnMonitorEvent_UsesMonitorEventsPath()
     {
-        var json = @"{\"data\":{\"id\":\"v1\",\"type\":\"vote\",\"data\":{\"attributes\":{\"date\":1,\"verdict\":\"malicious\"}}}}";
+        var json = @"{""data"":{""id"":""v1"",""type"":""vote"",""data"":{""attributes"":{""date"":1,""verdict"":""malicious""}}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")

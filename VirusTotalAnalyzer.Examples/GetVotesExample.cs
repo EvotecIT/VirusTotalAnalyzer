@@ -13,9 +13,10 @@ public static class GetVotesExample
         {
             var first = await client.GetVotesAsync(ResourceType.File, "file-id", limit: 10);
             Console.WriteLine(first?.Data.Count);
-            if (!string.IsNullOrEmpty(first?.Meta?.Cursor))
+            var cursor = first?.Meta?.Cursor;
+            if (!string.IsNullOrEmpty(cursor))
             {
-                var next = await client.GetVotesAsync(ResourceType.File, "file-id", cursor: first.Meta.Cursor);
+                var next = await client.GetVotesAsync(ResourceType.File, "file-id", cursor: cursor);
                 Console.WriteLine(next?.Data.Count);
             }
         }

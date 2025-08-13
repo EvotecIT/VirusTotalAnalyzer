@@ -636,6 +636,76 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetFeedAsync_ByTime_DailyBuildsPath()
+    {
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"data\":[]}", Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.GetFeedAsync(ResourceType.File, new DateTime(2024, 1, 2, 0, 0, 0, DateTimeKind.Utc), FeedGranularity.Daily);
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/feeds/files/20240102", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetFeedAsync_ByTime_HourlyBuildsPath()
+    {
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"data\":[]}", Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.GetFeedAsync(ResourceType.Url, new DateTime(2024, 1, 2, 3, 0, 0, DateTimeKind.Utc), FeedGranularity.Hourly);
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/feeds/urls/2024010203", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetFeedAsync_ByTime_FileBehaviourBuildsPath()
+    {
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"data\":[]}", Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.GetFeedAsync(ResourceType.FileBehaviour, new DateTime(2024, 1, 2, 3, 0, 0, DateTimeKind.Utc), FeedGranularity.Hourly);
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/feeds/file-behaviour/2024010203", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetFeedAsync_ByTime_ThrowsForUnsupportedResourceType()
+    {
+        var handler = new StubHandler("{\"data\":[]}");
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => client.GetFeedAsync(ResourceType.Analysis, DateTime.UtcNow, FeedGranularity.Daily));
+    }
+
+    [Fact]
     public async Task GetIocStreamAsync_BuildsQuery()
     {
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)

@@ -68,5 +68,8 @@ public enum ResourceType
     MonitorEvent,
 
     [EnumMember(Value = "intelligence_hunting_ruleset")]
-    IntelligenceHuntingRuleset
+    IntelligenceHuntingRuleset,
+
+    [EnumMember(Value = "file-behaviour")]
+    FileBehaviour
 }

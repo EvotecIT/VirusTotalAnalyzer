@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -391,6 +392,32 @@ public sealed partial class VirusTotalClient
             path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
         }
         using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        return await JsonSerializer.DeserializeAsync<FeedResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<FeedResponse?> GetFeedAsync(ResourceType resourceType, DateTime time, FeedGranularity granularity, CancellationToken cancellationToken = default)
+    {
+        if (resourceType != ResourceType.File &&
+            resourceType != ResourceType.Url &&
+            resourceType != ResourceType.Domain &&
+            resourceType != ResourceType.IpAddress &&
+            resourceType != ResourceType.FileBehaviour)
+        {
+            throw new ArgumentOutOfRangeException(nameof(resourceType));
+        }
+
+        var utc = time.ToUniversalTime();
+        var formatted = granularity == FeedGranularity.Daily
+            ? utc.ToString("yyyyMMdd", CultureInfo.InvariantCulture)
+            : utc.ToString("yyyyMMddHH", CultureInfo.InvariantCulture);
+        var path = $"feeds/{GetPath(resourceType)}/{formatted}";
+        using var response = await _httpClient.GetAsync(path, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);

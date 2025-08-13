@@ -22,27 +22,27 @@ public static class VirusTotalClientExtensions
             .Replace('/', '_');
     }
 
-    public static Task<AnalysisReport?> ScanFileAsync(this VirusTotalClient client, string filePath, CancellationToken cancellationToken = default)
+    public static Task<AnalysisReport?> ScanFileAsync(this VirusTotalClient client, string filePath, string? password = null, CancellationToken cancellationToken = default)
     {
         if (client == null) throw new ArgumentNullException(nameof(client));
 #if NET472
-        return ScanFileFrameworkAsync(client, filePath, cancellationToken);
+        return ScanFileFrameworkAsync(client, filePath, password, cancellationToken);
 #else
-        return ScanFileInternalAsync(client, filePath, cancellationToken);
+        return ScanFileInternalAsync(client, filePath, password, cancellationToken);
 #endif
     }
 
 #if NET472
-    private static async Task<AnalysisReport?> ScanFileFrameworkAsync(VirusTotalClient client, string filePath, CancellationToken cancellationToken)
+    private static async Task<AnalysisReport?> ScanFileFrameworkAsync(VirusTotalClient client, string filePath, string? password, CancellationToken cancellationToken)
     {
         using var stream = File.OpenRead(filePath);
-        return await client.SubmitFileAsync(stream, Path.GetFileName(filePath), cancellationToken).ConfigureAwait(false);
+        return await client.SubmitFileAsync(stream, Path.GetFileName(filePath), password, cancellationToken).ConfigureAwait(false);
     }
 #else
-    private static async Task<AnalysisReport?> ScanFileInternalAsync(VirusTotalClient client, string filePath, CancellationToken cancellationToken)
+    private static async Task<AnalysisReport?> ScanFileInternalAsync(VirusTotalClient client, string filePath, string? password, CancellationToken cancellationToken)
     {
         await using var stream = File.OpenRead(filePath);
-        return await client.SubmitFileAsync(stream, Path.GetFileName(filePath), cancellationToken).ConfigureAwait(false);
+        return await client.SubmitFileAsync(stream, Path.GetFileName(filePath), password, cancellationToken).ConfigureAwait(false);
     }
 #endif
 

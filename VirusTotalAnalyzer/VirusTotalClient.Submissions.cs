@@ -33,12 +33,8 @@ public sealed partial class VirusTotalClient
         return new Uri(result.Data);
     }
 
-    public async Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, AnalysisType analysisType = AnalysisType.File, string? password = null, CancellationToken cancellationToken = default)
+    public async Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, string? password = null, CancellationToken cancellationToken = default)
     {
-        if (analysisType != AnalysisType.File)
-        {
-            throw new ArgumentOutOfRangeException(nameof(analysisType));
-        }
 
         Stream uploadStream = stream;
         bool disposeUploadStream = false;
@@ -97,8 +93,8 @@ public sealed partial class VirusTotalClient
         }
     }
 
-    public Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, CancellationToken cancellationToken = default)
-        => SubmitFileAsync(stream, fileName, AnalysisType.File, null, cancellationToken);
+    public Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, CancellationToken cancellationToken)
+        => SubmitFileAsync(stream, fileName, null, cancellationToken);
 
     public async Task<PrivateAnalysis?> SubmitPrivateFileAsync(
         Stream stream,

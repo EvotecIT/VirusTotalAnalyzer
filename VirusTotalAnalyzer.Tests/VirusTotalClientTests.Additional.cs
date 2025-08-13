@@ -147,7 +147,7 @@ public partial class VirusTotalClientTests
 #endif
         try
         {
-            var report = await client.SubmitFileAsync(stream, "demo.bin", AnalysisType.File, "pass");
+            var report = await client.SubmitFileAsync(stream, "demo.bin", "pass");
 
             Assert.NotNull(report);
             Assert.NotNull(handler.Request);
@@ -186,7 +186,7 @@ public partial class VirusTotalClientTests
         var client = new VirusTotalClient(httpClient);
 
         using var ms = new System.IO.MemoryStream(new byte[33554433]);
-        var report = await client.SubmitFileAsync(ms, "demo.bin", AnalysisType.File, "pass");
+        var report = await client.SubmitFileAsync(ms, "demo.bin", "pass");
 
         Assert.NotNull(report);
         Assert.Equal(2, handler.Requests.Count);

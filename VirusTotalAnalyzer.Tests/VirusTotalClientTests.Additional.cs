@@ -152,7 +152,7 @@ public partial class VirusTotalClientTests
             Assert.NotNull(report);
             Assert.NotNull(handler.Request);
             Assert.Equal("/api/v3/files", handler.Request!.RequestUri!.AbsolutePath);
-            Assert.True(handler.Request.Headers.Contains("password"));
+            Assert.True(handler.Request.Headers.Contains("x-virustotal-password"));
         }
         finally
         {
@@ -192,7 +192,7 @@ public partial class VirusTotalClientTests
         Assert.Equal(2, handler.Requests.Count);
         Assert.Equal("/api/v3/files/upload_url", handler.Requests[0].RequestUri!.AbsolutePath);
         Assert.Equal("https://upload.example/upload", handler.Requests[1].RequestUri!.ToString());
-        Assert.True(handler.Requests[1].Headers.Contains("password"));
+        Assert.True(handler.Requests[1].Headers.Contains("x-virustotal-password"));
     }
 
     [Fact]

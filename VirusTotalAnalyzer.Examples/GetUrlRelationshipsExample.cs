@@ -19,6 +19,9 @@ public static class GetUrlRelationshipsExample
 
             var ips = await client.GetUrlContactedIpsAsync("url-id");
             Console.WriteLine(ips?.Count);
+
+            var lastIp = await client.GetUrlLastServingIpAddressAsync("url-id");
+            Console.WriteLine(lastIp?.Data.Attributes.IpAddress);
         }
         catch (ApiException ex)
         {

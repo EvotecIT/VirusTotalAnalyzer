@@ -10,6 +10,12 @@ public sealed class IpAddressSummary
     public IpAddressSummaryData Data { get; set; } = new();
 }
 
+public sealed class IpAddressSummaryResponse
+{
+    [JsonPropertyName("data")]
+    public IpAddressSummary Data { get; set; } = new();
+}
+
 public sealed class IpAddressSummaryData
 {
     public IpAddressSummaryAttributes Attributes { get; set; } = new();

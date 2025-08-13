@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using VirusTotalAnalyzer.Models;
+using VirusTotalAnalyzer;
 using Xunit;
 
 namespace VirusTotalAnalyzer.Tests;
@@ -295,6 +296,97 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/urls/abc/last_serving_ip_address", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(ip);
         Assert.Equal("1.2.3.4", ip!.Data.Attributes.IpAddress);
+    }
+
+    [Fact]
+    public async Task GetUrlAnalysesAsync_UsesCorrectPathAndDeserializesResponse()
+    {
+        var json = "{\"data\":[{\"id\":\"an1\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"completed\"}}}]}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var (analyses, cursor) = await client.GetUrlAnalysesAsync("abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/urls/abc/analyses", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.NotNull(analyses);
+        Assert.Single(analyses);
+        Assert.Equal(AnalysisStatus.Completed, analyses[0].Data.Attributes.Status);
+        Assert.Null(cursor);
+    }
+
+    [Fact]
+    public async Task GetUrlAnalysesAsync_ThrowsApiException()
+    {
+        var errorJson = "{\"error\":{\"code\":\"NotFoundError\",\"message\":\"not found\"}}";
+        var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ApiException>(() => client.GetUrlAnalysesAsync("abc"));
+    }
+
+    [Fact]
+    public async Task GetUrlAnalysesAsync_PagesThroughResults()
+    {
+        var first = "{\"data\":[{\"id\":\"an1\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"completed\"}}}],\"meta\":{\"cursor\":\"c1\"}}";
+        var second = "{\"data\":[{\"id\":\"an2\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"completed\"}}}]}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(first, Encoding.UTF8, "application/json") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(second, Encoding.UTF8, "application/json") });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var (analyses, cursor) = await client.GetUrlAnalysesAsync("abc");
+
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Equal("/api/v3/urls/abc/analyses", handler.Requests[0].RequestUri!.PathAndQuery);
+        Assert.Equal("/api/v3/urls/abc/analyses?cursor=c1", handler.Requests[1].RequestUri!.PathAndQuery);
+        Assert.Collection(analyses,
+            a => Assert.Equal("an1", a.Id),
+            a => Assert.Equal("an2", a.Id));
+        Assert.Null(cursor);
+    }
+
+    [Fact]
+    public async Task GetUrlAnalysesAsync_RespectsLimit()
+    {
+        var first = "{\"data\":[{\"id\":\"an1\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"completed\"}}}],\"meta\":{\"cursor\":\"c1\"}}";
+        var second = "{\"data\":[{\"id\":\"an2\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"completed\"}}}]}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(first, Encoding.UTF8, "application/json") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(second, Encoding.UTF8, "application/json") });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var (analyses, cursor) = await client.GetUrlAnalysesAsync("abc", limit: 1);
+
+        Assert.Single(analyses);
+        Assert.Equal("an1", analyses[0].Id);
+        Assert.Equal("c1", cursor);
+        Assert.Single(handler.Requests);
+        Assert.Equal("/api/v3/urls/abc/analyses?limit=1", handler.Requests[0].RequestUri!.PathAndQuery);
     }
 
     [Fact]

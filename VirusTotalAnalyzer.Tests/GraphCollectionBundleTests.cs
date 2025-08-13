@@ -118,6 +118,66 @@ public class GraphCollectionBundleTests
     }
 
     [Fact]
+    public async Task GetGraphCommentsAsync_GetsComments()
+    {
+        var json = @"{""data"":[{""id"":""c1"",""type"":""comment"",""data"":{""attributes"":{""text"":""hi""}}}]}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var response = await client.GetGraphCommentsAsync("g1");
+
+        Assert.NotNull(response);
+        Assert.Single(response.Data);
+        Assert.Equal(HttpMethod.Get, handler.Request!.Method);
+        Assert.Equal("/api/v3/graphs/g1/comments", handler.Request.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task AddGraphCommentAsync_PostsComment()
+    {
+        var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""data"":{""attributes"":{""text"":""hi""}}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var comment = await client.AddGraphCommentAsync("g1", "hi");
+
+        Assert.NotNull(comment);
+        Assert.Equal(HttpMethod.Post, handler.Request!.Method);
+        Assert.Equal("/api/v3/graphs/g1/comments", handler.Request.RequestUri!.AbsolutePath);
+        Assert.Contains("\"text\":\"hi\"", handler.Content);
+    }
+
+    [Fact]
+    public async Task DeleteGraphCommentAsync_UsesDelete()
+    {
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.NoContent));
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.DeleteGraphCommentAsync("g1", "c1");
+
+        Assert.Equal(HttpMethod.Delete, handler.Request!.Method);
+        Assert.Equal("/api/v3/graphs/g1/comments/c1", handler.Request.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
     public async Task CreateGraphAsync_ThrowsOnError()
     {
         var error = "{\"error\":{\"message\":\"bad\"}}";

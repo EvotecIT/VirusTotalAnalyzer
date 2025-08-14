@@ -83,7 +83,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<FileBehavior?> GetFileBehaviorAsync(string id, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/behavior", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/behaviour", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -96,7 +96,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<FileBehaviorSummary?> GetFileBehaviorSummaryAsync(string id, CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/behavior_summary", cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/behaviour_summary", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -186,7 +186,7 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<IReadOnlyList<UrlSummary>?> GetFileContactedUrlsAsync(
+    public async Task<PagedResponse<UrlSummary>?> GetFileContactedUrlsAsync(
         string id,
         int? limit = null,
         string? cursor = null,
@@ -210,11 +210,10 @@ public sealed partial class VirusTotalClient
 #else
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
-        var result = await JsonSerializer.DeserializeAsync<UrlSummariesResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-        return result?.Data;
+        return await JsonSerializer.DeserializeAsync<PagedResponse<UrlSummary>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<IReadOnlyList<DomainSummary>?> GetFileContactedDomainsAsync(
+    public async Task<PagedResponse<DomainSummary>?> GetFileContactedDomainsAsync(
         string id,
         int? limit = null,
         string? cursor = null,
@@ -238,11 +237,10 @@ public sealed partial class VirusTotalClient
 #else
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
-        var result = await JsonSerializer.DeserializeAsync<DomainSummariesResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-        return result?.Data;
+        return await JsonSerializer.DeserializeAsync<PagedResponse<DomainSummary>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<IReadOnlyList<IpAddressSummary>?> GetFileContactedIpsAsync(
+    public async Task<PagedResponse<IpAddressSummary>?> GetFileContactedIpsAsync(
         string id,
         int? limit = null,
         string? cursor = null,
@@ -266,11 +264,10 @@ public sealed partial class VirusTotalClient
 #else
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
-        var result = await JsonSerializer.DeserializeAsync<IpAddressSummariesResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-        return result?.Data;
+        return await JsonSerializer.DeserializeAsync<PagedResponse<IpAddressSummary>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<IReadOnlyList<FileReport>?> GetFileReferrerFilesAsync(
+    public async Task<PagedResponse<FileReport>?> GetFileReferrerFilesAsync(
         string id,
         int? limit = null,
         string? cursor = null,
@@ -294,11 +291,10 @@ public sealed partial class VirusTotalClient
 #else
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
-        var result = await JsonSerializer.DeserializeAsync<FileReportsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-        return result?.Data;
+        return await JsonSerializer.DeserializeAsync<PagedResponse<FileReport>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<IReadOnlyList<FileReport>?> GetFileDownloadedFilesAsync(
+    public async Task<PagedResponse<FileReport>?> GetFileDownloadedFilesAsync(
         string id,
         int? limit = null,
         string? cursor = null,
@@ -322,11 +318,10 @@ public sealed partial class VirusTotalClient
 #else
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
-        var result = await JsonSerializer.DeserializeAsync<FileReportsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-        return result?.Data;
+        return await JsonSerializer.DeserializeAsync<PagedResponse<FileReport>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<IReadOnlyList<FileReport>?> GetFileBundledFilesAsync(
+    public async Task<PagedResponse<FileReport>?> GetFileBundledFilesAsync(
         string id,
         int? limit = null,
         string? cursor = null,
@@ -350,11 +345,10 @@ public sealed partial class VirusTotalClient
 #else
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
-        var result = await JsonSerializer.DeserializeAsync<FileReportsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-        return result?.Data;
+        return await JsonSerializer.DeserializeAsync<PagedResponse<FileReport>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<IReadOnlyList<FileReport>?> GetFileDroppedFilesAsync(
+    public async Task<PagedResponse<FileReport>?> GetFileDroppedFilesAsync(
         string id,
         int? limit = null,
         string? cursor = null,
@@ -378,11 +372,10 @@ public sealed partial class VirusTotalClient
 #else
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
-        var result = await JsonSerializer.DeserializeAsync<FileReportsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-        return result?.Data;
+        return await JsonSerializer.DeserializeAsync<PagedResponse<FileReport>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<IReadOnlyList<FileReport>?> GetFileSimilarFilesAsync(
+    public async Task<PagedResponse<FileReport>?> GetFileSimilarFilesAsync(
         string id,
         int? limit = null,
         string? cursor = null,
@@ -406,8 +399,7 @@ public sealed partial class VirusTotalClient
 #else
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
-        var result = await JsonSerializer.DeserializeAsync<FileReportsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-        return result?.Data;
+        return await JsonSerializer.DeserializeAsync<PagedResponse<FileReport>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Uri?> GetFileDownloadUrlAsync(string id, CancellationToken cancellationToken = default)

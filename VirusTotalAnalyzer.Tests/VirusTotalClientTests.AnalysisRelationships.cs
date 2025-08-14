@@ -14,7 +14,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetFileContactedUrlsAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"u1\",\"type\":\"url\",\"data\":{\"attributes\":{\"url\":\"https://example.com\"}}}]}";
+        var json = "{\"data\":[{\"id\":\"u1\",\"type\":\"url\",\"data\":{\"attributes\":{\"url\":\"https://example.com\"}}}],\"meta\":{\"cursor\":\"c1\"}}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -31,8 +31,9 @@ public partial class VirusTotalClientTests
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/files/abc/contacted_urls", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(urls);
-        Assert.Single(urls!);
-        Assert.Equal("https://example.com", urls[0].Data.Attributes.Url);
+        Assert.Single(urls!.Data);
+        Assert.Equal("https://example.com", urls.Data[0].Data.Attributes.Url);
+        Assert.Equal("c1", urls.NextCursor);
     }
 
     [Fact]
@@ -75,8 +76,8 @@ public partial class VirusTotalClientTests
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/files/abc/contacted_domains", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(domains);
-        Assert.Single(domains!);
-        Assert.Equal("example.com", domains[0].Data.Attributes.Domain);
+        Assert.Single(domains!.Data);
+        Assert.Equal("example.com", domains.Data[0].Data.Attributes.Domain);
     }
 
     [Fact]
@@ -119,8 +120,8 @@ public partial class VirusTotalClientTests
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/files/abc/contacted_ips", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(ips);
-        Assert.Single(ips!);
-        Assert.Equal("1.2.3.4", ips[0].Data.Attributes.IpAddress);
+        Assert.Single(ips!.Data);
+        Assert.Equal("1.2.3.4", ips.Data[0].Data.Attributes.IpAddress);
     }
 
     [Fact]
@@ -163,8 +164,8 @@ public partial class VirusTotalClientTests
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/files/abc/referrer_files", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(files);
-        Assert.Single(files!);
-        Assert.Equal("abc", files[0].Attributes.Md5);
+        Assert.Single(files!.Data);
+        Assert.Equal("abc", files.Data[0].Attributes.Md5);
     }
 
     [Fact]
@@ -209,8 +210,8 @@ public partial class VirusTotalClientTests
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/files/abc/downloaded_files", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(files);
-        Assert.Single(files!);
-        Assert.Equal("abc", files[0].Attributes.Md5);
+        Assert.Single(files!.Data);
+        Assert.Equal("abc", files.Data[0].Attributes.Md5);
     }
 
     [Fact]
@@ -253,8 +254,8 @@ public partial class VirusTotalClientTests
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/files/abc/bundled_files", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(files);
-        Assert.Single(files!);
-        Assert.Equal("abc", files[0].Attributes.Md5);
+        Assert.Single(files!.Data);
+        Assert.Equal("abc", files.Data[0].Attributes.Md5);
     }
 
     [Fact]
@@ -297,8 +298,8 @@ public partial class VirusTotalClientTests
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/files/abc/dropped_files", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(files);
-        Assert.Single(files!);
-        Assert.Equal("abc", files[0].Attributes.Md5);
+        Assert.Single(files!.Data);
+        Assert.Equal("abc", files.Data[0].Attributes.Md5);
     }
 
     [Fact]
@@ -341,8 +342,8 @@ public partial class VirusTotalClientTests
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/files/abc/similar_files", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(files);
-        Assert.Single(files!);
-        Assert.Equal("abc", files[0].Attributes.Md5);
+        Assert.Single(files!.Data);
+        Assert.Equal("abc", files.Data[0].Attributes.Md5);
     }
 
     [Fact]

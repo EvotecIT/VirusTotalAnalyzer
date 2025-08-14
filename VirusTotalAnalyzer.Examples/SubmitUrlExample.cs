@@ -12,7 +12,7 @@ public static class SubmitUrlExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var report = await client.SubmitUrlAsync("https://example.com", AnalysisType.Url);
+            var report = await client.SubmitUrlAsync("https://example.com");
             Console.WriteLine(report?.Id);
 
             var simple = await client.SubmitUrlAsync("https://example.org", CancellationToken.None);

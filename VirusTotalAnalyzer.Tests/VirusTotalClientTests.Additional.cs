@@ -230,7 +230,7 @@ public partial class VirusTotalClientTests
         };
         var client = new VirusTotalClient(httpClient);
 
-        var report = await client.SubmitUrlAsync("https://example.com", AnalysisType.Url);
+        var report = await client.SubmitUrlAsync("https://example.com");
 
         Assert.NotNull(report);
         Assert.NotNull(handler.Request);

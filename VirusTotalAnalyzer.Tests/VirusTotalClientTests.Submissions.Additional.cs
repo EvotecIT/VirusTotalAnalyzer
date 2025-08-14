@@ -598,7 +598,7 @@ public partial class VirusTotalClientTests
 
         Assert.NotNull(behavior);
         Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/files/abc/behavior", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("/api/v3/files/abc/behaviour", handler.Request!.RequestUri!.AbsolutePath);
         Assert.Equal("b1", behavior!.Data[0].Id);
         Assert.Equal("proc1", behavior.Data[0].Attributes.Processes[0].Name);
     }
@@ -641,7 +641,7 @@ public partial class VirusTotalClientTests
 
         Assert.NotNull(summary);
         Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/files/abc/behavior_summary", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("/api/v3/files/abc/behaviour_summary", handler.Request!.RequestUri!.AbsolutePath);
         Assert.Contains("network", summary!.Data.Tags);
     }
 

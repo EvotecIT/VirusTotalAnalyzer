@@ -11,7 +11,10 @@ public static class GetFileReportExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var report = await client.GetFileReportAsync("44d88612fea8a8f36de82e1278abb02f");
+            var report = await client.GetFileReportAsync(
+                "44d88612fea8a8f36de82e1278abb02f",
+                fields: new[] { "md5", "sha256" },
+                relationships: new[] { "analyses" });
             Console.WriteLine(report?.Id);
             Console.WriteLine(report?.Attributes.CreationDate);
         }

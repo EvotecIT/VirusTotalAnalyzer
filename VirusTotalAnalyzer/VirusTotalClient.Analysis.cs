@@ -15,9 +15,29 @@ namespace VirusTotalAnalyzer;
 
 public sealed partial class VirusTotalClient
 {
-    public async Task<FileReport?> GetFileReportAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<FileReport?> GetFileReportAsync(
+        string id,
+        IEnumerable<string>? fields = null,
+        IEnumerable<string>? relationships = null,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
+        var url = new StringBuilder($"files/{Uri.EscapeDataString(id)}");
+        var hasQuery = false;
+
+        if (fields != null && fields.Any())
+        {
+            url.Append("?fields=").Append(string.Join(",", fields.Select(Uri.EscapeDataString)));
+            hasQuery = true;
+        }
+
+        if (relationships != null && relationships.Any())
+        {
+            url.Append(hasQuery ? '&' : '?')
+                .Append("relationships=")
+                .Append(string.Join(",", relationships.Select(Uri.EscapeDataString)));
+        }
+
+        using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -270,9 +290,29 @@ public sealed partial class VirusTotalClient
         return new StreamWithResponse(response, stream);
     }
 
-    public async Task<UrlReport?> GetUrlReportAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<UrlReport?> GetUrlReportAsync(
+        string id,
+        IEnumerable<string>? fields = null,
+        IEnumerable<string>? relationships = null,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"urls/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
+        var url = new StringBuilder($"urls/{Uri.EscapeDataString(id)}");
+        var hasQuery = false;
+
+        if (fields != null && fields.Any())
+        {
+            url.Append("?fields=").Append(string.Join(",", fields.Select(Uri.EscapeDataString)));
+            hasQuery = true;
+        }
+
+        if (relationships != null && relationships.Any())
+        {
+            url.Append(hasQuery ? '&' : '?')
+                .Append("relationships=")
+                .Append(string.Join(",", relationships.Select(Uri.EscapeDataString)));
+        }
+
+        using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -284,10 +324,18 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public Task<UrlReport?> GetUrlReportAsync(Uri url, CancellationToken cancellationToken = default)
+    public Task<UrlReport?> GetUrlReportAsync(
+        Uri url,
+        IEnumerable<string>? fields = null,
+        IEnumerable<string>? relationships = null,
+        CancellationToken cancellationToken = default)
     {
         if (url == null) throw new ArgumentNullException(nameof(url));
-        return GetUrlReportAsync(VirusTotalClientExtensions.GetUrlId(url.ToString()), cancellationToken);
+        return GetUrlReportAsync(
+            VirusTotalClientExtensions.GetUrlId(url.ToString()),
+            fields,
+            relationships,
+            cancellationToken);
     }
 
     public async Task<(List<AnalysisReport> Analyses, string? Cursor)> GetUrlAnalysesAsync(
@@ -413,9 +461,29 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<IpAddressReport?> GetIpAddressReportAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<IpAddressReport?> GetIpAddressReportAsync(
+        string id,
+        IEnumerable<string>? fields = null,
+        IEnumerable<string>? relationships = null,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"ip_addresses/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
+        var url = new StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}");
+        var hasQuery = false;
+
+        if (fields != null && fields.Any())
+        {
+            url.Append("?fields=").Append(string.Join(",", fields.Select(Uri.EscapeDataString)));
+            hasQuery = true;
+        }
+
+        if (relationships != null && relationships.Any())
+        {
+            url.Append(hasQuery ? '&' : '?')
+                .Append("relationships=")
+                .Append(string.Join(",", relationships.Select(Uri.EscapeDataString)));
+        }
+
+        using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -440,9 +508,29 @@ public sealed partial class VirusTotalClient
             .ConfigureAwait(false);
     }
 
-    public async Task<DomainReport?> GetDomainReportAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<DomainReport?> GetDomainReportAsync(
+        string id,
+        IEnumerable<string>? fields = null,
+        IEnumerable<string>? relationships = null,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"domains/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
+        var url = new StringBuilder($"domains/{Uri.EscapeDataString(id)}");
+        var hasQuery = false;
+
+        if (fields != null && fields.Any())
+        {
+            url.Append("?fields=").Append(string.Join(",", fields.Select(Uri.EscapeDataString)));
+            hasQuery = true;
+        }
+
+        if (relationships != null && relationships.Any())
+        {
+            url.Append(hasQuery ? '&' : '?')
+                .Append("relationships=")
+                .Append(string.Join(",", relationships.Select(Uri.EscapeDataString)));
+        }
+
+        using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);

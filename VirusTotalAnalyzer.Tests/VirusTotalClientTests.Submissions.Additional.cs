@@ -83,6 +83,32 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetIpAddressReportAsync_AppendsFieldsAndRelationships()
+    {
+        var json = "{\"data\":{\"id\":\"1.1.1.1\",\"type\":\"ip_address\"}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.GetIpAddressReportAsync(
+            "1.1.1.1",
+            fields: new[] { "last_analysis_stats" },
+            relationships: new[] { "resolutions" });
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/ip_addresses/1.1.1.1", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal(
+            "fields=last_analysis_stats&relationships=resolutions",
+            handler.Request!.RequestUri!.Query.TrimStart('?'));
+    }
+
+    [Fact]
     public async Task GetDomainReportAsync_DeserializesResponseAndUsesCorrectPath()
     {
         var json = "{\"data\":{\"id\":\"example.com\",\"type\":\"domain\",\"attributes\":{\"domain\":\"example.com\"}}}";
@@ -103,6 +129,32 @@ public partial class VirusTotalClientTests
         Assert.Equal(ResourceType.Domain, report.Type);
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/domains/example.com", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task GetDomainReportAsync_AppendsFieldsAndRelationships()
+    {
+        var json = "{\"data\":{\"id\":\"example.com\",\"type\":\"domain\"}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.GetDomainReportAsync(
+            "example.com",
+            fields: new[] { "last_analysis_stats" },
+            relationships: new[] { "siblings" });
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/domains/example.com", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal(
+            "fields=last_analysis_stats&relationships=siblings",
+            handler.Request!.RequestUri!.Query.TrimStart('?'));
     }
 
     [Fact]

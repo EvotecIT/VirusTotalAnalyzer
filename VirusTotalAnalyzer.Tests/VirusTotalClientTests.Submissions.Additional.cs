@@ -518,11 +518,13 @@ public partial class VirusTotalClientTests
         };
         var client = new VirusTotalClient(httpClient);
 
-        var report = await client.ReanalyzeUrlAsync("def");
+        const string url = "https://example.com";
+        var id = VirusTotalClientExtensions.GetUrlId(url);
+        var report = await client.ReanalyzeUrlAsync(url);
 
         Assert.NotNull(report);
         Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/urls/def/analyse", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal($"/api/v3/urls/{id}/analyse", handler.Request!.RequestUri!.AbsolutePath);
     }
 
     [Fact]

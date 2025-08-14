@@ -255,6 +255,19 @@ public sealed partial class VirusTotalClient
         return ReanalyzeHashAsync(id, AnalysisType.Url, cancellationToken);
     }
 
+    public Task<AnalysisReport?> ReanalyzeUrlAsync(string url)
+    {
+        if (url is null)
+        {
+            throw new ArgumentNullException(nameof(url));
+        }
+        if (url.Length == 0)
+        {
+            throw new ArgumentException("Url must not be empty.", nameof(url));
+        }
+        return ReanalyzeUrlAsync(VirusTotalClientExtensions.GetUrlId(url), cancellationToken: default);
+    }
+
     public Task<AnalysisReport?> SubmitUrlAsync(string url, CancellationToken cancellationToken = default)
         => SubmitUrlAsync(url, options: null, cancellationToken);
 

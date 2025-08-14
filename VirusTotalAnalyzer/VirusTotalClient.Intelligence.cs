@@ -284,6 +284,40 @@ public sealed partial class VirusTotalClient
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<IReadOnlyList<YaraWatcher>?> GetYaraRulesetWatchersAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync($"intelligence/hunting_rulesets/{Uri.EscapeDataString(id)}/watchers", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        var result = await JsonSerializer.DeserializeAsync<YaraWatcherResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return result?.Data;
+    }
+
+    public async Task<IReadOnlyList<YaraWatcher>?> AddYaraRulesetWatchersAsync(string id, YaraWatcherRequest request, CancellationToken cancellationToken = default)
+    {
+        var json = JsonSerializer.Serialize(request, _jsonOptions);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+        using var response = await _httpClient.PostAsync($"intelligence/hunting_rulesets/{Uri.EscapeDataString(id)}/watchers", content, cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        var result = await JsonSerializer.DeserializeAsync<YaraWatcherResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return result?.Data;
+    }
+
+    public async Task RemoveYaraRulesetWatcherAsync(string id, string watcherId, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.DeleteAsync($"intelligence/hunting_rulesets/{Uri.EscapeDataString(id)}/watchers/{Uri.EscapeDataString(watcherId)}", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task<Stream> DownloadYaraRulesetAsync(string id, CancellationToken ct = default)
     {
         var response = await _httpClient

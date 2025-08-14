@@ -19,6 +19,7 @@ public class AttributeSerializationTests
         {
             Id = "file1",
             Type = ResourceType.File,
+            Links = new Links { Self = "https://www.virustotal.com/api/v3/files/file1" },
             Attributes = new FileAttributes
             {
                 Md5 = "md5",
@@ -46,6 +47,7 @@ public class AttributeSerializationTests
         Assert.Equal(100, roundtrip.Attributes.Size);
         Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(10), roundtrip.Attributes.FirstSubmissionDate);
         Assert.Equal(Verdict.Harmless, roundtrip.Attributes.CrowdsourcedVerdicts[0].Verdict);
+        Assert.Equal("https://www.virustotal.com/api/v3/files/file1", roundtrip.Links.Self);
     }
 
     [Fact]
@@ -58,6 +60,7 @@ public class AttributeSerializationTests
         {
             Id = "url1",
             Type = ResourceType.Url,
+            Links = new Links { Self = "https://www.virustotal.com/api/v3/urls/url1" },
             Attributes = new UrlAttributes
             {
                 Url = "https://example.com",
@@ -83,6 +86,7 @@ public class AttributeSerializationTests
         Assert.Equal("malicious", roundtrip.Attributes.LastAnalysisResults["engine"].Category);
         Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(11), roundtrip.Attributes.FirstSubmissionDate);
         Assert.Equal(Verdict.Malicious, roundtrip.Attributes.CrowdsourcedVerdicts[0].Verdict);
+        Assert.Equal("https://www.virustotal.com/api/v3/urls/url1", roundtrip.Links.Self);
     }
 
     [Fact]
@@ -95,6 +99,7 @@ public class AttributeSerializationTests
         {
             Id = "an1",
             Type = ResourceType.Analysis,
+            Links = new Links { Self = "https://www.virustotal.com/api/v3/analyses/an1" },
             Data = new AnalysisData
             {
                 Attributes = new AnalysisAttributes
@@ -113,6 +118,7 @@ public class AttributeSerializationTests
         var roundtrip = JsonSerializer.Deserialize<AnalysisReport>(json, options);
         Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(5), roundtrip!.Data.Attributes.Date);
         Assert.Equal("harmless", roundtrip.Data.Attributes.Results["engine"].Category);
+        Assert.Equal("https://www.virustotal.com/api/v3/analyses/an1", roundtrip.Links.Self);
     }
 
     [Fact]
@@ -125,6 +131,7 @@ public class AttributeSerializationTests
         {
             Id = "domain1",
             Type = ResourceType.Domain,
+            Links = new Links { Self = "https://www.virustotal.com/api/v3/domains/domain1" },
             Attributes = new DomainAttributes
             {
                 Domain = "example.com",
@@ -143,6 +150,7 @@ public class AttributeSerializationTests
         Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(21), roundtrip!.Attributes.CreationDate);
         Assert.Equal("tag", Assert.Single(roundtrip.Attributes.Tags));
         Assert.Equal("suspicious", roundtrip.Attributes.LastAnalysisResults["engine"].Category);
+        Assert.Equal("https://www.virustotal.com/api/v3/domains/domain1", roundtrip.Links.Self);
     }
 
     [Fact]
@@ -155,6 +163,7 @@ public class AttributeSerializationTests
         {
             Id = "ip1",
             Type = ResourceType.IpAddress,
+            Links = new Links { Self = "https://www.virustotal.com/api/v3/ip_addresses/ip1" },
             Attributes = new IpAddressAttributes
             {
                 IpAddress = "1.2.3.4",
@@ -173,5 +182,6 @@ public class AttributeSerializationTests
         Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(63), roundtrip!.Attributes.CreationDate);
         Assert.Equal("tag", Assert.Single(roundtrip.Attributes.Tags));
         Assert.Equal("undetected", roundtrip.Attributes.LastAnalysisResults["engine"].Category);
+        Assert.Equal("https://www.virustotal.com/api/v3/ip_addresses/ip1", roundtrip.Links.Self);
     }
 }

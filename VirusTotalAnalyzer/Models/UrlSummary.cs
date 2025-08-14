@@ -7,6 +7,9 @@ public sealed class UrlSummary
 {
     public string Id { get; set; } = string.Empty;
     public ResourceType Type { get; set; }
+
+    [JsonPropertyName("links")]
+    public Links Links { get; set; } = new();
     public UrlSummaryData Data { get; set; } = new();
 }
 

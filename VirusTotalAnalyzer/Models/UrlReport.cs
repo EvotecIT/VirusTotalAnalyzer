@@ -9,6 +9,9 @@ public sealed class UrlReport
     public string Id { get; set; } = string.Empty;
     public ResourceType Type { get; set; }
 
+    [JsonPropertyName("links")]
+    public Links Links { get; set; } = new();
+
     [JsonPropertyName("attributes")]
     public UrlAttributes Attributes { get; set; } = new();
 }

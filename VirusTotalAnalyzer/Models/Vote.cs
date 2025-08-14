@@ -8,6 +8,9 @@ public sealed class Vote
 {
     public string Id { get; set; } = string.Empty;
     public ResourceType Type { get; set; }
+
+    [JsonPropertyName("links")]
+    public Links Links { get; set; } = new();
     public VoteData Data { get; set; } = new();
 }
 

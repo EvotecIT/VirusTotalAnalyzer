@@ -6,6 +6,9 @@ public sealed class DomainWhois
 {
     public string Id { get; set; } = string.Empty;
     public ResourceType Type { get; set; }
+
+    [JsonPropertyName("links")]
+    public Links Links { get; set; } = new();
     public DomainWhoisData Data { get; set; } = new();
 }
 

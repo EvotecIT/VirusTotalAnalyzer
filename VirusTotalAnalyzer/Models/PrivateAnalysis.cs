@@ -8,6 +8,9 @@ public sealed class PrivateAnalysis
 {
     public string Id { get; set; } = string.Empty;
     public ResourceType Type { get; set; }
+
+    [JsonPropertyName("links")]
+    public Links Links { get; set; } = new();
     public PrivateAnalysisData Data { get; set; } = new();
 }
 

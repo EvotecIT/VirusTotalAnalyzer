@@ -32,7 +32,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetFileReportAsync_DeserializesResponse()
     {
-        var json = "{\"data\":{\"id\":\"abc\",\"type\":\"file\",\"attributes\":{\"md5\":\"demo\"}}}";
+        var json = "{\"data\":{\"id\":\"abc\",\"type\":\"file\",\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/abc\"},\"attributes\":{\"md5\":\"demo\"}}}";
         var handler = new StubHandler(json);
         var httpClient = new HttpClient(handler)
         {
@@ -46,6 +46,7 @@ public partial class VirusTotalClientTests
         Assert.Equal("abc", report!.Id);
         Assert.Equal(ResourceType.File, report.Type);
         Assert.Equal("demo", report.Attributes.Md5);
+        Assert.Equal("https://www.virustotal.com/api/v3/files/abc", report.Links.Self);
     }
 
     [Fact]

@@ -904,4 +904,68 @@ public partial class VirusTotalClientTests
         Assert.Single(handler.Requests);
         Assert.Equal("/api/v3/files/abc/names?limit=1", handler.Requests[0].RequestUri!.PathAndQuery);
     }
+
+    [Fact]
+    public async Task GetFileNamesPagedAsync_DeserializesResponseAndUsesCorrectPath()
+    {
+        var json = "{\"data\":[{\"id\":\"a.exe\",\"type\":\"file_name\",\"attributes\":{\"date\":1672444800}}]}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var page = await client.GetFileNamesPagedAsync("abc");
+
+        Assert.NotNull(page);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/names", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("a.exe", page!.Data[0].Id);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1672444800), page.Data[0].Attributes.Date);
+    }
+
+    [Fact]
+    public async Task GetFileNamesPagedAsync_ThrowsApiException()
+    {
+        var errorJson = "{\"error\":{\"code\":\"NotFoundError\",\"message\":\"not found\"}}";
+        var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ApiException>(() => client.GetFileNamesPagedAsync("abc"));
+    }
+
+    [Fact]
+    public async Task GetFileNamesPagedAsync_PagesThroughResultsWhenFetchAllTrue()
+    {
+        var first = "{\"data\":[{\"id\":\"a.exe\",\"type\":\"file_name\",\"attributes\":{\"date\":1}}],\"meta\":{\"cursor\":\"c1\"}}";
+        var second = "{\"data\":[{\"id\":\"b.exe\",\"type\":\"file_name\",\"attributes\":{\"date\":2}}]}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(first, Encoding.UTF8, "application/json") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(second, Encoding.UTF8, "application/json") });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var page = await client.GetFileNamesPagedAsync("abc", fetchAll: true);
+
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Collection(page!.Data,
+            n => Assert.Equal("a.exe", n.Id),
+            n => Assert.Equal("b.exe", n.Id));
+        Assert.Null(page.NextCursor);
+    }
 }

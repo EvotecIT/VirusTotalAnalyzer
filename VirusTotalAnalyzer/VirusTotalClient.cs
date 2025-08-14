@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -44,7 +45,7 @@ public sealed partial class VirusTotalClient : IDisposable
     /// Pass <paramref name="disposeClient"/> as <see langword="false"/> when the lifetime of the
     /// provided <paramref name="httpClient"/> is managed externally.
     /// </remarks>
-    public VirusTotalClient(HttpClient httpClient, bool disposeClient = false)
+    public VirusTotalClient(HttpClient httpClient, bool disposeClient = false, string? userAgent = null)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _disposeClient = disposeClient;
@@ -54,6 +55,7 @@ public sealed partial class VirusTotalClient : IDisposable
         };
         _jsonOptions.Converters.Add(new JsonStringEnumMemberConverter());
         _jsonOptions.Converters.Add(new UnixTimestampConverter());
+        UserAgent = userAgent;
     }
 
     /// <summary>
@@ -61,7 +63,7 @@ public sealed partial class VirusTotalClient : IDisposable
     /// </summary>
     /// <param name="apiKey">The API key used for authenticated requests.</param>
     /// <returns>A <see cref="VirusTotalClient"/> that owns its underlying <see cref="HttpClient"/>.</returns>
-    public static VirusTotalClient Create(string apiKey)
+    public static VirusTotalClient Create(string apiKey, string? userAgent = null)
     {
         if (string.IsNullOrWhiteSpace(apiKey)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(apiKey));
         var httpClient = new HttpClient
@@ -69,7 +71,28 @@ public sealed partial class VirusTotalClient : IDisposable
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
         httpClient.DefaultRequestHeaders.Add("x-apikey", apiKey);
-        return new VirusTotalClient(httpClient, disposeClient: true);
+        return new VirusTotalClient(httpClient, disposeClient: true, userAgent: userAgent);
+    }
+
+    /// <summary>
+    /// Gets or sets the user agent used for outgoing requests.
+    /// </summary>
+    public string UserAgent
+    {
+        get => _httpClient.DefaultRequestHeaders.UserAgent.ToString();
+        set
+        {
+            var agent = string.IsNullOrWhiteSpace(value) ? GetDefaultUserAgent() : value;
+            _httpClient.DefaultRequestHeaders.UserAgent.Clear();
+            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(agent);
+        }
+    }
+
+    private static string GetDefaultUserAgent()
+    {
+        var asm = typeof(VirusTotalClient).Assembly.GetName();
+        var version = asm.Version?.ToString() ?? "1.0.0.0";
+        return $"{asm.Name}/{version}";
     }
 
     private static string GetPath(AnalysisType type)

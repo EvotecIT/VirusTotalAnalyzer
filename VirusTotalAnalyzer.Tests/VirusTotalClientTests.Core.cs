@@ -26,6 +26,8 @@ public partial class VirusTotalClientTests
         Assert.Equal(new Uri("https://www.virustotal.com/api/v3/"), httpClient.BaseAddress);
         Assert.True(httpClient.DefaultRequestHeaders.TryGetValues("x-apikey", out var values));
         Assert.Equal("demo-key", Assert.Single(values));
+        var expectedAgent = $"{typeof(VirusTotalClient).Assembly.GetName().Name}/{typeof(VirusTotalClient).Assembly.GetName().Version}";
+        Assert.Equal(expectedAgent, httpClient.DefaultRequestHeaders.UserAgent.ToString());
         Assert.True(disposeClient);
     }
 

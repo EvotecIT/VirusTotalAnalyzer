@@ -65,6 +65,20 @@ public sealed partial class VirusTotalClient
         return new Page<LivehuntNotification>(results, nextCursor);
     }
 
+    public async Task DeleteLivehuntNotificationAsync(string id, CancellationToken cancellationToken = default)
+    {
+        ValidateId(id, nameof(id));
+        using var response = await _httpClient.DeleteAsync($"intelligence/hunting_notifications/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task AcknowledgeLivehuntNotificationAsync(string id, CancellationToken cancellationToken = default)
+    {
+        ValidateId(id, nameof(id));
+        using var response = await _httpClient.PostAsync($"intelligence/hunting_notifications/{Uri.EscapeDataString(id)}/acknowledge", null, cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task<RetrohuntJob?> GetRetrohuntJobAsync(string id, CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
@@ -181,6 +195,13 @@ public sealed partial class VirusTotalClient
         while (!string.IsNullOrEmpty(nextCursor));
 
         return new Page<RetrohuntNotification>(results, nextCursor);
+    }
+
+    public async Task DeleteRetrohuntNotificationAsync(string id, CancellationToken cancellationToken = default)
+    {
+        ValidateId(id, nameof(id));
+        using var response = await _httpClient.DeleteAsync($"intelligence/retrohunt_notifications/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<MonitorItem?> GetMonitorItemAsync(string id, CancellationToken cancellationToken = default)

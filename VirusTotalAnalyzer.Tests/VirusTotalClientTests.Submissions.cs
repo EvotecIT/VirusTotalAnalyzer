@@ -461,4 +461,55 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/intelligence/retrohunt_jobs/rj1", handler.Request.RequestUri!.AbsolutePath);
     }
 
+    [Fact]
+    public async Task DeleteLivehuntNotificationAsync_UsesDelete()
+    {
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.NoContent));
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.DeleteLivehuntNotificationAsync("ln1");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal(HttpMethod.Delete, handler.Request!.Method);
+        Assert.Equal("/api/v3/intelligence/hunting_notifications/ln1", handler.Request.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task DeleteRetrohuntNotificationAsync_UsesDelete()
+    {
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.NoContent));
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.DeleteRetrohuntNotificationAsync("rn1");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal(HttpMethod.Delete, handler.Request!.Method);
+        Assert.Equal("/api/v3/intelligence/retrohunt_notifications/rn1", handler.Request.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task AcknowledgeLivehuntNotificationAsync_UsesPost()
+    {
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.NoContent));
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.AcknowledgeLivehuntNotificationAsync("ln1");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal(HttpMethod.Post, handler.Request!.Method);
+        Assert.Equal("/api/v3/intelligence/hunting_notifications/ln1/acknowledge", handler.Request.RequestUri!.AbsolutePath);
+    }
+
 }

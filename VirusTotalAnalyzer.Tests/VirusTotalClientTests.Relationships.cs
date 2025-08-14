@@ -239,6 +239,26 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetIpAddressCommunicatingFilesAsync_BuildsQueryWithLimitAndCursor()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}", Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.GetIpAddressCommunicatingFilesAsync("1.2.3.4", limit: 10, cursor: "abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("?limit=10&cursor=abc", handler.Request!.RequestUri!.Query);
+    }
+
+    [Fact]
     public async Task GetIpAddressDownloadedFilesAsync_UsesCorrectPathAndDeserializesResponse()
     {
         var json = "{\"data\":[{\"id\":\"f1\",\"type\":\"file\",\"attributes\":{\"md5\":\"abc\"}}]}";
@@ -260,6 +280,26 @@ public partial class VirusTotalClientTests
         Assert.NotNull(files);
         Assert.Single(files!);
         Assert.Equal("abc", files[0].Attributes.Md5);
+    }
+
+    [Fact]
+    public async Task GetIpAddressDownloadedFilesAsync_BuildsQueryWithLimitAndCursor()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}", Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.GetIpAddressDownloadedFilesAsync("1.2.3.4", limit: 10, cursor: "abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("?limit=10&cursor=abc", handler.Request!.RequestUri!.Query);
     }
 
     [Fact]
@@ -287,6 +327,26 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetIpAddressReferrerFilesAsync_BuildsQueryWithLimitAndCursor()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}", Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.GetIpAddressReferrerFilesAsync("1.2.3.4", limit: 10, cursor: "abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("?limit=10&cursor=abc", handler.Request!.RequestUri!.Query);
+    }
+
+    [Fact]
     public async Task GetIpAddressUrlsAsync_UsesCorrectPathAndDeserializesResponse()
     {
         var json = "{\"data\":[{\"id\":\"u1\",\"type\":\"url\",\"data\":{\"attributes\":{\"url\":\"http://example.com/\"}}}]}";
@@ -308,5 +368,25 @@ public partial class VirusTotalClientTests
         Assert.NotNull(urls);
         Assert.Single(urls!);
         Assert.Equal("http://example.com/", urls[0].Data.Attributes.Url);
+    }
+
+    [Fact]
+    public async Task GetIpAddressUrlsAsync_BuildsQueryWithLimitAndCursor()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}", Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.GetIpAddressUrlsAsync("1.2.3.4", limit: 10, cursor: "abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("?limit=10&cursor=abc", handler.Request!.RequestUri!.Query);
     }
 }

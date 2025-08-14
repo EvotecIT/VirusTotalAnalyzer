@@ -154,9 +154,24 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<IReadOnlyList<UrlSummary>?> GetFileContactedUrlsAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<UrlSummary>?> GetFileContactedUrlsAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/contacted_urls", cancellationToken).ConfigureAwait(false);
+        var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/contacted_urls");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -167,9 +182,24 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<IReadOnlyList<DomainSummary>?> GetFileContactedDomainsAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<DomainSummary>?> GetFileContactedDomainsAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/contacted_domains", cancellationToken).ConfigureAwait(false);
+        var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/contacted_domains");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -180,9 +210,24 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<IReadOnlyList<IpAddressSummary>?> GetFileContactedIpsAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<IpAddressSummary>?> GetFileContactedIpsAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/contacted_ips", cancellationToken).ConfigureAwait(false);
+        var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/contacted_ips");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -193,9 +238,24 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<IReadOnlyList<FileReport>?> GetFileReferrerFilesAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FileReport>?> GetFileReferrerFilesAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/referrer_files", cancellationToken).ConfigureAwait(false);
+        var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/referrer_files");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -206,9 +266,24 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<IReadOnlyList<FileReport>?> GetFileDownloadedFilesAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FileReport>?> GetFileDownloadedFilesAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/downloaded_files", cancellationToken).ConfigureAwait(false);
+        var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/downloaded_files");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -219,9 +294,24 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<IReadOnlyList<FileReport>?> GetFileBundledFilesAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FileReport>?> GetFileBundledFilesAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/bundled_files", cancellationToken).ConfigureAwait(false);
+        var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/bundled_files");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -232,9 +322,24 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<IReadOnlyList<FileReport>?> GetFileDroppedFilesAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FileReport>?> GetFileDroppedFilesAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/dropped_files", cancellationToken).ConfigureAwait(false);
+        var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/dropped_files");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -245,9 +350,24 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<IReadOnlyList<FileReport>?> GetFileSimilarFilesAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FileReport>?> GetFileSimilarFilesAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/similar_files", cancellationToken).ConfigureAwait(false);
+        var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/similar_files");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -395,9 +515,24 @@ public sealed partial class VirusTotalClient
         return (results, nextCursor);
     }
 
-    public async Task<IReadOnlyList<FileReport>?> GetUrlDownloadedFilesAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FileReport>?> GetUrlDownloadedFilesAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"urls/{Uri.EscapeDataString(id)}/downloaded_files", cancellationToken).ConfigureAwait(false);
+        var path = new System.Text.StringBuilder($"urls/{Uri.EscapeDataString(id)}/downloaded_files");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -408,9 +543,24 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<IReadOnlyList<FileReport>?> GetUrlReferrerFilesAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FileReport>?> GetUrlReferrerFilesAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"urls/{Uri.EscapeDataString(id)}/referrer_files", cancellationToken).ConfigureAwait(false);
+        var path = new System.Text.StringBuilder($"urls/{Uri.EscapeDataString(id)}/referrer_files");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -421,9 +571,24 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<IReadOnlyList<UrlSummary>?> GetUrlRedirectingUrlsAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<UrlSummary>?> GetUrlRedirectingUrlsAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"urls/{Uri.EscapeDataString(id)}/redirecting_urls", cancellationToken).ConfigureAwait(false);
+        var path = new System.Text.StringBuilder($"urls/{Uri.EscapeDataString(id)}/redirecting_urls");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -434,9 +599,24 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<IReadOnlyList<IpAddressSummary>?> GetUrlContactedIpsAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<IpAddressSummary>?> GetUrlContactedIpsAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"urls/{Uri.EscapeDataString(id)}/contacted_ips", cancellationToken).ConfigureAwait(false);
+        var path = new System.Text.StringBuilder($"urls/{Uri.EscapeDataString(id)}/contacted_ips");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);

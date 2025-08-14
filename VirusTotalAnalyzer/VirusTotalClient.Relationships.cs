@@ -24,9 +24,13 @@ public sealed partial class VirusTotalClient
         CancellationToken cancellationToken = default)
         => GetSubmissionsAsync(ResourceType.Url, id, limit, cursor, cancellationToken);
 
-    public async Task<IReadOnlyList<Graph>> GetUrlGraphsAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<Graph>> GetUrlGraphsAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
     {
-        var relationships = await GetRelationshipsAsync(ResourceType.Url, id, "graphs", cancellationToken: cancellationToken).ConfigureAwait(false);
+        var relationships = await GetRelationshipsAsync(ResourceType.Url, id, "graphs", limit, cursor, cancellationToken).ConfigureAwait(false);
         if (relationships == null || relationships.Data.Count == 0)
         {
             return Array.Empty<Graph>();
@@ -59,23 +63,47 @@ public sealed partial class VirusTotalClient
         CancellationToken cancellationToken = default)
         => GetSubmissionsAsync(ResourceType.Domain, id, limit, cursor, cancellationToken);
 
-    public Task<IReadOnlyList<DomainSummary>?> GetDomainSubdomainsAsync(string id, CancellationToken cancellationToken = default)
-        => GetDomainRelationshipsAsync<DomainSubdomainsResponse, DomainSummary>(id, "subdomains", r => r.Data, cancellationToken);
+    public Task<IReadOnlyList<DomainSummary>?> GetDomainSubdomainsAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetDomainRelationshipsAsync<DomainSubdomainsResponse, DomainSummary>(id, "subdomains", r => r.Data, limit, cursor, cancellationToken);
 
-    public Task<IReadOnlyList<DomainSummary>?> GetDomainSiblingsAsync(string id, CancellationToken cancellationToken = default)
-        => GetDomainRelationshipsAsync<DomainSiblingsResponse, DomainSummary>(id, "siblings", r => r.Data, cancellationToken);
+    public Task<IReadOnlyList<DomainSummary>?> GetDomainSiblingsAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetDomainRelationshipsAsync<DomainSiblingsResponse, DomainSummary>(id, "siblings", r => r.Data, limit, cursor, cancellationToken);
 
-    public Task<IReadOnlyList<UrlSummary>?> GetDomainUrlsAsync(string id, CancellationToken cancellationToken = default)
-        => GetDomainRelationshipsAsync<DomainUrlsResponse, UrlSummary>(id, "urls", r => r.Data, cancellationToken);
+    public Task<IReadOnlyList<UrlSummary>?> GetDomainUrlsAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetDomainRelationshipsAsync<DomainUrlsResponse, UrlSummary>(id, "urls", r => r.Data, limit, cursor, cancellationToken);
 
-    public Task<IReadOnlyList<DnsRecord>?> GetDomainDnsRecordsAsync(string id, CancellationToken cancellationToken = default)
-        => GetDomainRelationshipsAsync<DnsRecordsResponse, DnsRecord>(id, "dns_records", r => r.Data, cancellationToken);
+    public Task<IReadOnlyList<DnsRecord>?> GetDomainDnsRecordsAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetDomainRelationshipsAsync<DnsRecordsResponse, DnsRecord>(id, "dns_records", r => r.Data, limit, cursor, cancellationToken);
 
-    public Task<IReadOnlyList<FileReport>?> GetDomainReferrerFilesAsync(string id, CancellationToken cancellationToken = default)
-        => GetDomainRelationshipsAsync<FileReportsResponse, FileReport>(id, "referrer_files", r => r.Data, cancellationToken);
+    public Task<IReadOnlyList<FileReport>?> GetDomainReferrerFilesAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetDomainRelationshipsAsync<FileReportsResponse, FileReport>(id, "referrer_files", r => r.Data, limit, cursor, cancellationToken);
 
-    public Task<IReadOnlyList<FileReport>?> GetDomainDownloadedFilesAsync(string id, CancellationToken cancellationToken = default)
-        => GetDomainRelationshipsAsync<FileReportsResponse, FileReport>(id, "downloaded_files", r => r.Data, cancellationToken);
+    public Task<IReadOnlyList<FileReport>?> GetDomainDownloadedFilesAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetDomainRelationshipsAsync<FileReportsResponse, FileReport>(id, "downloaded_files", r => r.Data, limit, cursor, cancellationToken);
 
     public Task<IReadOnlyList<Resolution>?> GetIpAddressResolutionsAsync(
         string id,
@@ -91,9 +119,24 @@ public sealed partial class VirusTotalClient
         CancellationToken cancellationToken = default)
         => GetSubmissionsAsync(ResourceType.IpAddress, id, limit, cursor, cancellationToken);
 
-    public async Task<IReadOnlyList<FileReport>?> GetIpAddressCommunicatingFilesAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FileReport>?> GetIpAddressCommunicatingFilesAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"ip_addresses/{Uri.EscapeDataString(id)}/communicating_files", cancellationToken).ConfigureAwait(false);
+        var path = new System.Text.StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}/communicating_files");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -104,9 +147,24 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<IReadOnlyList<FileReport>?> GetIpAddressDownloadedFilesAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FileReport>?> GetIpAddressDownloadedFilesAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"ip_addresses/{Uri.EscapeDataString(id)}/downloaded_files", cancellationToken).ConfigureAwait(false);
+        var path = new System.Text.StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}/downloaded_files");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -117,9 +175,24 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<IReadOnlyList<FileReport>?> GetIpAddressReferrerFilesAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FileReport>?> GetIpAddressReferrerFilesAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"ip_addresses/{Uri.EscapeDataString(id)}/referrer_files", cancellationToken).ConfigureAwait(false);
+        var path = new System.Text.StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}/referrer_files");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -130,9 +203,24 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<IReadOnlyList<UrlSummary>?> GetIpAddressUrlsAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<UrlSummary>?> GetIpAddressUrlsAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await _httpClient.GetAsync($"ip_addresses/{Uri.EscapeDataString(id)}/urls", cancellationToken).ConfigureAwait(false);
+        var path = new System.Text.StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}/urls");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -147,9 +235,23 @@ public sealed partial class VirusTotalClient
         string id,
         string relationship,
         Func<TResponse, List<T>> selector,
+        int? limit,
+        string? cursor,
         CancellationToken cancellationToken)
     {
-        using var response = await _httpClient.GetAsync($"domains/{Uri.EscapeDataString(id)}/{Uri.EscapeDataString(relationship)}", cancellationToken).ConfigureAwait(false);
+        var path = new System.Text.StringBuilder($"domains/{Uri.EscapeDataString(id)}/{Uri.EscapeDataString(relationship)}");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);

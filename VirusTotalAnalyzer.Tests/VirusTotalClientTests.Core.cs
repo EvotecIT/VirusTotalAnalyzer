@@ -49,6 +49,32 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetFileReportAsync_AppendsFieldsAndRelationships()
+    {
+        var json = "{\"data\":{\"id\":\"abc\",\"type\":\"file\"}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.GetFileReportAsync(
+            "abc",
+            fields: new[] { "reputation", "size" },
+            relationships: new[] { "analyses" });
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal(
+            "fields=reputation,size&relationships=analyses",
+            handler.Request!.RequestUri!.Query.TrimStart('?'));
+    }
+
+    [Fact]
     public async Task DownloadFileAsync_UsesCorrectPathAndReturnsStream()
     {
         var trackingStream = new TrackingStream(new byte[] { 1, 2, 3 });
@@ -296,6 +322,32 @@ public partial class VirusTotalClientTests
         Assert.Equal("def", report!.Id);
         Assert.Equal(ResourceType.Url, report.Type);
         Assert.Equal("https://example.com", report.Attributes.Url);
+    }
+
+    [Fact]
+    public async Task GetUrlReportAsync_AppendsFieldsAndRelationships()
+    {
+        var json = "{\"data\":{\"id\":\"def\",\"type\":\"url\"}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.GetUrlReportAsync(
+            "def",
+            fields: new[] { "last_analysis_date" },
+            relationships: new[] { "last_serving_ip_address" });
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/urls/def", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal(
+            "fields=last_analysis_date&relationships=last_serving_ip_address",
+            handler.Request!.RequestUri!.Query.TrimStart('?'));
     }
 
     [Fact]

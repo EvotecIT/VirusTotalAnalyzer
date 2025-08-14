@@ -11,7 +11,10 @@ public static class GetDomainReportExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var report = await client.GetDomainReportAsync("example.com");
+            var report = await client.GetDomainReportAsync(
+                "example.com",
+                fields: new[] { "last_analysis_stats" },
+                relationships: new[] { "siblings" });
             Console.WriteLine(report?.Id);
         }
         catch (RateLimitExceededException ex)

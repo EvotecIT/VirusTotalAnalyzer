@@ -11,7 +11,10 @@ public static class GetUrlReportFromUrlExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var report = await client.GetUrlReportAsync(new Uri("https://example.com"));
+            var report = await client.GetUrlReportAsync(
+                new Uri("https://example.com"),
+                fields: new[] { "last_analysis_date" },
+                relationships: new[] { "last_serving_ip_address" });
             Console.WriteLine(report?.Id);
         }
         catch (RateLimitExceededException ex)

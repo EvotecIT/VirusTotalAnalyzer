@@ -11,7 +11,7 @@ public static class ListBundlesExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var page = await client.ListBundlesAsync();
+            var page = await client.ListBundlesAsync(fetchAll: true);
             foreach (var bundle in page!.Data)
             {
                 Console.WriteLine(bundle.Id);

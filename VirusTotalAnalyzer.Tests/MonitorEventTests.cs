@@ -56,6 +56,30 @@ public class MonitorEventTests
     }
 
     [Fact]
+    public async Task ListMonitorEventsAsync_FetchAll_RetrievesAllPages()
+    {
+        var first = "{\"data\":[{\"id\":\"e1\",\"type\":\"monitor_event\"}],\"meta\":{\"cursor\":\"next\"}}";
+        var second = "{\"data\":[{\"id\":\"e2\",\"type\":\"monitor_event\"}]}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(first, Encoding.UTF8, "application/json") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(second, Encoding.UTF8, "application/json") }
+        );
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var response = await client.ListMonitorEventsAsync(fetchAll: true);
+
+        Assert.NotNull(response);
+        Assert.Equal(2, response.Data.Count);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Equal(string.Empty, handler.Requests[0].RequestUri!.Query);
+        Assert.Equal("?cursor=next", handler.Requests[1].RequestUri!.Query);
+    }
+
+    [Fact]
     public async Task GetCommentsAsync_OnMonitorEvent_UsesMonitorEventsPath()
     {
         var json = "{\"data\":[]}";

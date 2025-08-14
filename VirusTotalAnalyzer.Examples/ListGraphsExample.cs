@@ -11,7 +11,7 @@ public static class ListGraphsExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var page = await client.ListGraphsAsync();
+            var page = await client.ListGraphsAsync(fetchAll: true);
             foreach (var graph in page!.Data)
             {
                 Console.WriteLine(graph.Id);

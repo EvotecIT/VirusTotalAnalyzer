@@ -12,7 +12,7 @@ public static class GetFileContactedUrlsExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var page = await client.GetFileContactedUrlsAsync("44d88612fea8a8f36de82e1278abb02f");
+            var page = await client.GetFileContactedUrlsAsync("44d88612fea8a8f36de82e1278abb02f", fetchAll: true);
             foreach (var url in page?.Data ?? new List<UrlSummary>())
             {
                 Console.WriteLine(url.Data.Attributes.Url);

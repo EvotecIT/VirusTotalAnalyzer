@@ -195,228 +195,260 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<PagedResponse<UrlSummary>?> GetFileContactedUrlsAsync(
+    public Task<PagedResponse<UrlSummary>?> GetFileContactedUrlsAsync(
         string id,
         int? limit = null,
         string? cursor = null,
+        bool fetchAll = false,
         CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/contacted_urls");
-        var hasQuery = false;
-        if (limit.HasValue)
+        return GetPagedAsync<UrlSummary>(async (c, token) =>
         {
-            path.Append("?limit=").Append(limit.Value);
-            hasQuery = true;
-        }
-        if (!string.IsNullOrEmpty(cursor))
-        {
-            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
-        }
-        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/contacted_urls");
+            var hasQuery = false;
+            if (limit.HasValue)
+            {
+                path.Append("?limit=").Append(limit.Value);
+                hasQuery = true;
+            }
+            if (!string.IsNullOrEmpty(c))
+            {
+                path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(c));
+            }
+            using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, token).ConfigureAwait(false);
 #if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<PagedResponse<UrlSummary>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            return await JsonSerializer.DeserializeAsync<PagedResponse<UrlSummary>>(stream, _jsonOptions, token).ConfigureAwait(false);
+        }, cursor, fetchAll, cancellationToken);
     }
 
-    public async Task<PagedResponse<DomainSummary>?> GetFileContactedDomainsAsync(
+    public Task<PagedResponse<DomainSummary>?> GetFileContactedDomainsAsync(
         string id,
         int? limit = null,
         string? cursor = null,
+        bool fetchAll = false,
         CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/contacted_domains");
-        var hasQuery = false;
-        if (limit.HasValue)
+        return GetPagedAsync<DomainSummary>(async (c, token) =>
         {
-            path.Append("?limit=").Append(limit.Value);
-            hasQuery = true;
-        }
-        if (!string.IsNullOrEmpty(cursor))
-        {
-            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
-        }
-        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/contacted_domains");
+            var hasQuery = false;
+            if (limit.HasValue)
+            {
+                path.Append("?limit=").Append(limit.Value);
+                hasQuery = true;
+            }
+            if (!string.IsNullOrEmpty(c))
+            {
+                path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(c));
+            }
+            using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, token).ConfigureAwait(false);
 #if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<PagedResponse<DomainSummary>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            return await JsonSerializer.DeserializeAsync<PagedResponse<DomainSummary>>(stream, _jsonOptions, token).ConfigureAwait(false);
+        }, cursor, fetchAll, cancellationToken);
     }
 
-    public async Task<PagedResponse<IpAddressSummary>?> GetFileContactedIpsAsync(
+    public Task<PagedResponse<IpAddressSummary>?> GetFileContactedIpsAsync(
         string id,
         int? limit = null,
         string? cursor = null,
+        bool fetchAll = false,
         CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/contacted_ips");
-        var hasQuery = false;
-        if (limit.HasValue)
+        return GetPagedAsync<IpAddressSummary>(async (c, token) =>
         {
-            path.Append("?limit=").Append(limit.Value);
-            hasQuery = true;
-        }
-        if (!string.IsNullOrEmpty(cursor))
-        {
-            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
-        }
-        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/contacted_ips");
+            var hasQuery = false;
+            if (limit.HasValue)
+            {
+                path.Append("?limit=").Append(limit.Value);
+                hasQuery = true;
+            }
+            if (!string.IsNullOrEmpty(c))
+            {
+                path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(c));
+            }
+            using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, token).ConfigureAwait(false);
 #if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<PagedResponse<IpAddressSummary>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            return await JsonSerializer.DeserializeAsync<PagedResponse<IpAddressSummary>>(stream, _jsonOptions, token).ConfigureAwait(false);
+        }, cursor, fetchAll, cancellationToken);
     }
 
-    public async Task<PagedResponse<FileReport>?> GetFileReferrerFilesAsync(
+    public Task<PagedResponse<FileReport>?> GetFileReferrerFilesAsync(
         string id,
         int? limit = null,
         string? cursor = null,
+        bool fetchAll = false,
         CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/referrer_files");
-        var hasQuery = false;
-        if (limit.HasValue)
+        return GetPagedAsync<FileReport>(async (c, token) =>
         {
-            path.Append("?limit=").Append(limit.Value);
-            hasQuery = true;
-        }
-        if (!string.IsNullOrEmpty(cursor))
-        {
-            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
-        }
-        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/referrer_files");
+            var hasQuery = false;
+            if (limit.HasValue)
+            {
+                path.Append("?limit=").Append(limit.Value);
+                hasQuery = true;
+            }
+            if (!string.IsNullOrEmpty(c))
+            {
+                path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(c));
+            }
+            using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, token).ConfigureAwait(false);
 #if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<PagedResponse<FileReport>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            return await JsonSerializer.DeserializeAsync<PagedResponse<FileReport>>(stream, _jsonOptions, token).ConfigureAwait(false);
+        }, cursor, fetchAll, cancellationToken);
     }
 
-    public async Task<PagedResponse<FileReport>?> GetFileDownloadedFilesAsync(
+    public Task<PagedResponse<FileReport>?> GetFileDownloadedFilesAsync(
         string id,
         int? limit = null,
         string? cursor = null,
+        bool fetchAll = false,
         CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/downloaded_files");
-        var hasQuery = false;
-        if (limit.HasValue)
+        return GetPagedAsync<FileReport>(async (c, token) =>
         {
-            path.Append("?limit=").Append(limit.Value);
-            hasQuery = true;
-        }
-        if (!string.IsNullOrEmpty(cursor))
-        {
-            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
-        }
-        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/downloaded_files");
+            var hasQuery = false;
+            if (limit.HasValue)
+            {
+                path.Append("?limit=").Append(limit.Value);
+                hasQuery = true;
+            }
+            if (!string.IsNullOrEmpty(c))
+            {
+                path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(c));
+            }
+            using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, token).ConfigureAwait(false);
 #if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<PagedResponse<FileReport>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            return await JsonSerializer.DeserializeAsync<PagedResponse<FileReport>>(stream, _jsonOptions, token).ConfigureAwait(false);
+        }, cursor, fetchAll, cancellationToken);
     }
 
-    public async Task<PagedResponse<FileReport>?> GetFileBundledFilesAsync(
+    public Task<PagedResponse<FileReport>?> GetFileBundledFilesAsync(
         string id,
         int? limit = null,
         string? cursor = null,
+        bool fetchAll = false,
         CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/bundled_files");
-        var hasQuery = false;
-        if (limit.HasValue)
+        return GetPagedAsync<FileReport>(async (c, token) =>
         {
-            path.Append("?limit=").Append(limit.Value);
-            hasQuery = true;
-        }
-        if (!string.IsNullOrEmpty(cursor))
-        {
-            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
-        }
-        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/bundled_files");
+            var hasQuery = false;
+            if (limit.HasValue)
+            {
+                path.Append("?limit=").Append(limit.Value);
+                hasQuery = true;
+            }
+            if (!string.IsNullOrEmpty(c))
+            {
+                path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(c));
+            }
+            using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, token).ConfigureAwait(false);
 #if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<PagedResponse<FileReport>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            return await JsonSerializer.DeserializeAsync<PagedResponse<FileReport>>(stream, _jsonOptions, token).ConfigureAwait(false);
+        }, cursor, fetchAll, cancellationToken);
     }
 
-    public async Task<PagedResponse<FileReport>?> GetFileDroppedFilesAsync(
+    public Task<PagedResponse<FileReport>?> GetFileDroppedFilesAsync(
         string id,
         int? limit = null,
         string? cursor = null,
+        bool fetchAll = false,
         CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/dropped_files");
-        var hasQuery = false;
-        if (limit.HasValue)
+        return GetPagedAsync<FileReport>(async (c, token) =>
         {
-            path.Append("?limit=").Append(limit.Value);
-            hasQuery = true;
-        }
-        if (!string.IsNullOrEmpty(cursor))
-        {
-            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
-        }
-        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/dropped_files");
+            var hasQuery = false;
+            if (limit.HasValue)
+            {
+                path.Append("?limit=").Append(limit.Value);
+                hasQuery = true;
+            }
+            if (!string.IsNullOrEmpty(c))
+            {
+                path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(c));
+            }
+            using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, token).ConfigureAwait(false);
 #if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<PagedResponse<FileReport>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            return await JsonSerializer.DeserializeAsync<PagedResponse<FileReport>>(stream, _jsonOptions, token).ConfigureAwait(false);
+        }, cursor, fetchAll, cancellationToken);
     }
 
-    public async Task<PagedResponse<FileReport>?> GetFileSimilarFilesAsync(
+    public Task<PagedResponse<FileReport>?> GetFileSimilarFilesAsync(
         string id,
         int? limit = null,
         string? cursor = null,
+        bool fetchAll = false,
         CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/similar_files");
-        var hasQuery = false;
-        if (limit.HasValue)
+        return GetPagedAsync<FileReport>(async (c, token) =>
         {
-            path.Append("?limit=").Append(limit.Value);
-            hasQuery = true;
-        }
-        if (!string.IsNullOrEmpty(cursor))
-        {
-            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
-        }
-        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var path = new System.Text.StringBuilder($"files/{Uri.EscapeDataString(id)}/similar_files");
+            var hasQuery = false;
+            if (limit.HasValue)
+            {
+                path.Append("?limit=").Append(limit.Value);
+                hasQuery = true;
+            }
+            if (!string.IsNullOrEmpty(c))
+            {
+                path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(c));
+            }
+            using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, token).ConfigureAwait(false);
 #if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<PagedResponse<FileReport>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            return await JsonSerializer.DeserializeAsync<PagedResponse<FileReport>>(stream, _jsonOptions, token).ConfigureAwait(false);
+        }, cursor, fetchAll, cancellationToken);
     }
 
     public async Task<Uri?> GetFileDownloadUrlAsync(string id, CancellationToken cancellationToken = default)

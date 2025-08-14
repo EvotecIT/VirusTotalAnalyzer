@@ -11,7 +11,7 @@ public static class ListCollectionsExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var page = await client.ListCollectionsAsync();
+            var page = await client.ListCollectionsAsync(fetchAll: true);
             foreach (var collection in page!.Data)
             {
                 Console.WriteLine(collection.Id);

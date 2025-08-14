@@ -11,7 +11,7 @@ public static class ListMonitorEventsExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var events = await client.ListMonitorEventsAsync();
+            var events = await client.ListMonitorEventsAsync(fetchAll: true);
             if (events != null)
             {
                 foreach (var e in events.Data)

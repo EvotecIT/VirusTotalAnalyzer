@@ -11,7 +11,7 @@ public static class ReanalyzeUrlExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var report = await client.ReanalyzeUrlAsync("url-id");
+            var report = await client.ReanalyzeUrlAsync("https://www.example.com");
             Console.WriteLine(report?.Id);
         }
         catch (RateLimitExceededException ex)

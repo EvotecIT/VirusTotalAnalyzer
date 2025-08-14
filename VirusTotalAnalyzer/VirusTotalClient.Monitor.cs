@@ -78,6 +78,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<MonitorItem?> UpdateMonitorItemAsync(string id, UpdateMonitorItemRequest request, CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var message = new HttpRequestMessage(new HttpMethod("PATCH"), $"monitor/items/{Uri.EscapeDataString(id)}") { Content = content };
@@ -93,6 +94,7 @@ public sealed partial class VirusTotalClient
 
     public async Task DeleteMonitorItemAsync(string id, CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         using var response = await _httpClient.DeleteAsync($"monitor/items/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }

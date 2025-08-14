@@ -109,6 +109,18 @@ public sealed partial class VirusTotalClient : IDisposable
             _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
 
+    private static void ValidateId(string id, string paramName)
+    {
+        if (id is null)
+        {
+            throw new ArgumentNullException(paramName);
+        }
+        if (id.Length == 0)
+        {
+            throw new ArgumentException("Id must not be empty.", paramName);
+        }
+    }
+
     private async Task EnsureSuccessAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
         if (response.IsSuccessStatusCode)
@@ -171,6 +183,7 @@ public sealed partial class VirusTotalClient : IDisposable
         string? cursor = null,
         CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         if (limit == 0)
         {
             return (new List<FileNameInfo>(), cursor);
@@ -224,6 +237,7 @@ public sealed partial class VirusTotalClient : IDisposable
 
     public async Task<Stream> DownloadLivehuntNotificationFileAsync(string id, CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         var response = await _httpClient.GetAsync($"intelligence/hunting_notification_files/{Uri.EscapeDataString(id)}", HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
@@ -235,6 +249,7 @@ public sealed partial class VirusTotalClient : IDisposable
 
     public async Task<Stream> DownloadRetrohuntNotificationFileAsync(string id, CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         var response = await _httpClient
             .GetAsync($"intelligence/retrohunt_notification_files/{Uri.EscapeDataString(id)}", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);

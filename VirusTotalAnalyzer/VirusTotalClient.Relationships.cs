@@ -30,6 +30,7 @@ public sealed partial class VirusTotalClient
         string? cursor = null,
         CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         var relationships = await GetRelationshipsAsync(ResourceType.Url, id, "graphs", limit, cursor, cancellationToken).ConfigureAwait(false);
         if (relationships == null || relationships.Data.Count == 0)
         {
@@ -125,6 +126,7 @@ public sealed partial class VirusTotalClient
         string? cursor = null,
         CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         var path = new System.Text.StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}/communicating_files");
         var hasQuery = false;
         if (limit.HasValue)
@@ -153,6 +155,7 @@ public sealed partial class VirusTotalClient
         string? cursor = null,
         CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         var path = new System.Text.StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}/downloaded_files");
         var hasQuery = false;
         if (limit.HasValue)
@@ -181,6 +184,7 @@ public sealed partial class VirusTotalClient
         string? cursor = null,
         CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         var path = new System.Text.StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}/referrer_files");
         var hasQuery = false;
         if (limit.HasValue)
@@ -209,6 +213,7 @@ public sealed partial class VirusTotalClient
         string? cursor = null,
         CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         var path = new System.Text.StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}/urls");
         var hasQuery = false;
         if (limit.HasValue)
@@ -239,6 +244,7 @@ public sealed partial class VirusTotalClient
         string? cursor,
         CancellationToken cancellationToken)
     {
+        ValidateId(id, nameof(id));
         var path = new System.Text.StringBuilder($"domains/{Uri.EscapeDataString(id)}/{Uri.EscapeDataString(relationship)}");
         var hasQuery = false;
         if (limit.HasValue)
@@ -269,6 +275,7 @@ public sealed partial class VirusTotalClient
         string? cursor,
         CancellationToken cancellationToken)
     {
+        ValidateId(id, nameof(id));
         var path = new System.Text.StringBuilder($"{GetPath(resourceType)}/{Uri.EscapeDataString(id)}/resolutions");
         var hasQuery = false;
         if (limit.HasValue)
@@ -298,6 +305,7 @@ public sealed partial class VirusTotalClient
         string? cursor,
         CancellationToken cancellationToken)
     {
+        ValidateId(id, nameof(id));
         var path = new System.Text.StringBuilder($"{GetPath(resourceType)}/{Uri.EscapeDataString(id)}/submissions");
         var hasQuery = false;
         if (limit.HasValue)

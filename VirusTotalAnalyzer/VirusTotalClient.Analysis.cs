@@ -15,15 +15,23 @@ namespace VirusTotalAnalyzer;
 
 public sealed partial class VirusTotalClient
 {
+    /// <summary>
+    /// Retrieves reports for multiple files.
+    /// </summary>
+    /// <param name="ids">Identifiers of the files to retrieve. Must contain between 1 and 4 items.</param>
+    /// <param name="fields">Optional fields to include in the response.</param>
+    /// <param name="relationships">Optional relationships to include in the response.</param>
+    /// <param name="cancellationToken">Token that can be used to cancel the operation.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="ids"/> is empty or contains more than four items.</exception>
     public async Task<IReadOnlyList<FileReport>?> GetFileReportsAsync(
         IEnumerable<string> ids,
         IEnumerable<string>? fields = null,
         IEnumerable<string>? relationships = null,
         CancellationToken cancellationToken = default)
     {
-        if (ids == null) throw new ArgumentNullException(nameof(ids));
+        var idArray = ValidateIds(ids, nameof(ids));
         var url = new StringBuilder("files?ids=")
-            .Append(string.Join(",", ids.Select(Uri.EscapeDataString)));
+            .Append(string.Join(",", idArray.Select(Uri.EscapeDataString)));
 
         if (fields != null && fields.Any())
         {
@@ -485,15 +493,23 @@ public sealed partial class VirusTotalClient
         return new StreamWithResponse(response, stream);
     }
 
+    /// <summary>
+    /// Retrieves reports for multiple URLs.
+    /// </summary>
+    /// <param name="ids">Identifiers of the URLs to retrieve. Must contain between 1 and 4 items.</param>
+    /// <param name="fields">Optional fields to include in the response.</param>
+    /// <param name="relationships">Optional relationships to include in the response.</param>
+    /// <param name="cancellationToken">Token that can be used to cancel the operation.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="ids"/> is empty or contains more than four items.</exception>
     public async Task<IReadOnlyList<UrlReport>?> GetUrlReportsAsync(
         IEnumerable<string> ids,
         IEnumerable<string>? fields = null,
         IEnumerable<string>? relationships = null,
         CancellationToken cancellationToken = default)
     {
-        if (ids == null) throw new ArgumentNullException(nameof(ids));
+        var idArray = ValidateIds(ids, nameof(ids));
         var url = new StringBuilder("urls?ids=")
-            .Append(string.Join(",", ids.Select(Uri.EscapeDataString)));
+            .Append(string.Join(",", idArray.Select(Uri.EscapeDataString)));
 
         if (fields != null && fields.Any())
         {
@@ -755,15 +771,23 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
+    /// <summary>
+    /// Retrieves reports for multiple IP addresses.
+    /// </summary>
+    /// <param name="ids">Identifiers of the IP addresses to retrieve. Must contain between 1 and 4 items.</param>
+    /// <param name="fields">Optional fields to include in the response.</param>
+    /// <param name="relationships">Optional relationships to include in the response.</param>
+    /// <param name="cancellationToken">Token that can be used to cancel the operation.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="ids"/> is empty or contains more than four items.</exception>
     public async Task<IReadOnlyList<IpAddressReport>?> GetIpAddressReportsAsync(
         IEnumerable<string> ids,
         IEnumerable<string>? fields = null,
         IEnumerable<string>? relationships = null,
         CancellationToken cancellationToken = default)
     {
-        if (ids == null) throw new ArgumentNullException(nameof(ids));
+        var idArray = ValidateIds(ids, nameof(ids));
         var url = new StringBuilder("ip_addresses?ids=")
-            .Append(string.Join(",", ids.Select(Uri.EscapeDataString)));
+            .Append(string.Join(",", idArray.Select(Uri.EscapeDataString)));
 
         if (fields != null && fields.Any())
         {
@@ -836,15 +860,23 @@ public sealed partial class VirusTotalClient
             .ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Retrieves reports for multiple domains.
+    /// </summary>
+    /// <param name="ids">Domain identifiers to retrieve. Must contain between 1 and 4 items.</param>
+    /// <param name="fields">Optional fields to include in the response.</param>
+    /// <param name="relationships">Optional relationships to include in the response.</param>
+    /// <param name="cancellationToken">Token that can be used to cancel the operation.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="ids"/> is empty or contains more than four items.</exception>
     public async Task<IReadOnlyList<DomainReport>?> GetDomainReportsAsync(
         IEnumerable<string> ids,
         IEnumerable<string>? fields = null,
         IEnumerable<string>? relationships = null,
         CancellationToken cancellationToken = default)
     {
-        if (ids == null) throw new ArgumentNullException(nameof(ids));
+        var idArray = ValidateIds(ids, nameof(ids));
         var url = new StringBuilder("domains?ids=")
-            .Append(string.Join(",", ids.Select(Uri.EscapeDataString)));
+            .Append(string.Join(",", idArray.Select(Uri.EscapeDataString)));
 
         if (fields != null && fields.Any())
         {
@@ -917,15 +949,23 @@ public sealed partial class VirusTotalClient
             .ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Retrieves reports for multiple analyses.
+    /// </summary>
+    /// <param name="ids">Identifiers of the analyses to retrieve. Must contain between 1 and 4 items.</param>
+    /// <param name="fields">Optional fields to include in the response.</param>
+    /// <param name="relationships">Optional relationships to include in the response.</param>
+    /// <param name="cancellationToken">Token that can be used to cancel the operation.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="ids"/> is empty or contains more than four items.</exception>
     public async Task<IReadOnlyList<AnalysisReport>?> GetAnalysesAsync(
         IEnumerable<string> ids,
         IEnumerable<string>? fields = null,
         IEnumerable<string>? relationships = null,
         CancellationToken cancellationToken = default)
     {
-        if (ids == null) throw new ArgumentNullException(nameof(ids));
+        var idArray = ValidateIds(ids, nameof(ids));
         var url = new StringBuilder("analyses?ids=")
-            .Append(string.Join(",", ids.Select(Uri.EscapeDataString)));
+            .Append(string.Join(",", idArray.Select(Uri.EscapeDataString)));
 
         if (fields != null && fields.Any())
         {
@@ -1024,4 +1064,24 @@ public sealed partial class VirusTotalClient
         }
     }
 
+    private static string[] ValidateIds(IEnumerable<string> ids, string paramName)
+    {
+        if (ids == null)
+        {
+            throw new ArgumentNullException(paramName);
+        }
+
+        var array = ids as string[] ?? ids.ToArray();
+        if (array.Length == 0)
+        {
+            throw new ArgumentException("The collection must not be empty.", paramName);
+        }
+
+        if (array.Length > 4)
+        {
+            throw new ArgumentException("A maximum of 4 ids is allowed.", paramName);
+        }
+
+        return array;
+    }
 }

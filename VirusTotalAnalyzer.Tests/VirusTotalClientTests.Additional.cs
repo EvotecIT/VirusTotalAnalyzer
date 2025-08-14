@@ -624,7 +624,7 @@ public partial class VirusTotalClientTests
         await client.GetFeedAsync(ResourceType.FileBehaviour, limit: 5, cursor: "abc");
 
         Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/feeds/file-behaviour", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("/api/v3/feeds/file-behaviours", handler.Request!.RequestUri!.AbsolutePath);
         Assert.Equal("limit=5&cursor=abc", handler.Request!.RequestUri!.Query.TrimStart('?'));
     }
 
@@ -711,7 +711,7 @@ public partial class VirusTotalClientTests
         await client.GetFeedAsync(ResourceType.FileBehaviour, new DateTime(2024, 1, 2, 3, 0, 0, DateTimeKind.Utc), FeedGranularity.Hourly);
 
         Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/feeds/file-behaviour/2024010203", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("/api/v3/feeds/file-behaviours/2024010203", handler.Request!.RequestUri!.AbsolutePath);
     }
 
     [Fact]

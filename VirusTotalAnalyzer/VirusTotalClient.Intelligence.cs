@@ -482,7 +482,7 @@ public sealed partial class VirusTotalClient
             throw new ArgumentOutOfRangeException(nameof(resourceType));
         }
 
-        var path = new StringBuilder($"feeds/{GetPath(resourceType)}");
+        var path = new StringBuilder($"feeds/{GetFeedPath(resourceType)}");
         var hasQuery = false;
         if (limit.HasValue)
         {
@@ -518,7 +518,7 @@ public sealed partial class VirusTotalClient
         var formatted = granularity == FeedGranularity.Daily
             ? utc.ToString("yyyyMMdd", CultureInfo.InvariantCulture)
             : utc.ToString("yyyyMMddHH", CultureInfo.InvariantCulture);
-        var path = $"feeds/{GetPath(resourceType)}/{formatted}";
+        var path = $"feeds/{GetFeedPath(resourceType)}/{formatted}";
         using var response = await _httpClient.GetAsync(path, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472

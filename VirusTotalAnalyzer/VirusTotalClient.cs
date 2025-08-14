@@ -132,6 +132,13 @@ public sealed partial class VirusTotalClient : IDisposable
             _ => throw new ArgumentOutOfRangeException(nameof(type))
         };
 
+    private static string GetFeedPath(ResourceType type)
+        => type switch
+        {
+            ResourceType.FileBehaviour => "file-behaviours",
+            _ => GetPath(type)
+        };
+
     private static void ValidateId(string id, string paramName)
     {
         if (id is null)

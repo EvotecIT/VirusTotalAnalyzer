@@ -19,6 +19,15 @@ public sealed class UrlReportResponse
     public UrlReport Data { get; set; } = new();
 }
 
+public sealed class UrlReportsResponse
+{
+    [JsonPropertyName("data")]
+    public List<UrlReport> Data { get; set; } = new();
+
+    [JsonPropertyName("meta")]
+    public PaginationMetadata? Meta { get; set; }
+}
+
 public sealed class UrlAttributes
 {
     [JsonPropertyName("url")]

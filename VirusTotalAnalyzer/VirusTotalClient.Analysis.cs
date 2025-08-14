@@ -15,6 +15,38 @@ namespace VirusTotalAnalyzer;
 
 public sealed partial class VirusTotalClient
 {
+    public async Task<IReadOnlyList<FileReport>?> GetFileReportsAsync(
+        IEnumerable<string> ids,
+        IEnumerable<string>? fields = null,
+        IEnumerable<string>? relationships = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (ids == null) throw new ArgumentNullException(nameof(ids));
+        var url = new StringBuilder("files?ids=")
+            .Append(string.Join(",", ids.Select(Uri.EscapeDataString)));
+
+        if (fields != null && fields.Any())
+        {
+            url.Append("&fields=").Append(string.Join(",", fields.Select(Uri.EscapeDataString)));
+        }
+
+        if (relationships != null && relationships.Any())
+        {
+            url.Append("&relationships=").Append(string.Join(",", relationships.Select(Uri.EscapeDataString)));
+        }
+
+        using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        var result = await JsonSerializer.DeserializeAsync<FileReportsResponse>(stream, _jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+        return result?.Data;
+    }
+
     public async Task<FileReport?> GetFileReportAsync(
         string id,
         IEnumerable<string>? fields = null,
@@ -410,6 +442,38 @@ public sealed partial class VirusTotalClient
         return new StreamWithResponse(response, stream);
     }
 
+    public async Task<IReadOnlyList<UrlReport>?> GetUrlReportsAsync(
+        IEnumerable<string> ids,
+        IEnumerable<string>? fields = null,
+        IEnumerable<string>? relationships = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (ids == null) throw new ArgumentNullException(nameof(ids));
+        var url = new StringBuilder("urls?ids=")
+            .Append(string.Join(",", ids.Select(Uri.EscapeDataString)));
+
+        if (fields != null && fields.Any())
+        {
+            url.Append("&fields=").Append(string.Join(",", fields.Select(Uri.EscapeDataString)));
+        }
+
+        if (relationships != null && relationships.Any())
+        {
+            url.Append("&relationships=").Append(string.Join(",", relationships.Select(Uri.EscapeDataString)));
+        }
+
+        using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        var result = await JsonSerializer.DeserializeAsync<UrlReportsResponse>(stream, _jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+        return result?.Data;
+    }
+
     public async Task<UrlReport?> GetUrlReportAsync(
         string id,
         IEnumerable<string>? fields = null,
@@ -641,6 +705,38 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
+    public async Task<IReadOnlyList<IpAddressReport>?> GetIpAddressReportsAsync(
+        IEnumerable<string> ids,
+        IEnumerable<string>? fields = null,
+        IEnumerable<string>? relationships = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (ids == null) throw new ArgumentNullException(nameof(ids));
+        var url = new StringBuilder("ip_addresses?ids=")
+            .Append(string.Join(",", ids.Select(Uri.EscapeDataString)));
+
+        if (fields != null && fields.Any())
+        {
+            url.Append("&fields=").Append(string.Join(",", fields.Select(Uri.EscapeDataString)));
+        }
+
+        if (relationships != null && relationships.Any())
+        {
+            url.Append("&relationships=").Append(string.Join(",", relationships.Select(Uri.EscapeDataString)));
+        }
+
+        using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        var result = await JsonSerializer.DeserializeAsync<IpAddressReportsResponse>(stream, _jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+        return result?.Data;
+    }
+
     public async Task<IpAddressReport?> GetIpAddressReportAsync(
         string id,
         IEnumerable<string>? fields = null,
@@ -688,6 +784,38 @@ public sealed partial class VirusTotalClient
             .ConfigureAwait(false);
     }
 
+    public async Task<IReadOnlyList<DomainReport>?> GetDomainReportsAsync(
+        IEnumerable<string> ids,
+        IEnumerable<string>? fields = null,
+        IEnumerable<string>? relationships = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (ids == null) throw new ArgumentNullException(nameof(ids));
+        var url = new StringBuilder("domains?ids=")
+            .Append(string.Join(",", ids.Select(Uri.EscapeDataString)));
+
+        if (fields != null && fields.Any())
+        {
+            url.Append("&fields=").Append(string.Join(",", fields.Select(Uri.EscapeDataString)));
+        }
+
+        if (relationships != null && relationships.Any())
+        {
+            url.Append("&relationships=").Append(string.Join(",", relationships.Select(Uri.EscapeDataString)));
+        }
+
+        using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        var result = await JsonSerializer.DeserializeAsync<DomainReportsResponse>(stream, _jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+        return result?.Data;
+    }
+
     public async Task<DomainReport?> GetDomainReportAsync(
         string id,
         IEnumerable<string>? fields = null,
@@ -733,6 +861,38 @@ public sealed partial class VirusTotalClient
 #endif
         return await JsonSerializer.DeserializeAsync<DomainWhois>(stream, _jsonOptions, cancellationToken)
             .ConfigureAwait(false);
+    }
+
+    public async Task<IReadOnlyList<AnalysisReport>?> GetAnalysesAsync(
+        IEnumerable<string> ids,
+        IEnumerable<string>? fields = null,
+        IEnumerable<string>? relationships = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (ids == null) throw new ArgumentNullException(nameof(ids));
+        var url = new StringBuilder("analyses?ids=")
+            .Append(string.Join(",", ids.Select(Uri.EscapeDataString)));
+
+        if (fields != null && fields.Any())
+        {
+            url.Append("&fields=").Append(string.Join(",", fields.Select(Uri.EscapeDataString)));
+        }
+
+        if (relationships != null && relationships.Any())
+        {
+            url.Append("&relationships=").Append(string.Join(",", relationships.Select(Uri.EscapeDataString)));
+        }
+
+        using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        var result = await JsonSerializer.DeserializeAsync<AnalysisReportsResponse>(stream, _jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+        return result?.Data;
     }
 
     public async Task<AnalysisReport?> GetAnalysisAsync(string id, CancellationToken cancellationToken = default)

@@ -19,6 +19,15 @@ public sealed class IpAddressReportResponse
     public IpAddressReport Data { get; set; } = new();
 }
 
+public sealed class IpAddressReportsResponse
+{
+    [JsonPropertyName("data")]
+    public List<IpAddressReport> Data { get; set; } = new();
+
+    [JsonPropertyName("meta")]
+    public PaginationMetadata? Meta { get; set; }
+}
+
 public sealed class IpAddressAttributes
 {
     [JsonPropertyName("ip_address")]

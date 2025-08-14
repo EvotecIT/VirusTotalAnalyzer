@@ -19,6 +19,15 @@ public sealed class DomainReportResponse
     public DomainReport Data { get; set; } = new();
 }
 
+public sealed class DomainReportsResponse
+{
+    [JsonPropertyName("data")]
+    public List<DomainReport> Data { get; set; } = new();
+
+    [JsonPropertyName("meta")]
+    public PaginationMetadata? Meta { get; set; }
+}
+
 public sealed class DomainAttributes
 {
     [JsonPropertyName("domain")]

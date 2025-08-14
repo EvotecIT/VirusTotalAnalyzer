@@ -106,6 +106,13 @@ public sealed partial class VirusTotalClient
         CancellationToken cancellationToken = default)
         => GetDomainRelationshipsAsync<FileReportsResponse, FileReport>(id, "downloaded_files", r => r.Data, limit, cursor, cancellationToken);
 
+    public Task<IReadOnlyList<SslCertificate>?> GetDomainSslCertificatesAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetDomainRelationshipsAsync<SslCertificatesResponse, SslCertificate>(id, "ssl_certificates", r => r.Data, limit, cursor, cancellationToken);
+
     public Task<IReadOnlyList<Resolution>?> GetIpAddressResolutionsAsync(
         string id,
         int? limit = null,
@@ -233,6 +240,35 @@ public sealed partial class VirusTotalClient
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
         var result = await JsonSerializer.DeserializeAsync<UrlSummariesResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return result?.Data;
+    }
+
+    public async Task<IReadOnlyList<SslCertificate>?> GetIpAddressSslCertificatesAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateId(id, nameof(id));
+        var path = new System.Text.StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}/ssl_certificates");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+        {
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+        }
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+#if NET472
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
+        var result = await JsonSerializer.DeserializeAsync<SslCertificatesResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
         return result?.Data;
     }
 

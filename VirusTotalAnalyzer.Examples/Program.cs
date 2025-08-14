@@ -4,6 +4,7 @@ using VirusTotalAnalyzer.Examples;
 // Uncomment the example you want to run.
 
 // await GetFileReportExample.RunAsync();
+// await GetFileReportsExample.RunAsync();
 // await GetUrlReportExample.RunAsync();
 // await GetUrlReportFromUrlExample.RunAsync();
 // await GetUrlRelationshipsExample.RunAsync();

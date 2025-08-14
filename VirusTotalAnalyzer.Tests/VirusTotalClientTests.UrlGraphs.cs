@@ -47,5 +47,27 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/graphs/g1", handler.Requests[1].RequestUri!.AbsolutePath);
         Assert.Equal("/api/v3/graphs/g2", handler.Requests[2].RequestUri!.AbsolutePath);
     }
+
+    [Fact]
+    public async Task GetUrlGraphsAsync_BuildsQueryWithLimitAndCursor()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"data\":[]}", Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var graphs = await client.GetUrlGraphsAsync("url-id", limit: 10, cursor: "abc");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("?limit=10&cursor=abc", handler.Request!.RequestUri!.Query);
+        Assert.NotNull(graphs);
+        Assert.Empty(graphs);
+    }
 }
 

@@ -51,7 +51,7 @@ public sealed partial class VirusTotalClient : IDisposable
         _disposeClient = disposeClient;
         _jsonOptions = new JsonSerializerOptions
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            PropertyNamingPolicy = SnakeCaseNamingPolicy.Instance
         };
         _jsonOptions.Converters.Add(new JsonStringEnumMemberConverter());
         _jsonOptions.Converters.Add(new UnixTimestampConverter());

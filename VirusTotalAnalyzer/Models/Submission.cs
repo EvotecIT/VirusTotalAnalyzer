@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 namespace VirusTotalAnalyzer.Models;
 
@@ -18,15 +17,12 @@ public sealed class SubmissionData
 
 public sealed class SubmissionAttributes
 {
-    [JsonPropertyName("date")]
     public DateTimeOffset Date { get; set; }
 }
 
 public sealed class SubmissionsResponse
 {
-    [JsonPropertyName("data")]
     public List<Submission> Data { get; set; } = new();
 
-    [JsonPropertyName("meta")]
     public PaginationMetadata? Meta { get; set; }
 }

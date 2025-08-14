@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 namespace VirusTotalAnalyzer.Models;
 
@@ -9,7 +8,6 @@ public sealed class Comment
     public string Id { get; set; } = string.Empty;
     public ResourceType Type { get; set; }
 
-    [JsonPropertyName("links")]
     public Links Links { get; set; } = new();
     public CommentData Data { get; set; } = new();
 }
@@ -21,45 +19,36 @@ public sealed class CommentData
 
 public sealed class CommentAttributes
 {
-    [JsonPropertyName("date")]
     public DateTimeOffset Date { get; set; }
 
-    [JsonPropertyName("text")]
     public string Text { get; set; } = string.Empty;
 }
 
 public sealed class CommentsResponse
 {
-    [JsonPropertyName("data")]
     public List<Comment> Data { get; set; } = new();
 
-    [JsonPropertyName("meta")]
     public PaginationMetadata? Meta { get; set; }
 }
 
 public sealed class CommentResponse
 {
-    [JsonPropertyName("data")]
     public Comment Data { get; set; } = new();
 }
 
 public sealed class CreateCommentRequest
 {
-    [JsonPropertyName("data")]
     public CreateCommentData Data { get; set; } = new();
 }
 
 public sealed class CreateCommentData
 {
-    [JsonPropertyName("type")]
     public string Type { get; set; } = "comment";
 
-    [JsonPropertyName("attributes")]
     public CreateCommentAttributes Attributes { get; set; } = new();
 }
 
 public sealed class CreateCommentAttributes
 {
-    [JsonPropertyName("text")]
     public string Text { get; set; } = string.Empty;
 }

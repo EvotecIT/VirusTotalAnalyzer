@@ -255,7 +255,27 @@ public sealed partial class VirusTotalClient
         return ReanalyzeHashAsync(id, AnalysisType.Url, cancellationToken);
     }
 
-    public async Task<AnalysisReport?> SubmitUrlAsync(string url, CancellationToken cancellationToken = default)
+    public Task<AnalysisReport?> SubmitUrlAsync(string url, CancellationToken cancellationToken = default)
+        => SubmitUrlAsync(url, options: null, cancellationToken);
+
+    public Task<AnalysisReport?> SubmitUrlAsync(
+        string url,
+        bool waitForCompletion,
+        bool? analyze = null,
+        CancellationToken cancellationToken = default)
+    {
+        var options = new SubmitUrlOptions
+        {
+            WaitForCompletion = waitForCompletion,
+            Analyze = analyze
+        };
+        return SubmitUrlAsync(url, options, cancellationToken);
+    }
+
+    public async Task<AnalysisReport?> SubmitUrlAsync(
+        string url,
+        SubmitUrlOptions? options,
+        CancellationToken cancellationToken = default)
     {
         if (url is null)
         {
@@ -265,8 +285,21 @@ public sealed partial class VirusTotalClient
         {
             throw new ArgumentException("URL must not be empty.", nameof(url));
         }
+        var path = new StringBuilder("urls");
+        var hasQuery = false;
+        if (options?.WaitForCompletion == true)
+        {
+            path.Append("?wait_for_completion=true");
+            hasQuery = true;
+        }
+        if (options?.Analyze.HasValue == true)
+        {
+            path.Append(hasQuery ? '&' : '?')
+                .Append("analyze=")
+                .Append(options.Analyze.Value ? "true" : "false");
+        }
         using var content = new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("url", url) });
-        using var response = await _httpClient.PostAsync("urls", content, cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.PostAsync(path.ToString(), content, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);

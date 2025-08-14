@@ -200,6 +200,40 @@ public sealed partial class VirusTotalClient : IDisposable
         throw new ApiException(error);
     }
 
+    public Task<PagedResponse<FileNameInfo>?> GetFileNamesPagedAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        bool fetchAll = false,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateId(id, nameof(id));
+        return GetPagedAsync<FileNameInfo>(async (c, token) =>
+        {
+            var url = new StringBuilder($"files/{Uri.EscapeDataString(id)}/names");
+            var hasQuery = false;
+            if (limit.HasValue)
+            {
+                url.Append("?limit=").Append(limit.Value);
+                hasQuery = true;
+            }
+            if (!string.IsNullOrEmpty(c))
+            {
+                url.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(c));
+            }
+
+            using var response = await _httpClient.GetAsync(url.ToString(), token).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, token).ConfigureAwait(false);
+#if NET472
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
+#endif
+            return await JsonSerializer.DeserializeAsync<PagedResponse<FileNameInfo>>(stream, _jsonOptions, token)
+                .ConfigureAwait(false);
+        }, cursor, fetchAll, cancellationToken);
+    }
+
     public async Task<(List<FileNameInfo> Names, string? Cursor)> GetFileNamesAsync(
         string id,
         int? limit = null,
@@ -218,26 +252,7 @@ public sealed partial class VirusTotalClient : IDisposable
 
         do
         {
-            var url = new StringBuilder($"files/{Uri.EscapeDataString(id)}/names");
-            var hasQuery = false;
-            if (remaining.HasValue)
-            {
-                url.Append("?limit=").Append(remaining.Value);
-                hasQuery = true;
-            }
-            if (!string.IsNullOrEmpty(nextCursor))
-            {
-                url.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(nextCursor));
-            }
-
-            using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
-            await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
-            var page = await JsonSerializer.DeserializeAsync<FileNamesResponse>(stream, _jsonOptions, cancellationToken)
+            var page = await GetFileNamesPagedAsync(id, remaining, nextCursor, fetchAll: false, cancellationToken)
                 .ConfigureAwait(false);
             if (page != null)
             {

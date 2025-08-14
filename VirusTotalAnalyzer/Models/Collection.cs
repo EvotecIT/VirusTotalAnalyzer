@@ -6,6 +6,9 @@ public sealed class Collection
 {
     public string Id { get; set; } = string.Empty;
     public ResourceType Type { get; set; }
+
+    [JsonPropertyName("links")]
+    public Links Links { get; set; } = new();
     public CollectionData Data { get; set; } = new();
 }
 

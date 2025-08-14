@@ -9,6 +9,9 @@ public sealed class DomainReport
     public string Id { get; set; } = string.Empty;
     public ResourceType Type { get; set; }
 
+    [JsonPropertyName("links")]
+    public Links Links { get; set; } = new();
+
     [JsonPropertyName("attributes")]
     public DomainAttributes Attributes { get; set; } = new();
 }

@@ -16,7 +16,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetUserAsync_DeserializesResponse()
     {
-        var json = @"{""id"":""user1"",""type"":""user"",""data"":{""attributes"":{""username"":""demo"",""role"":""admin""}}}";
+        var json = @"{""id"":""user1"",""type"":""user"",""links"":{""self"":""https://www.virustotal.com/api/v3/users/user1""},""data"":{""attributes"":{""username"":""demo"",""role"":""admin""}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -32,6 +32,7 @@ public partial class VirusTotalClientTests
         Assert.NotNull(user);
         Assert.Equal("demo", user!.Data.Attributes.Username);
         Assert.Equal(UserRole.Admin, user.Data.Attributes.Role);
+        Assert.Equal("https://www.virustotal.com/api/v3/users/user1", user.Links.Self);
         Assert.Equal("/api/v3/users/user1", handler.Request!.RequestUri!.AbsolutePath);
     }
 

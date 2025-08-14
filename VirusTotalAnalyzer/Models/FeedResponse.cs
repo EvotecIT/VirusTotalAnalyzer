@@ -19,4 +19,7 @@ public sealed class FeedItem
 
     [JsonPropertyName("type")]
     public ResourceType Type { get; set; }
+
+    [JsonPropertyName("links")]
+    public Links Links { get; set; } = new();
 }

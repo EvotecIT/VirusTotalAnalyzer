@@ -8,6 +8,9 @@ public sealed class Comment
 {
     public string Id { get; set; } = string.Empty;
     public ResourceType Type { get; set; }
+
+    [JsonPropertyName("links")]
+    public Links Links { get; set; } = new();
     public CommentData Data { get; set; } = new();
 }
 

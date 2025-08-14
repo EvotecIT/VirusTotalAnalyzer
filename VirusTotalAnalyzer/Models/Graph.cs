@@ -6,6 +6,9 @@ public sealed class Graph
 {
     public string Id { get; set; } = string.Empty;
     public ResourceType Type { get; set; }
+
+    [JsonPropertyName("links")]
+    public Links Links { get; set; } = new();
     public GraphData Data { get; set; } = new();
 }
 

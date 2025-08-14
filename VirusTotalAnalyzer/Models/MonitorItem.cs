@@ -6,6 +6,9 @@ public sealed class MonitorItem
 {
     public string Id { get; set; } = string.Empty;
     public ResourceType Type { get; set; }
+
+    [JsonPropertyName("links")]
+    public Links Links { get; set; } = new();
     public MonitorItemData Data { get; set; } = new();
 }
 

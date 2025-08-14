@@ -11,56 +11,58 @@ namespace VirusTotalAnalyzer;
 
 public sealed partial class VirusTotalClient
 {
-    public async Task<PagedResponse<MonitorEvent>?> ListMonitorEventsAsync(string? filter = null, int? limit = null, string? cursor = null, CancellationToken ct = default)
-    {
-        var path = new StringBuilder("monitor/events");
-        var hasQuery = false;
-        if (!string.IsNullOrEmpty(filter))
+    public Task<PagedResponse<MonitorEvent>?> ListMonitorEventsAsync(string? filter = null, int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken ct = default)
+        => GetPagedAsync<MonitorEvent>(async (c, token) =>
         {
-            path.Append("?filter=").Append(Uri.EscapeDataString(filter));
-            hasQuery = true;
-        }
-        if (limit.HasValue)
-        {
-            path.Append(hasQuery ? '&' : '?').Append("limit=").Append(limit.Value);
-            hasQuery = true;
-        }
-        if (!string.IsNullOrEmpty(cursor))
-        {
-            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
-        }
-        using var response = await _httpClient.GetAsync(path.ToString(), ct).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, ct).ConfigureAwait(false);
+            var path = new StringBuilder("monitor/events");
+            var hasQuery = false;
+            if (!string.IsNullOrEmpty(filter))
+            {
+                path.Append("?filter=").Append(Uri.EscapeDataString(filter));
+                hasQuery = true;
+            }
+            if (limit.HasValue)
+            {
+                path.Append(hasQuery ? '&' : '?').Append("limit=").Append(limit.Value);
+                hasQuery = true;
+            }
+            if (!string.IsNullOrEmpty(c))
+            {
+                path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(c));
+            }
+            using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, token).ConfigureAwait(false);
 #if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-        await using var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<PagedResponse<MonitorEvent>>(stream, _jsonOptions, ct).ConfigureAwait(false);
-    }
+            return await JsonSerializer.DeserializeAsync<PagedResponse<MonitorEvent>>(stream, _jsonOptions, token).ConfigureAwait(false);
+        }, cursor, fetchAll, ct);
 
-    public async Task<PagedResponse<MonitorItem>?> ListMonitorItemsAsync(int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
-    {
-        var path = new StringBuilder("monitor/items");
-        var hasQuery = false;
-        if (limit.HasValue)
+    public Task<PagedResponse<MonitorItem>?> ListMonitorItemsAsync(int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken cancellationToken = default)
+        => GetPagedAsync<MonitorItem>(async (c, token) =>
         {
-            path.Append("?limit=").Append(limit.Value);
-            hasQuery = true;
-        }
-        if (!string.IsNullOrEmpty(cursor))
-        {
-            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
-        }
-        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var path = new StringBuilder("monitor/items");
+            var hasQuery = false;
+            if (limit.HasValue)
+            {
+                path.Append("?limit=").Append(limit.Value);
+                hasQuery = true;
+            }
+            if (!string.IsNullOrEmpty(c))
+            {
+                path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(c));
+            }
+            using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, token).ConfigureAwait(false);
 #if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<PagedResponse<MonitorItem>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-    }
+            return await JsonSerializer.DeserializeAsync<PagedResponse<MonitorItem>>(stream, _jsonOptions, token).ConfigureAwait(false);
+        }, cursor, fetchAll, cancellationToken);
 
     public async Task<MonitorItem?> CreateMonitorItemAsync(CreateMonitorItemRequest request, CancellationToken cancellationToken = default)
     {

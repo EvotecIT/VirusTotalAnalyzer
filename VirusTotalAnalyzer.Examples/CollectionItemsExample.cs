@@ -18,7 +18,7 @@ public static class CollectionItemsExample
             var added = await client.AddCollectionItemsAsync("collection-id", request);
             Console.WriteLine($"Added {added?.Data.Count ?? 0} items");
 
-            var items = await client.ListCollectionItemsAsync("collection-id", limit: 10);
+            var items = await client.ListCollectionItemsAsync("collection-id", limit: 10, fetchAll: true);
             Console.WriteLine($"Retrieved {items?.Data.Count} items");
 
             await client.DeleteCollectionItemAsync("collection-id", "file-id");

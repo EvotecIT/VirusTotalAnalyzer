@@ -18,7 +18,7 @@ public static class BundleItemsExample
             var added = await client.AddBundleItemsAsync("bundle-id", request);
             Console.WriteLine($"Added {added?.Data.Count ?? 0} items");
 
-            var items = await client.ListBundleItemsAsync("bundle-id", limit: 10);
+            var items = await client.ListBundleItemsAsync("bundle-id", limit: 10, fetchAll: true);
             Console.WriteLine($"Retrieved {items?.Data.Count} items");
 
             await client.DeleteBundleItemAsync("bundle-id", "file-id");

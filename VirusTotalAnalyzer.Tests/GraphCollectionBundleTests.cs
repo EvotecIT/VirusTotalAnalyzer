@@ -56,6 +56,30 @@ public class GraphCollectionBundleTests
     }
 
     [Fact]
+    public async Task ListGraphsAsync_FetchAll_RetrievesAllPages()
+    {
+        var first = "{\"data\":[{\"id\":\"g1\",\"type\":\"graph\"}],\"meta\":{\"cursor\":\"next\"}}";
+        var second = "{\"data\":[{\"id\":\"g2\",\"type\":\"graph\"}]}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(first, Encoding.UTF8, "application/json") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(second, Encoding.UTF8, "application/json") }
+        );
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var response = await client.ListGraphsAsync(fetchAll: true);
+
+        Assert.NotNull(response);
+        Assert.Equal(2, response.Data.Count);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Equal(string.Empty, handler.Requests[0].RequestUri!.Query);
+        Assert.Equal("?cursor=next", handler.Requests[1].RequestUri!.Query);
+    }
+
+    [Fact]
     public async Task CreateGraphAsync_PostsGraph()
     {
         var json = "{\"id\":\"g1\",\"type\":\"graph\",\"data\":{\"attributes\":{\"name\":\"demo\"}}}";
@@ -241,6 +265,30 @@ public class GraphCollectionBundleTests
     }
 
     [Fact]
+    public async Task ListCollectionsAsync_FetchAll_RetrievesAllPages()
+    {
+        var first = "{\"data\":[{\"id\":\"c1\",\"type\":\"collection\"}],\"meta\":{\"cursor\":\"next\"}}";
+        var second = "{\"data\":[{\"id\":\"c2\",\"type\":\"collection\"}]}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(first, Encoding.UTF8, "application/json") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(second, Encoding.UTF8, "application/json") }
+        );
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var response = await client.ListCollectionsAsync(fetchAll: true);
+
+        Assert.NotNull(response);
+        Assert.Equal(2, response.Data.Count);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Equal(string.Empty, handler.Requests[0].RequestUri!.Query);
+        Assert.Equal("?cursor=next", handler.Requests[1].RequestUri!.Query);
+    }
+
+    [Fact]
     public async Task CreateCollectionAsync_PostsCollection()
     {
         var json = "{\"id\":\"c1\",\"type\":\"collection\",\"data\":{\"attributes\":{\"name\":\"demo\"}}}";
@@ -322,6 +370,30 @@ public class GraphCollectionBundleTests
         Assert.Single(response.Data);
         Assert.Equal(HttpMethod.Get, handler.Request!.Method);
         Assert.Equal("/api/v3/collections/c1/items", handler.Request.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task ListCollectionItemsAsync_FetchAll_RetrievesAllPages()
+    {
+        var first = "{\"data\":[{\"id\":\"f1\",\"type\":\"file\"}],\"meta\":{\"cursor\":\"next\"}}";
+        var second = "{\"data\":[{\"id\":\"f2\",\"type\":\"file\"}]}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(first, Encoding.UTF8, "application/json") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(second, Encoding.UTF8, "application/json") }
+        );
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var response = await client.ListCollectionItemsAsync("c1", fetchAll: true);
+
+        Assert.NotNull(response);
+        Assert.Equal(2, response.Data.Count);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Equal(string.Empty, handler.Requests[0].RequestUri!.Query);
+        Assert.Equal("?cursor=next", handler.Requests[1].RequestUri!.Query);
     }
 
     [Fact]
@@ -412,6 +484,30 @@ public class GraphCollectionBundleTests
     }
 
     [Fact]
+    public async Task ListBundlesAsync_FetchAll_RetrievesAllPages()
+    {
+        var first = "{\"data\":[{\"id\":\"b1\",\"type\":\"bundle\"}],\"meta\":{\"cursor\":\"next\"}}";
+        var second = "{\"data\":[{\"id\":\"b2\",\"type\":\"bundle\"}]}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(first, Encoding.UTF8, "application/json") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(second, Encoding.UTF8, "application/json") }
+        );
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var response = await client.ListBundlesAsync(fetchAll: true);
+
+        Assert.NotNull(response);
+        Assert.Equal(2, response.Data.Count);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Equal(string.Empty, handler.Requests[0].RequestUri!.Query);
+        Assert.Equal("?cursor=next", handler.Requests[1].RequestUri!.Query);
+    }
+
+    [Fact]
     public async Task CreateBundleAsync_PostsBundle()
     {
         var json = "{\"id\":\"b1\",\"type\":\"bundle\",\"data\":{\"attributes\":{\"name\":\"demo\"}}}";
@@ -496,6 +592,30 @@ public class GraphCollectionBundleTests
         Assert.Single(response.Data);
         Assert.Equal(HttpMethod.Get, handler.Request!.Method);
         Assert.Equal("/api/v3/bundles/b1/items", handler.Request.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task ListBundleItemsAsync_FetchAll_RetrievesAllPages()
+    {
+        var first = "{\"data\":[{\"id\":\"f1\",\"type\":\"file\"}],\"meta\":{\"cursor\":\"next\"}}";
+        var second = "{\"data\":[{\"id\":\"f2\",\"type\":\"file\"}]}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(first, Encoding.UTF8, "application/json") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(second, Encoding.UTF8, "application/json") }
+        );
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var response = await client.ListBundleItemsAsync("b1", fetchAll: true);
+
+        Assert.NotNull(response);
+        Assert.Equal(2, response.Data.Count);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Equal(string.Empty, handler.Requests[0].RequestUri!.Query);
+        Assert.Equal("?cursor=next", handler.Requests[1].RequestUri!.Query);
     }
 
     [Fact]

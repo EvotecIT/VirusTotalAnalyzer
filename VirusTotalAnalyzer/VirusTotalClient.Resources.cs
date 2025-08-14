@@ -15,28 +15,29 @@ namespace VirusTotalAnalyzer;
 
 public sealed partial class VirusTotalClient
 {
-    public async Task<PagedResponse<Graph>?> ListGraphsAsync(int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
-    {
-        var path = new StringBuilder("graphs");
-        var hasQuery = false;
-        if (limit.HasValue)
+    public Task<PagedResponse<Graph>?> ListGraphsAsync(int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken cancellationToken = default)
+        => GetPagedAsync<Graph>(async (c, token) =>
         {
-            path.Append("?limit=").Append(limit.Value);
-            hasQuery = true;
-        }
-        if (!string.IsNullOrEmpty(cursor))
-        {
-            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
-        }
-        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var path = new StringBuilder("graphs");
+            var hasQuery = false;
+            if (limit.HasValue)
+            {
+                path.Append("?limit=").Append(limit.Value);
+                hasQuery = true;
+            }
+            if (!string.IsNullOrEmpty(c))
+            {
+                path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(c));
+            }
+            using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, token).ConfigureAwait(false);
 #if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<PagedResponse<Graph>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-    }
+            return await JsonSerializer.DeserializeAsync<PagedResponse<Graph>>(stream, _jsonOptions, token).ConfigureAwait(false);
+        }, cursor, fetchAll, cancellationToken);
 
     public async Task<Graph?> GetGraphAsync(string id, CancellationToken cancellationToken = default)
     {
@@ -103,28 +104,29 @@ public sealed partial class VirusTotalClient
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<PagedResponse<Collection>?> ListCollectionsAsync(int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
-    {
-        var path = new StringBuilder("collections");
-        var hasQuery = false;
-        if (limit.HasValue)
+    public Task<PagedResponse<Collection>?> ListCollectionsAsync(int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken cancellationToken = default)
+        => GetPagedAsync<Collection>(async (c, token) =>
         {
-            path.Append("?limit=").Append(limit.Value);
-            hasQuery = true;
-        }
-        if (!string.IsNullOrEmpty(cursor))
-        {
-            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
-        }
-        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var path = new StringBuilder("collections");
+            var hasQuery = false;
+            if (limit.HasValue)
+            {
+                path.Append("?limit=").Append(limit.Value);
+                hasQuery = true;
+            }
+            if (!string.IsNullOrEmpty(c))
+            {
+                path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(c));
+            }
+            using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, token).ConfigureAwait(false);
 #if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<PagedResponse<Collection>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-    }
+            return await JsonSerializer.DeserializeAsync<PagedResponse<Collection>>(stream, _jsonOptions, token).ConfigureAwait(false);
+        }, cursor, fetchAll, cancellationToken);
 
     public async Task<Collection?> GetCollectionAsync(string id, CancellationToken cancellationToken = default)
     {
@@ -176,28 +178,31 @@ public sealed partial class VirusTotalClient
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<PagedResponse<Relationship>?> ListCollectionItemsAsync(string id, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
+    public Task<PagedResponse<Relationship>?> ListCollectionItemsAsync(string id, int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        var path = new StringBuilder($"collections/{Uri.EscapeDataString(id)}/items");
-        var hasQuery = false;
-        if (limit.HasValue)
+        return GetPagedAsync<Relationship>(async (c, token) =>
         {
-            path.Append("?limit=").Append(limit.Value);
-            hasQuery = true;
-        }
-        if (!string.IsNullOrEmpty(cursor))
-        {
-            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
-        }
-        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var path = new StringBuilder($"collections/{Uri.EscapeDataString(id)}/items");
+            var hasQuery = false;
+            if (limit.HasValue)
+            {
+                path.Append("?limit=").Append(limit.Value);
+                hasQuery = true;
+            }
+            if (!string.IsNullOrEmpty(c))
+            {
+                path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(c));
+            }
+            using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, token).ConfigureAwait(false);
 #if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<PagedResponse<Relationship>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            return await JsonSerializer.DeserializeAsync<PagedResponse<Relationship>>(stream, _jsonOptions, token).ConfigureAwait(false);
+        }, cursor, fetchAll, cancellationToken);
     }
 
     public async Task<RelationshipResponse?> AddCollectionItemsAsync(string id, AddItemsRequest request, CancellationToken cancellationToken = default)
@@ -222,28 +227,29 @@ public sealed partial class VirusTotalClient
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<PagedResponse<Bundle>?> ListBundlesAsync(int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
-    {
-        var path = new StringBuilder("bundles");
-        var hasQuery = false;
-        if (limit.HasValue)
+    public Task<PagedResponse<Bundle>?> ListBundlesAsync(int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken cancellationToken = default)
+        => GetPagedAsync<Bundle>(async (c, token) =>
         {
-            path.Append("?limit=").Append(limit.Value);
-            hasQuery = true;
-        }
-        if (!string.IsNullOrEmpty(cursor))
-        {
-            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
-        }
-        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var path = new StringBuilder("bundles");
+            var hasQuery = false;
+            if (limit.HasValue)
+            {
+                path.Append("?limit=").Append(limit.Value);
+                hasQuery = true;
+            }
+            if (!string.IsNullOrEmpty(c))
+            {
+                path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(c));
+            }
+            using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, token).ConfigureAwait(false);
 #if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<PagedResponse<Bundle>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-    }
+            return await JsonSerializer.DeserializeAsync<PagedResponse<Bundle>>(stream, _jsonOptions, token).ConfigureAwait(false);
+        }, cursor, fetchAll, cancellationToken);
 
     public async Task<Bundle?> GetBundleAsync(string id, CancellationToken cancellationToken = default)
     {
@@ -295,28 +301,31 @@ public sealed partial class VirusTotalClient
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<PagedResponse<Relationship>?> ListBundleItemsAsync(string id, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
+    public Task<PagedResponse<Relationship>?> ListBundleItemsAsync(string id, int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        var path = new StringBuilder($"bundles/{Uri.EscapeDataString(id)}/items");
-        var hasQuery = false;
-        if (limit.HasValue)
+        return GetPagedAsync<Relationship>(async (c, token) =>
         {
-            path.Append("?limit=").Append(limit.Value);
-            hasQuery = true;
-        }
-        if (!string.IsNullOrEmpty(cursor))
-        {
-            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
-        }
-        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var path = new StringBuilder($"bundles/{Uri.EscapeDataString(id)}/items");
+            var hasQuery = false;
+            if (limit.HasValue)
+            {
+                path.Append("?limit=").Append(limit.Value);
+                hasQuery = true;
+            }
+            if (!string.IsNullOrEmpty(c))
+            {
+                path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(c));
+            }
+            using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, token).ConfigureAwait(false);
 #if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
 #endif
-        return await JsonSerializer.DeserializeAsync<PagedResponse<Relationship>>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            return await JsonSerializer.DeserializeAsync<PagedResponse<Relationship>>(stream, _jsonOptions, token).ConfigureAwait(false);
+        }, cursor, fetchAll, cancellationToken);
     }
 
     public async Task<RelationshipResponse?> AddBundleItemsAsync(string id, AddItemsRequest request, CancellationToken cancellationToken = default)

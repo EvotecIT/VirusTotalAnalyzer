@@ -56,6 +56,30 @@ public class MonitorItemTests
     }
 
     [Fact]
+    public async Task ListMonitorItemsAsync_FetchAll_RetrievesAllPages()
+    {
+        var first = "{\"data\":[{\"id\":\"m1\",\"type\":\"monitor_item\"}],\"meta\":{\"cursor\":\"next\"}}";
+        var second = "{\"data\":[{\"id\":\"m2\",\"type\":\"monitor_item\"}]}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(first, Encoding.UTF8, "application/json") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(second, Encoding.UTF8, "application/json") }
+        );
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var response = await client.ListMonitorItemsAsync(fetchAll: true);
+
+        Assert.NotNull(response);
+        Assert.Equal(2, response.Data.Count);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Equal(string.Empty, handler.Requests[0].RequestUri!.Query);
+        Assert.Equal("?cursor=next", handler.Requests[1].RequestUri!.Query);
+    }
+
+    [Fact]
     public async Task CreateMonitorItemAsync_PostsItem()
     {
         var json = "{\"id\":\"m1\",\"type\":\"monitor_item\",\"data\":{\"attributes\":{\"path\":\"/foo\"}}}";

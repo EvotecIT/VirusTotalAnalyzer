@@ -255,7 +255,7 @@ public sealed partial class VirusTotalClient
         return ReanalyzeHashAsync(id, AnalysisType.Url, cancellationToken);
     }
 
-    public async Task<AnalysisReport?> SubmitUrlAsync(string url, AnalysisType analysisType = AnalysisType.Url, CancellationToken cancellationToken = default)
+    public async Task<AnalysisReport?> SubmitUrlAsync(string url, CancellationToken cancellationToken = default)
     {
         if (url is null)
         {
@@ -264,10 +264,6 @@ public sealed partial class VirusTotalClient
         if (url.Length == 0)
         {
             throw new ArgumentException("URL must not be empty.", nameof(url));
-        }
-        if (analysisType != AnalysisType.Url)
-        {
-            throw new ArgumentOutOfRangeException(nameof(analysisType));
         }
         using var content = new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("url", url) });
         using var response = await _httpClient.PostAsync("urls", content, cancellationToken).ConfigureAwait(false);
@@ -279,18 +275,5 @@ public sealed partial class VirusTotalClient
 #endif
         return await JsonSerializer.DeserializeAsync<AnalysisReport>(stream, _jsonOptions, cancellationToken)
             .ConfigureAwait(false);
-    }
-
-    public Task<AnalysisReport?> SubmitUrlAsync(string url, CancellationToken cancellationToken = default)
-    {
-        if (url is null)
-        {
-            throw new ArgumentNullException(nameof(url));
-        }
-        if (url.Length == 0)
-        {
-            throw new ArgumentException("URL must not be empty.", nameof(url));
-        }
-        return SubmitUrlAsync(url, AnalysisType.Url, cancellationToken);
     }
 }

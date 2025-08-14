@@ -40,6 +40,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<Graph?> GetGraphAsync(string id, CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"graphs/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
@@ -66,6 +67,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<Graph?> UpdateGraphAsync(string id, UpdateGraphRequest request, CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var message = new HttpRequestMessage(new HttpMethod("PATCH"), $"graphs/{Uri.EscapeDataString(id)}") { Content = content };
@@ -81,6 +83,7 @@ public sealed partial class VirusTotalClient
 
     public async Task DeleteGraphAsync(string id, CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         using var response = await _httpClient.DeleteAsync($"graphs/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
@@ -125,6 +128,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<Collection?> GetCollectionAsync(string id, CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"collections/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
@@ -151,6 +155,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<Collection?> UpdateCollectionAsync(string id, UpdateCollectionRequest request, CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var message = new HttpRequestMessage(new HttpMethod("PATCH"), $"collections/{Uri.EscapeDataString(id)}") { Content = content };
@@ -166,12 +171,14 @@ public sealed partial class VirusTotalClient
 
     public async Task DeleteCollectionAsync(string id, CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         using var response = await _httpClient.DeleteAsync($"collections/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<PagedResponse<Relationship>?> ListCollectionItemsAsync(string id, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         var path = new StringBuilder($"collections/{Uri.EscapeDataString(id)}/items");
         var hasQuery = false;
         if (limit.HasValue)
@@ -195,6 +202,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<RelationshipResponse?> AddCollectionItemsAsync(string id, AddItemsRequest request, CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var response = await _httpClient.PostAsync($"collections/{Uri.EscapeDataString(id)}/items", content, cancellationToken).ConfigureAwait(false);
@@ -209,6 +217,7 @@ public sealed partial class VirusTotalClient
 
     public async Task DeleteCollectionItemAsync(string id, string itemId, CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         using var response = await _httpClient.DeleteAsync($"collections/{Uri.EscapeDataString(id)}/items/{Uri.EscapeDataString(itemId)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
@@ -238,6 +247,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<Bundle?> GetBundleAsync(string id, CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"bundles/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
@@ -264,6 +274,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<Bundle?> UpdateBundleAsync(string id, UpdateBundleRequest request, CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var message = new HttpRequestMessage(new HttpMethod("PATCH"), $"bundles/{Uri.EscapeDataString(id)}") { Content = content };
@@ -279,12 +290,14 @@ public sealed partial class VirusTotalClient
 
     public async Task DeleteBundleAsync(string id, CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         using var response = await _httpClient.DeleteAsync($"bundles/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<PagedResponse<Relationship>?> ListBundleItemsAsync(string id, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         var path = new StringBuilder($"bundles/{Uri.EscapeDataString(id)}/items");
         var hasQuery = false;
         if (limit.HasValue)
@@ -308,6 +321,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<RelationshipResponse?> AddBundleItemsAsync(string id, AddItemsRequest request, CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var response = await _httpClient.PostAsync($"bundles/{Uri.EscapeDataString(id)}/items", content, cancellationToken).ConfigureAwait(false);
@@ -322,6 +336,7 @@ public sealed partial class VirusTotalClient
 
     public async Task DeleteBundleItemAsync(string id, string itemId, CancellationToken cancellationToken = default)
     {
+        ValidateId(id, nameof(id));
         using var response = await _httpClient.DeleteAsync($"bundles/{Uri.EscapeDataString(id)}/items/{Uri.EscapeDataString(itemId)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }

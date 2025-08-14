@@ -247,10 +247,22 @@ public sealed partial class VirusTotalClient : IDisposable
         return new StreamWithResponse(response, stream);
     }
 
-    public async Task<Stream> DownloadPcapAsync(string analysisId, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Downloads the PCAP generated during a file analysis.
+    /// </summary>
+    /// <param name="analysisId">The analysis identifier.</param>
+    /// <param name="sandbox">Optional sandbox vendor to use when several are available.</param>
+    /// <param name="cancellationToken">Token to cancel the request.</param>
+    public async Task<Stream> DownloadPcapAsync(string analysisId, string? sandbox = null, CancellationToken cancellationToken = default)
     {
+        var url = $"analyses/{Uri.EscapeDataString(analysisId)}/pcap";
+        if (!string.IsNullOrEmpty(sandbox))
+        {
+            url += $"?sandbox={Uri.EscapeDataString(sandbox)}";
+        }
+
         var response = await _httpClient
-            .GetAsync($"analyses/{Uri.EscapeDataString(analysisId)}/pcap", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+            .GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472

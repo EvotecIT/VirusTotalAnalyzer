@@ -13,11 +13,11 @@ public static class DownloadPcapExample
         try
         {
 #if NET472
-            using var stream = await client.DownloadPcapAsync("ANALYSIS_ID");
+            using var stream = await client.DownloadPcapAsync("ANALYSIS_ID", sandbox: "default");
             using var file = File.Create("analysis.pcap");
             await stream.CopyToAsync(file);
 #else
-            await using var stream = await client.DownloadPcapAsync("ANALYSIS_ID");
+            await using var stream = await client.DownloadPcapAsync("ANALYSIS_ID", sandbox: "default");
             await using var file = File.Create("analysis.pcap");
             await stream.CopyToAsync(file);
 #endif

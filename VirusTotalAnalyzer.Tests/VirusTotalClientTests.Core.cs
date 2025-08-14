@@ -172,6 +172,45 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task DownloadPcapAsync_AppendsSandboxQuery()
+    {
+        var trackingStream = new TrackingStream(new byte[] { 1, 2, 3 });
+        var response = new TrackingResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StreamContent(trackingStream)
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+#if NETFRAMEWORK
+        using (var stream = await client.DownloadPcapAsync("abc", sandbox: "sb"))
+        {
+            Assert.NotNull(handler.Request);
+            Assert.Equal("/api/v3/analyses/abc/pcap", handler.Request!.RequestUri!.AbsolutePath);
+            Assert.Equal("?sandbox=sb", handler.Request.RequestUri!.Query);
+            Assert.False(trackingStream.Disposed);
+            Assert.False(response.Disposed);
+        }
+#else
+        await using (var stream = await client.DownloadPcapAsync("abc", sandbox: "sb"))
+        {
+            Assert.NotNull(handler.Request);
+            Assert.Equal("/api/v3/analyses/abc/pcap", handler.Request!.RequestUri!.AbsolutePath);
+            Assert.Equal("?sandbox=sb", handler.Request.RequestUri!.Query);
+            Assert.False(trackingStream.Disposed);
+            Assert.False(response.Disposed);
+        }
+#endif
+        Assert.True(trackingStream.Disposed);
+        Assert.True(response.Disposed);
+    }
+
+    [Fact]
     public async Task DownloadPcapAsync_ThrowsApiException()
     {
         var errorJson = @"{""error"":{""code"":""NotFoundError"",""message"":""not found""}}";

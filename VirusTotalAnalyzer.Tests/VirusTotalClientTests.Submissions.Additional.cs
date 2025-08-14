@@ -604,6 +604,27 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetFileBehaviorAsync_AppendsSandboxQuery()
+    {
+        var json = "{\"data\":[]}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.GetFileBehaviorAsync("abc", sandbox: "sb");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/behaviour", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("?sandbox=sb", handler.Request.RequestUri!.Query);
+    }
+
+    [Fact]
     public async Task GetFileBehaviorAsync_ThrowsApiException()
     {
         var errorJson = @"{""error"":{""code"":""NotFoundError"",""message"":""not found""}}";
@@ -646,6 +667,27 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetFileBehaviorSummaryAsync_AppendsSandboxQuery()
+    {
+        var json = "{\"data\":{}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.GetFileBehaviorSummaryAsync("abc", sandbox: "sb");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/behaviour_summary", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("?sandbox=sb", handler.Request.RequestUri!.Query);
+    }
+
+    [Fact]
     public async Task GetFileBehaviorSummaryAsync_ThrowsApiException()
     {
         var errorJson = @"{""error"":{""code"":""NotFoundError"",""message"":""not found""}}";
@@ -684,6 +726,27 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/files/abc/network-traffic", handler.Request!.RequestUri!.AbsolutePath);
         Assert.Equal("1.2.3.4", traffic!.Data.Tcp[0].Destination);
         Assert.Equal(80, traffic.Data.Tcp[0].Port);
+    }
+
+    [Fact]
+    public async Task GetFileNetworkTrafficAsync_AppendsSandboxQuery()
+    {
+        var json = "{\"data\":{}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.GetFileNetworkTrafficAsync("abc", sandbox: "sb");
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/network-traffic", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("?sandbox=sb", handler.Request.RequestUri!.Query);
     }
 
     [Fact]

@@ -11,10 +11,10 @@ public static class GetFileBehaviorExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var behavior = await client.GetFileBehaviorAsync("44d88612fea8a8f36de82e1278abb02f");
+            var behavior = await client.GetFileBehaviorAsync("44d88612fea8a8f36de82e1278abb02f", sandbox: "default");
             Console.WriteLine(behavior?.Data.Count);
 
-            var summary = await client.GetFileBehaviorSummaryAsync("44d88612fea8a8f36de82e1278abb02f");
+            var summary = await client.GetFileBehaviorSummaryAsync("44d88612fea8a8f36de82e1278abb02f", sandbox: "default");
             Console.WriteLine(summary?.Data.Tags.Count);
         }
         catch (ApiException ex)

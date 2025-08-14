@@ -12,10 +12,11 @@ public static class SubmitUrlExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var report = await client.SubmitUrlAsync("https://example.com");
+            var report = await client.SubmitUrlAsync("https://example.com", waitForCompletion: true);
             Console.WriteLine(report?.Id);
 
-            var simple = await client.SubmitUrlAsync("https://example.org", CancellationToken.None);
+            var options = new SubmitUrlOptions { WaitForCompletion = true, Analyze = false };
+            var simple = await client.SubmitUrlAsync("https://example.org", options, CancellationToken.None);
             Console.WriteLine(simple?.Id);
         }
         catch (RateLimitExceededException ex)

@@ -237,6 +237,7 @@ public partial class VirusTotalClientTests
         var request = handler.Request!;
         Assert.Equal(HttpMethod.Post, request.Method);
         Assert.Equal("/api/v3/urls", request.RequestUri!.AbsolutePath);
+        Assert.Equal(string.Empty, request.RequestUri!.Query);
         Assert.Equal("application/x-www-form-urlencoded", request.Content!.Headers.ContentType!.MediaType);
         Assert.Equal("url=https%3A%2F%2Fexample.com", handler.Content);
     }

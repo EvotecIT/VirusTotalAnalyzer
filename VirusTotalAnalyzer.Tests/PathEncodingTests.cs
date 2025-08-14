@@ -70,5 +70,23 @@ public class PathEncodingTests
         Assert.NotNull(handler.Request);
         Assert.Equal($"/api/v3/graphs/{Uri.EscapeDataString(graphId)}/comments/{Uri.EscapeDataString(commentId)}", handler.Request!.RequestUri!.AbsolutePath);
     }
+
+    [Fact]
+    public async Task DeleteGraphCollaboratorAsync_EncodesIdsInPath()
+    {
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK));
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var graphId = "graph/id#1";
+        var username = "user/name?2";
+        await client.DeleteGraphCollaboratorAsync(graphId, username);
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal($"/api/v3/graphs/{Uri.EscapeDataString(graphId)}/collaborators/{Uri.EscapeDataString(username)}", handler.Request!.RequestUri!.AbsolutePath);
+    }
 }
 

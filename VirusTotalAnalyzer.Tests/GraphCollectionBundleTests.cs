@@ -202,6 +202,70 @@ public class GraphCollectionBundleTests
     }
 
     [Fact]
+    public async Task GetGraphCollaboratorsAsync_GetsCollaborators()
+    {
+        var json = "{\"data\":[{\"id\":\"u1\",\"type\":\"user\"}]}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var response = await client.GetGraphCollaboratorsAsync("g1");
+
+        Assert.NotNull(response);
+        Assert.Single(response.Data);
+        Assert.Equal(HttpMethod.Get, handler.Request!.Method);
+        Assert.Equal("/api/v3/graphs/g1/collaborators", handler.Request.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task AddGraphCollaboratorsAsync_PostsCollaborators()
+    {
+        var json = "{\"data\":[{\"id\":\"u1\",\"type\":\"user\"}]}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var request = new AddCollaboratorsRequest
+        {
+            Data = { new Relationship { Id = "u1", Type = ResourceType.User } }
+        };
+        var response = await client.AddGraphCollaboratorsAsync("g1", request);
+
+        Assert.NotNull(response);
+        Assert.Equal(HttpMethod.Post, handler.Request!.Method);
+        Assert.Equal("/api/v3/graphs/g1/collaborators", handler.Request.RequestUri!.AbsolutePath);
+        Assert.Contains("\"u1\"", handler.Content);
+    }
+
+    [Fact]
+    public async Task DeleteGraphCollaboratorAsync_UsesDelete()
+    {
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.NoContent));
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        await client.DeleteGraphCollaboratorAsync("g1", "user1");
+
+        Assert.Equal(HttpMethod.Delete, handler.Request!.Method);
+        Assert.Equal("/api/v3/graphs/g1/collaborators/user1", handler.Request.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
     public async Task CreateGraphAsync_ThrowsOnError()
     {
         var error = "{\"error\":{\"message\":\"bad\"}}";

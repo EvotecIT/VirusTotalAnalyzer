@@ -261,13 +261,16 @@ public sealed partial class VirusTotalClient : IDisposable
     public async Task<Stream> DownloadLivehuntNotificationFileAsync(string id, CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        var response = await _httpClient.GetAsync($"intelligence/hunting_notification_files/{Uri.EscapeDataString(id)}", HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        var response = await _httpClient
+            .GetAsync($"intelligence/hunting_notification_files/{Uri.EscapeDataString(id)}", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+            .ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 #if NET472
-        return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-        return await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
+        return new StreamWithResponse(response, stream);
     }
 
     public async Task<Stream> DownloadRetrohuntNotificationFileAsync(string id, CancellationToken cancellationToken = default)

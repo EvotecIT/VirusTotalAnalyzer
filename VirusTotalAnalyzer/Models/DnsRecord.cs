@@ -20,18 +20,14 @@ public sealed class DnsRecordAttributes
     [JsonPropertyName("type")]
     public string? RecordType { get; set; }
 
-    [JsonPropertyName("value")]
     public string? Value { get; set; }
 
-    [JsonPropertyName("ttl")]
     public int? Ttl { get; set; }
 }
 
 public sealed class DnsRecordsResponse
 {
-    [JsonPropertyName("data")]
     public List<DnsRecord> Data { get; set; } = new();
 
-    [JsonPropertyName("meta")]
     public PaginationMetadata? Meta { get; set; }
 }

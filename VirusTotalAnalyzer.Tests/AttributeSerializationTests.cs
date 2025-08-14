@@ -12,7 +12,7 @@ public class AttributeSerializationTests
     [Fact]
     public void FileAttributes_Roundtrip()
     {
-        var options = new JsonSerializerOptions();
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = SnakeCaseNamingPolicy.Instance };
         options.Converters.Add(new UnixTimestampConverter());
 
         var report = new FileReport
@@ -53,7 +53,7 @@ public class AttributeSerializationTests
     [Fact]
     public void UrlAttributes_Roundtrip()
     {
-        var options = new JsonSerializerOptions();
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = SnakeCaseNamingPolicy.Instance };
         options.Converters.Add(new UnixTimestampConverter());
 
         var report = new UrlReport
@@ -92,7 +92,7 @@ public class AttributeSerializationTests
     [Fact]
     public void AnalysisAttributes_Roundtrip()
     {
-        var options = new JsonSerializerOptions();
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = SnakeCaseNamingPolicy.Instance };
         options.Converters.Add(new UnixTimestampConverter());
 
         var report = new AnalysisReport
@@ -124,7 +124,7 @@ public class AttributeSerializationTests
     [Fact]
     public void DomainAttributes_Roundtrip()
     {
-        var options = new JsonSerializerOptions();
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = SnakeCaseNamingPolicy.Instance };
         options.Converters.Add(new UnixTimestampConverter());
 
         var report = new DomainReport
@@ -156,7 +156,7 @@ public class AttributeSerializationTests
     [Fact]
     public void IpAddressAttributes_Roundtrip()
     {
-        var options = new JsonSerializerOptions();
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = SnakeCaseNamingPolicy.Instance };
         options.Converters.Add(new UnixTimestampConverter());
 
         var report = new IpAddressReport

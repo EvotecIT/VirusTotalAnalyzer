@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+
 
 namespace VirusTotalAnalyzer.Models;
 
@@ -7,7 +7,6 @@ public sealed class MonitorItem
     public string Id { get; set; } = string.Empty;
     public ResourceType Type { get; set; }
 
-    [JsonPropertyName("links")]
     public Links Links { get; set; } = new();
     public MonitorItemData Data { get; set; } = new();
 }
@@ -19,48 +18,39 @@ public sealed class MonitorItemData
 
 public sealed class MonitorItemAttributes
 {
-    [JsonPropertyName("path")]
     public string Path { get; set; } = string.Empty;
 }
 
 public sealed class CreateMonitorItemRequest
 {
-    [JsonPropertyName("data")]
     public CreateMonitorItemData Data { get; set; } = new();
 }
 
 public sealed class CreateMonitorItemData
 {
-    [JsonPropertyName("type")]
     public string Type { get; set; } = "monitor_item";
 
-    [JsonPropertyName("attributes")]
     public CreateMonitorItemAttributes Attributes { get; set; } = new();
 }
 
 public sealed class CreateMonitorItemAttributes
 {
-    [JsonPropertyName("path")]
     public string Path { get; set; } = string.Empty;
 }
 
 public sealed class UpdateMonitorItemRequest
 {
-    [JsonPropertyName("data")]
     public UpdateMonitorItemData Data { get; set; } = new();
 }
 
 public sealed class UpdateMonitorItemData
 {
-    [JsonPropertyName("type")]
     public string Type { get; set; } = "monitor_item";
 
-    [JsonPropertyName("attributes")]
     public UpdateMonitorItemAttributes Attributes { get; set; } = new();
 }
 
 public sealed class UpdateMonitorItemAttributes
 {
-    [JsonPropertyName("path")]
     public string? Path { get; set; }
 }

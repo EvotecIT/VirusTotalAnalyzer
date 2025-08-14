@@ -221,5 +221,65 @@ public class YaraRulesetTests
         Assert.Equal("/api/v3/intelligence/hunting_rulesets/rs1/relationships/editors", handler.Request!.RequestUri!.AbsolutePath);
         Assert.Equal("limit=10&cursor=abc", handler.Request.RequestUri!.Query.TrimStart('?'));
     }
+
+    [Fact]
+    public async Task DownloadYaraRulesetAsync_UsesCorrectPathAndReturnsStream()
+    {
+        var trackingStream = new TrackingStream(new byte[] { 1, 2, 3 });
+        var response = new TrackingResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StreamContent(trackingStream)
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+#if NETFRAMEWORK
+        using (var stream = await client.DownloadYaraRulesetAsync("rs1"))
+        {
+            Assert.NotNull(handler.Request);
+            Assert.Equal("/api/v3/intelligence/hunting_rulesets/rs1/download", handler.Request!.RequestUri!.AbsolutePath);
+            Assert.False(trackingStream.Disposed);
+            Assert.False(response.Disposed);
+        }
+#else
+        await using (var stream = await client.DownloadYaraRulesetAsync("rs1"))
+        {
+            Assert.NotNull(handler.Request);
+            Assert.Equal("/api/v3/intelligence/hunting_rulesets/rs1/download", handler.Request!.RequestUri!.AbsolutePath);
+            Assert.False(trackingStream.Disposed);
+            Assert.False(response.Disposed);
+        }
+#endif
+        Assert.True(trackingStream.Disposed);
+        Assert.True(response.Disposed);
+    }
+
+    [Fact]
+    public async Task DownloadYaraRulesetAsync_ThrowsApiException()
+    {
+        var errorJson = "{\"error\":{\"code\":\"NotFoundError\",\"message\":\"not found\"}}";
+        var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<ApiException>(async () => await client.DownloadYaraRulesetAsync("rs1"));
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/intelligence/hunting_rulesets/rs1/download", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("NotFoundError", ex.Error?.Code);
+        Assert.Equal("not found", ex.Message);
+    }
 }
 

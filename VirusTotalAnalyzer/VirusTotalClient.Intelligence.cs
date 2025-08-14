@@ -284,6 +284,20 @@ public sealed partial class VirusTotalClient
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<Stream> DownloadYaraRulesetAsync(string id, CancellationToken ct = default)
+    {
+        var response = await _httpClient
+            .GetAsync($"intelligence/hunting_rulesets/{Uri.EscapeDataString(id)}/download", HttpCompletionOption.ResponseHeadersRead, ct)
+            .ConfigureAwait(false);
+        await EnsureSuccessAsync(response, ct).ConfigureAwait(false);
+#if NET472
+        var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+        var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+#endif
+        return new StreamWithResponse(response, stream);
+    }
+
     public async Task<Relationship?> GetYaraRulesetOwnerAsync(string id, CancellationToken cancellationToken = default)
     {
         var response = await GetRelationshipsAsync(ResourceType.IntelligenceHuntingRuleset, id, "owner", cancellationToken: cancellationToken).ConfigureAwait(false);

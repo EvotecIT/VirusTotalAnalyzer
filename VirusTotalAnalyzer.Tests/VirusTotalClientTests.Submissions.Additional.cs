@@ -906,6 +906,113 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetFileNamesAsyncEnumerable_DeserializesResponseAndUsesCorrectPath()
+    {
+        var json = "{\"data\":[{\"id\":\"a.exe\",\"type\":\"file_name\",\"attributes\":{\"date\":1672444800}}]}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var list = new List<FileNameInfo>();
+        await foreach (var name in client.GetFileNamesAsyncEnumerable("abc"))
+        {
+            list.Add(name);
+        }
+
+        Assert.Single(list);
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/files/abc/names", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("a.exe", list[0].Id);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1672444800), list[0].Attributes.Date);
+    }
+
+    [Fact]
+    public async Task GetFileNamesAsyncEnumerable_ThrowsApiException()
+    {
+        var errorJson = "{\"error\":{\"code\":\"NotFoundError\",\"message\":\"not found\"}}";
+        var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var enumerable = client.GetFileNamesAsyncEnumerable("abc");
+        var ex = await Assert.ThrowsAsync<ApiException>(async () =>
+        {
+            await foreach (var _ in enumerable)
+            {
+            }
+        });
+        Assert.Equal("NotFoundError", ex.Error?.Code);
+        Assert.Equal("not found", ex.Message);
+    }
+
+    [Fact]
+    public async Task GetFileNamesAsyncEnumerable_PagesThroughResults()
+    {
+        var first = "{\"data\":[{\"id\":\"a.exe\",\"type\":\"file_name\",\"attributes\":{\"date\":1}}],\"meta\":{\"cursor\":\"c1\"}}";
+        var second = "{\"data\":[{\"id\":\"b.exe\",\"type\":\"file_name\",\"attributes\":{\"date\":2}}]}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(first, Encoding.UTF8, "application/json") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(second, Encoding.UTF8, "application/json") });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var list = new List<FileNameInfo>();
+        await foreach (var name in client.GetFileNamesAsyncEnumerable("abc"))
+        {
+            list.Add(name);
+        }
+
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Equal("/api/v3/files/abc/names", handler.Requests[0].RequestUri!.PathAndQuery);
+        Assert.Equal("/api/v3/files/abc/names?cursor=c1", handler.Requests[1].RequestUri!.PathAndQuery);
+        Assert.Collection(list,
+            n => Assert.Equal("a.exe", n.Id),
+            n => Assert.Equal("b.exe", n.Id));
+    }
+
+    [Fact]
+    public async Task GetFileNamesAsyncEnumerable_RespectsLimit()
+    {
+        var first = "{\"data\":[{\"id\":\"a.exe\",\"type\":\"file_name\",\"attributes\":{\"date\":1}}],\"meta\":{\"cursor\":\"c1\"}}";
+        var second = "{\"data\":[{\"id\":\"b.exe\",\"type\":\"file_name\",\"attributes\":{\"date\":2}}]}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(first, Encoding.UTF8, "application/json") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(second, Encoding.UTF8, "application/json") });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient);
+
+        var list = new List<FileNameInfo>();
+        await foreach (var name in client.GetFileNamesAsyncEnumerable("abc", limit: 1))
+        {
+            list.Add(name);
+        }
+
+        Assert.Single(list);
+        Assert.Equal("a.exe", list[0].Id);
+        Assert.Single(handler.Requests);
+        Assert.Equal("/api/v3/files/abc/names?limit=1", handler.Requests[0].RequestUri!.PathAndQuery);
+    }
+
+    [Fact]
     public async Task GetFileNamesPagedAsync_DeserializesResponseAndUsesCorrectPath()
     {
         var json = "{\"data\":[{\"id\":\"a.exe\",\"type\":\"file_name\",\"attributes\":{\"date\":1672444800}}]}";

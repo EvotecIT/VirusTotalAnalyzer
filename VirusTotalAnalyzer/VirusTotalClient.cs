@@ -119,6 +119,7 @@ public sealed partial class VirusTotalClient : IDisposable
             ResourceType.Search => "intelligence/search",
             ResourceType.Feed => "feeds",
             ResourceType.Graph => "graphs",
+            ResourceType.SslCertificate => "ssl_certificates",
             ResourceType.User => "users",
             ResourceType.Collection => "collections",
             ResourceType.Bundle => "bundles",

@@ -23,6 +23,7 @@ using VirusTotalAnalyzer.Examples;
 // await GetGraphExample.RunAsync();
 // await GetUrlGraphsExample.RunAsync();
 // await GetCollectionExample.RunAsync();
+// await GetSslCertificateExample.RunAsync();
 // await CreateGraphExample.RunAsync();
 // await CreateCollectionExample.RunAsync();
 // await CreateBundleExample.RunAsync();

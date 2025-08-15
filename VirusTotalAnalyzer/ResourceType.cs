@@ -43,6 +43,9 @@ public enum ResourceType
     [EnumMember(Value = "graph")]
     Graph,
 
+    [EnumMember(Value = "ssl_certificate")]
+    SslCertificate,
+
     [EnumMember(Value = "user")]
     User,
 

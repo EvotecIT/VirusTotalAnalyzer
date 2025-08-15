@@ -10,6 +10,7 @@ namespace VirusTotalAnalyzer.PowerShell;
 /// <summary>
 /// An abstract base class for asynchronous PowerShell cmdlets.
 /// </summary>
+/// <para>Provides helper infrastructure for executing cmdlet logic on background tasks.</para>
 public abstract class AsyncPSCmdlet : PSCmdlet, IDisposable {
     /// <summary>
     /// Defines the types of pipelines used in the cmdlet.

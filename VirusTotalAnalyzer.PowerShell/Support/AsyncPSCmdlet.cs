@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Management.Automation;
 using System.Threading;
 using System.Threading.Tasks;
-using ADPlayground;
+using System.IO;
 
 namespace ADPlayground.PowerShell;
 
@@ -273,7 +273,6 @@ public abstract class AsyncPSCmdlet : PSCmdlet, IDisposable {
         }
 
         string message = $"{MyInvocation.InvocationName} - The specified file does not exist: {path}";
-        LoggingMessages.Logger.WriteWarning(message);
         if (errorAction == ActionPreference.Stop) {
             var ex = new FileNotFoundException("The specified file does not exist.", path);
             ThrowTerminatingError(new ErrorRecord(ex, "FileNotFound", ErrorCategory.ObjectNotFound, path));

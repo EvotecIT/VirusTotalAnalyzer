@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using VirusTotalAnalyzer;
 
-namespace ADPlayground.PowerShell;
+namespace VirusTotalAnalyzer.PowerShell;
 
 [Cmdlet(VerbsCommon.Get, "VirusReport", DefaultParameterSetName = "FileInformation")]
 [Alias("Get-VirusScan")]

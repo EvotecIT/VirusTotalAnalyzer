@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
 
-namespace ADPlayground.PowerShell;
+namespace VirusTotalAnalyzer.PowerShell;
 
 /// <summary>
 /// An abstract base class for asynchronous PowerShell cmdlets.

@@ -436,7 +436,7 @@ public partial class VirusTotalClientTests
         Assert.Single(feed!.Data);
         Assert.Equal("b1", feed.Data[0].Id);
         Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/feeds/file-behaviour", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("/api/v3/feeds/file-behaviours", handler.Request!.RequestUri!.AbsolutePath);
     }
 
     [Fact]

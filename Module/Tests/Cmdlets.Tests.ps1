@@ -39,6 +39,21 @@ Describe 'Get-VirusReport cmdlet' {
         $result.Id | Should -Be 'abc'
         $handler.LastRequest.RequestUri.AbsolutePath | Should -Be '/api/v3/files/abc'
     }
+
+    It 'uses lowercase hash when hashing file content' {
+        $json = '{"data":{"id":"def","type":"file"}}'
+        $handler = [FakeHandler]::new($json)
+        $httpClient = [System.Net.Http.HttpClient]::new($handler)
+        $httpClient.BaseAddress = [Uri]::new('https://www.virustotal.com/api/v3/')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new($httpClient)
+
+        $file = New-TemporaryFile
+        Set-Content -Path $file -Value 'test'
+        $expected = (Get-FileHash -Path $file -Algorithm SHA256).Hash.ToLowerInvariant()
+
+        Get-VirusReport -ApiKey 'x' -File $file -Client $client | Out-Null
+        $handler.LastRequest.RequestUri.AbsolutePath | Should -Be "/api/v3/files/$expected"
+    }
 }
 
 Describe 'New-VirusScan cmdlet' {
@@ -55,5 +70,20 @@ Describe 'New-VirusScan cmdlet' {
         $result = New-VirusScan -ApiKey 'x' -File $file -Client $client
         $result.Id | Should -Be 'analysis1'
         $handler.LastRequest.RequestUri.AbsolutePath | Should -Be '/api/v3/files'
+    }
+
+    It 'reanalyzes a file using a lowercase hash' {
+        $json = '{"id":"analysis2","type":"analysis"}'
+        $handler = [FakeHandler]::new($json)
+        $httpClient = [System.Net.Http.HttpClient]::new($handler)
+        $httpClient.BaseAddress = [Uri]::new('https://www.virustotal.com/api/v3/')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new($httpClient)
+
+        $file = New-TemporaryFile
+        Set-Content -Path $file -Value 'test'
+        $expected = (Get-FileHash -Path $file -Algorithm SHA256).Hash.ToLowerInvariant()
+
+        New-VirusScan -ApiKey 'x' -FileHash $file -Client $client | Out-Null
+        $handler.LastRequest.RequestUri.AbsolutePath | Should -Be "/api/v3/files/$expected/analyse"
     }
 }

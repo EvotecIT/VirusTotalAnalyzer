@@ -58,7 +58,7 @@ public sealed class CmdletGetVirusReport : AsyncPSCmdlet
 #if NET472
                         hash = BitConverter.ToString(bytes).Replace("-", string.Empty).ToLowerInvariant();
 #else
-                        hash = Convert.ToHexString(bytes);
+                        hash = Convert.ToHexString(bytes).ToLowerInvariant();
 #endif
                     }
                     var fileReport = await client.GetFileReportAsync(hash, cancellationToken: CancelToken).ConfigureAwait(false);

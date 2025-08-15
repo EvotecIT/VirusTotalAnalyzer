@@ -281,6 +281,41 @@ public sealed partial class VirusTotalClient : IDisposable
         return (results, nextCursor);
     }
 
+    public IAsyncEnumerable<FileNameInfo> GetFileNamesAsyncEnumerable(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateId(id, nameof(id));
+        if (limit == 0)
+        {
+            return Empty();
+        }
+
+        var remaining = limit;
+        return GetPagedAsyncEnumerable<FileNameInfo>(async (c, token) =>
+        {
+            if (remaining.HasValue && remaining <= 0)
+            {
+                return null;
+            }
+
+            var page = await GetFileNamesPagedAsync(id, remaining, c, fetchAll: false, token).ConfigureAwait(false);
+            if (page != null && remaining.HasValue)
+            {
+                remaining -= page.Data.Count;
+            }
+            return page;
+        }, cursor, cancellationToken);
+
+        static async IAsyncEnumerable<FileNameInfo> Empty()
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+    }
+
     public async Task<Stream> DownloadLivehuntNotificationFileAsync(string id, CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));

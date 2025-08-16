@@ -63,5 +63,6 @@ using VirusTotalAnalyzer.Examples;
 // await ListRetrohuntJobsExample.RunAsync();
 // await StartRetrohuntJobExample.RunAsync();
 // await ListMonitorEventsExample.RunAsync();
+// await DirectoryScanServiceExample.RunAsync();
 
 await Task.CompletedTask;

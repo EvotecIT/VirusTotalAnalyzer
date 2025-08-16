@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -16,6 +17,7 @@ public sealed class MultipartFormDataBuilder
 {
     private readonly Stream _stream;
     private readonly string _fileName;
+    private readonly List<KeyValuePair<string, string>> _fields = new();
 
     public MultipartFormDataBuilder(Stream stream, string fileName)
     {
@@ -30,13 +32,35 @@ public sealed class MultipartFormDataBuilder
     public string Boundary { get; }
 
     /// <summary>
+    /// Adds an additional form field to the multipart content.
+    /// </summary>
+    public MultipartFormDataBuilder WithFormField(string name, string value)
+    {
+        if (name is null)
+            throw new ArgumentNullException(nameof(name));
+        if (value is null)
+            throw new ArgumentNullException(nameof(value));
+        _fields.Add(new KeyValuePair<string, string>(name, value));
+        return this;
+    }
+
+    /// <summary>
     /// Builds the <see cref="HttpContent"/> that streams the file with boundaries.
     /// </summary>
     public HttpContent Build()
     {
-        var start = Encoding.UTF8.GetBytes($"--{Boundary}\r\n" +
-            $"Content-Disposition: form-data; name=\"file\"; filename=\"{_fileName}\"\r\n" +
-            "Content-Type: application/octet-stream\r\n\r\n");
+        var builder = new StringBuilder();
+        foreach (var field in _fields)
+        {
+            builder.Append($"--{Boundary}\r\n");
+            builder.Append($"Content-Disposition: form-data; name=\"{field.Key}\"\r\n\r\n");
+            builder.Append(field.Value);
+            builder.Append("\r\n");
+        }
+        builder.Append($"--{Boundary}\r\n");
+        builder.Append($"Content-Disposition: form-data; name=\"file\"; filename=\"{_fileName}\"\r\n");
+        builder.Append("Content-Type: application/octet-stream\r\n\r\n");
+        var start = Encoding.UTF8.GetBytes(builder.ToString());
         var end = Encoding.UTF8.GetBytes($"\r\n--{Boundary}--\r\n");
         return new MultipartStreamContent(_stream, start, end, Boundary);
     }

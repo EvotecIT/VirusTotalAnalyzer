@@ -20,15 +20,9 @@ public static class DownloadFileExample
                 return;
             }
             using var httpClient = new HttpClient();
-#if NET472
             using var stream = await httpClient.GetStreamAsync(url);
             using var file = File.Create("downloaded_file.bin");
             await stream.CopyToAsync(file);
-#else
-            await using var stream = await httpClient.GetStreamAsync(url);
-            await using var file = File.Create("downloaded_file.bin");
-            await stream.CopyToAsync(file);
-#endif
         }
         catch (RateLimitExceededException ex)
         {

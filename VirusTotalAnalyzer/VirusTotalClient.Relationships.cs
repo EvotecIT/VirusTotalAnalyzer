@@ -147,11 +147,7 @@ public sealed partial class VirusTotalClient
         }
         using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         var result = await JsonSerializer.DeserializeAsync<FileReportsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
         return result?.Data;
     }
@@ -176,11 +172,7 @@ public sealed partial class VirusTotalClient
         }
         using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         var result = await JsonSerializer.DeserializeAsync<FileReportsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
         return result?.Data;
     }
@@ -205,11 +197,7 @@ public sealed partial class VirusTotalClient
         }
         using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         var result = await JsonSerializer.DeserializeAsync<FileReportsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
         return result?.Data;
     }
@@ -234,11 +222,7 @@ public sealed partial class VirusTotalClient
         }
         using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         var result = await JsonSerializer.DeserializeAsync<UrlSummariesResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
         return result?.Data;
     }
@@ -263,11 +247,7 @@ public sealed partial class VirusTotalClient
         }
         using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         var result = await JsonSerializer.DeserializeAsync<SslCertificatesResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
         return result?.Data;
     }
@@ -295,11 +275,7 @@ public sealed partial class VirusTotalClient
 
         using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         var result = await JsonSerializer.DeserializeAsync<TResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
         return result == null ? null : selector(result);
     }
@@ -325,11 +301,7 @@ public sealed partial class VirusTotalClient
         }
         using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         var result = await JsonSerializer.DeserializeAsync<ResolutionsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
         return result?.Data;
     }
@@ -355,11 +327,7 @@ public sealed partial class VirusTotalClient
         }
         using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         var result = await JsonSerializer.DeserializeAsync<SubmissionsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
         return result?.Data;
     }

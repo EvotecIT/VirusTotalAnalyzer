@@ -31,11 +31,7 @@ public sealed partial class VirusTotalClient
             }
             using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
             await EnsureSuccessAsync(response, token).ConfigureAwait(false);
-#if NET472
-            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
-#endif
+            using var stream = await response.Content.ReadContentStreamAsync(token).ConfigureAwait(false);
             return await JsonSerializer.DeserializeAsync<PagedResponse<Graph>>(stream, _jsonOptions, token).ConfigureAwait(false);
         }, cursor, fetchAll, cancellationToken);
 
@@ -44,11 +40,7 @@ public sealed partial class VirusTotalClient
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"graphs/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         return await JsonSerializer.DeserializeAsync<Graph>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
@@ -58,11 +50,7 @@ public sealed partial class VirusTotalClient
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var response = await _httpClient.PostAsync("graphs", content, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         return await JsonSerializer.DeserializeAsync<Graph>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
@@ -74,11 +62,7 @@ public sealed partial class VirusTotalClient
         using var message = new HttpRequestMessage(new HttpMethod("PATCH"), $"graphs/{Uri.EscapeDataString(id)}") { Content = content };
         using var response = await _httpClient.SendAsync(message, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         return await JsonSerializer.DeserializeAsync<Graph>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
@@ -120,11 +104,7 @@ public sealed partial class VirusTotalClient
             }
             using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
             await EnsureSuccessAsync(response, token).ConfigureAwait(false);
-#if NET472
-            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
-#endif
+            using var stream = await response.Content.ReadContentStreamAsync(token).ConfigureAwait(false);
             return await JsonSerializer.DeserializeAsync<PagedResponse<Collection>>(stream, _jsonOptions, token).ConfigureAwait(false);
         }, cursor, fetchAll, cancellationToken);
 
@@ -133,11 +113,7 @@ public sealed partial class VirusTotalClient
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"collections/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         return await JsonSerializer.DeserializeAsync<Collection>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
@@ -147,11 +123,7 @@ public sealed partial class VirusTotalClient
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var response = await _httpClient.PostAsync("collections", content, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         return await JsonSerializer.DeserializeAsync<Collection>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
@@ -163,11 +135,7 @@ public sealed partial class VirusTotalClient
         using var message = new HttpRequestMessage(new HttpMethod("PATCH"), $"collections/{Uri.EscapeDataString(id)}") { Content = content };
         using var response = await _httpClient.SendAsync(message, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         return await JsonSerializer.DeserializeAsync<Collection>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
@@ -196,11 +164,7 @@ public sealed partial class VirusTotalClient
             }
             using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
             await EnsureSuccessAsync(response, token).ConfigureAwait(false);
-#if NET472
-            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
-#endif
+            using var stream = await response.Content.ReadContentStreamAsync(token).ConfigureAwait(false);
             return await JsonSerializer.DeserializeAsync<PagedResponse<Relationship>>(stream, _jsonOptions, token).ConfigureAwait(false);
         }, cursor, fetchAll, cancellationToken);
     }
@@ -212,11 +176,7 @@ public sealed partial class VirusTotalClient
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var response = await _httpClient.PostAsync($"collections/{Uri.EscapeDataString(id)}/items", content, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         return await JsonSerializer.DeserializeAsync<RelationshipResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
@@ -243,11 +203,7 @@ public sealed partial class VirusTotalClient
             }
             using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
             await EnsureSuccessAsync(response, token).ConfigureAwait(false);
-#if NET472
-            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
-#endif
+            using var stream = await response.Content.ReadContentStreamAsync(token).ConfigureAwait(false);
             return await JsonSerializer.DeserializeAsync<PagedResponse<Bundle>>(stream, _jsonOptions, token).ConfigureAwait(false);
         }, cursor, fetchAll, cancellationToken);
 
@@ -256,11 +212,7 @@ public sealed partial class VirusTotalClient
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"bundles/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         return await JsonSerializer.DeserializeAsync<Bundle>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
@@ -270,11 +222,7 @@ public sealed partial class VirusTotalClient
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var response = await _httpClient.PostAsync("bundles", content, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         return await JsonSerializer.DeserializeAsync<Bundle>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
@@ -286,11 +234,7 @@ public sealed partial class VirusTotalClient
         using var message = new HttpRequestMessage(new HttpMethod("PATCH"), $"bundles/{Uri.EscapeDataString(id)}") { Content = content };
         using var response = await _httpClient.SendAsync(message, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         return await JsonSerializer.DeserializeAsync<Bundle>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
@@ -319,11 +263,7 @@ public sealed partial class VirusTotalClient
             }
             using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
             await EnsureSuccessAsync(response, token).ConfigureAwait(false);
-#if NET472
-            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
-#endif
+            using var stream = await response.Content.ReadContentStreamAsync(token).ConfigureAwait(false);
             return await JsonSerializer.DeserializeAsync<PagedResponse<Relationship>>(stream, _jsonOptions, token).ConfigureAwait(false);
         }, cursor, fetchAll, cancellationToken);
     }
@@ -335,11 +275,7 @@ public sealed partial class VirusTotalClient
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var response = await _httpClient.PostAsync($"bundles/{Uri.EscapeDataString(id)}/items", content, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         return await JsonSerializer.DeserializeAsync<RelationshipResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 

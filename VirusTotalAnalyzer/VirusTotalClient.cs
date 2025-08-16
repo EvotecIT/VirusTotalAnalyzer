@@ -162,11 +162,7 @@ public sealed partial class VirusTotalClient : IDisposable
         ApiError? error = null;
         try
         {
-#if NET472
-            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+            using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
             var wrapper = await JsonSerializer.DeserializeAsync<ApiErrorResponse>(stream, _jsonOptions, cancellationToken)
                 .ConfigureAwait(false);
             error = wrapper?.Error;
@@ -232,11 +228,7 @@ public sealed partial class VirusTotalClient : IDisposable
 
             using var response = await _httpClient.GetAsync(url.ToString(), token).ConfigureAwait(false);
             await EnsureSuccessAsync(response, token).ConfigureAwait(false);
-#if NET472
-            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-            await using var stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
-#endif
+            using var stream = await response.Content.ReadContentStreamAsync(token).ConfigureAwait(false);
             return await JsonSerializer.DeserializeAsync<PagedResponse<FileNameInfo>>(stream, _jsonOptions, token)
                 .ConfigureAwait(false);
         }, cursor, fetchAll, cancellationToken);
@@ -323,11 +315,7 @@ public sealed partial class VirusTotalClient : IDisposable
             .GetAsync($"intelligence/hunting_notification_files/{Uri.EscapeDataString(id)}", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         return new StreamWithResponse(response, stream);
     }
 
@@ -338,11 +326,7 @@ public sealed partial class VirusTotalClient : IDisposable
             .GetAsync($"intelligence/retrohunt_notification_files/{Uri.EscapeDataString(id)}", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         return new StreamWithResponse(response, stream);
     }
 
@@ -352,11 +336,7 @@ public sealed partial class VirusTotalClient : IDisposable
             .GetAsync($"analyses/{Uri.EscapeDataString(analysisId)}/pcap", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-#if NET472
-        var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-#else
-        var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#endif
+        var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         return new StreamWithResponse(response, stream);
     }
 

@@ -32,6 +32,31 @@ public class MultipartFormDataBuilderTests
         Assert.False(ms.CanSeek);
     }
 
+    [Fact]
+    public async Task Build_WritesAdditionalFieldsBeforeFile()
+    {
+        using var ms = new NonSeekableStream(Encoding.UTF8.GetBytes("hi"));
+        var builder = new MultipartFormDataBuilder(ms, "test.txt")
+            .WithFormField("foo", "bar")
+            .WithFormField("baz", "qux");
+        using var content = builder.Build();
+
+        var bytes = await content.ReadAsByteArrayAsync();
+        var expected = Encoding.UTF8.GetBytes(
+            $"--{builder.Boundary}\r\n" +
+            "Content-Disposition: form-data; name=\"foo\"\r\n\r\n" +
+            "bar\r\n" +
+            $"--{builder.Boundary}\r\n" +
+            "Content-Disposition: form-data; name=\"baz\"\r\n\r\n" +
+            "qux\r\n" +
+            $"--{builder.Boundary}\r\n" +
+            "Content-Disposition: form-data; name=\"file\"; filename=\"test.txt\"\r\n" +
+            "Content-Type: application/octet-stream\r\n\r\n" +
+            "hi\r\n" +
+            $"--{builder.Boundary}--\r\n");
+        Assert.Equal(expected, bytes);
+    }
+
     private sealed class NonSeekableStream : Stream
     {
         private readonly Stream _inner;

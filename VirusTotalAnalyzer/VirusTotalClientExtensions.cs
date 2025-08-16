@@ -9,33 +9,47 @@ namespace VirusTotalAnalyzer;
 
 public static class VirusTotalClientExtensions
 {
-    public static string GetUrlId(string url)
+    public static bool TryGetUrlId(string url, out string? id)
     {
         if (url == null) throw new ArgumentNullException(nameof(url));
 
-        var uri = new Uri(url, UriKind.Absolute);
-        var builder = new UriBuilder(uri)
+        id = null;
+        try
         {
-            Fragment = string.Empty
-        };
+            var uri = new Uri(url, UriKind.Absolute);
+            var builder = new UriBuilder(uri)
+            {
+                Fragment = string.Empty
+            };
 
-        if ((builder.Scheme == Uri.UriSchemeHttp && builder.Port == 80) ||
-            (builder.Scheme == Uri.UriSchemeHttps && builder.Port == 443))
-        {
-            builder.Port = -1;
+            if ((builder.Scheme == Uri.UriSchemeHttp && builder.Port == 80) ||
+                (builder.Scheme == Uri.UriSchemeHttps && builder.Port == 443))
+            {
+                builder.Port = -1;
+            }
+
+            if (string.IsNullOrEmpty(builder.Path))
+            {
+                builder.Path = "/";
+            }
+
+            var canonical = builder.Uri.GetComponents(UriComponents.AbsoluteUri, UriFormat.SafeUnescaped);
+            var bytes = Encoding.UTF8.GetBytes(canonical);
+            id = Convert.ToBase64String(bytes)
+                .TrimEnd('=')
+                .Replace('+', '-')
+                .Replace('/', '_');
+            return true;
         }
-
-        if (string.IsNullOrEmpty(builder.Path))
+        catch (UriFormatException)
         {
-            builder.Path = "/";
+            return false;
         }
+    }
 
-        var canonical = builder.Uri.GetComponents(UriComponents.AbsoluteUri, UriFormat.SafeUnescaped);
-        var bytes = Encoding.UTF8.GetBytes(canonical);
-        return Convert.ToBase64String(bytes)
-            .TrimEnd('=')
-            .Replace('+', '-')
-            .Replace('/', '_');
+    public static string GetUrlId(string url)
+    {
+        return TryGetUrlId(url, out var id) ? id! : throw new UriFormatException("Invalid URL");
     }
 
     public static Task<AnalysisReport?> ScanFileAsync(this VirusTotalClient client, string filePath, string? password = null, CancellationToken cancellationToken = default)

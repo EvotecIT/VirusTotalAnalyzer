@@ -16,7 +16,7 @@ public static class ScanFileExample
             return;
         }
 
-        var client = VirusTotalClient.Create("YOUR_API_KEY");
+        IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
             var report = await client.ScanFileAsync(path);

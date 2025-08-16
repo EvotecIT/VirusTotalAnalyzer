@@ -25,7 +25,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var notifications = await client.ListRetrohuntNotificationsAsync(limit: 1);
 
@@ -48,7 +48,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var page = await client.ListRetrohuntNotificationsAsync(limit: 1, fetchAll: false);
 
@@ -71,7 +71,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var report = await client.GetIpAddressReportAsync("1.1.1.1");
 
@@ -94,7 +94,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await client.GetIpAddressReportAsync(
             "1.1.1.1",
@@ -120,7 +120,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var report = await client.GetDomainReportAsync("example.com");
 
@@ -143,7 +143,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await client.GetDomainReportAsync(
             "example.com",
@@ -169,7 +169,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var whois = await client.GetDomainWhoisAsync("example.com");
 
@@ -193,7 +193,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var whois = await client.GetIpAddressWhoisAsync("1.1.1.1");
 
@@ -217,7 +217,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var report = await client.GetAnalysisAsync("an1");
 
@@ -240,7 +240,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetAnalysisAsync("an1"));
 
@@ -262,7 +262,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var graph = await client.GetGraphAsync("g1");
 
@@ -286,7 +286,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var collection = await client.GetCollectionAsync("c1");
 
@@ -310,7 +310,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var page = await client.GetVotesAsync(ResourceType.File, "abc");
 
@@ -339,7 +339,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var page1 = await client.GetVotesAsync(ResourceType.File, "abc", limit: 1);
         var page2 = await client.GetVotesAsync(ResourceType.File, "abc", cursor: page1!.Meta!.Cursor);
@@ -363,7 +363,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var vote = await client.GetVoteAsync("v1");
 
@@ -386,7 +386,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetVoteAsync("v1"));
         Assert.Equal("not found", ex.Message);
@@ -405,7 +405,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var feed = await client.GetFeedAsync(ResourceType.File);
 
@@ -428,7 +428,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var feed = await client.GetFeedAsync(ResourceType.FileBehaviour);
 
@@ -451,7 +451,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var relationships = await client.GetRelationshipsAsync(ResourceType.File, "abc", "comments");
 
@@ -474,7 +474,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await client.GetRelationshipsAsync(ResourceType.File, "abc", "comments", limit: 10, cursor: "abc");
 
@@ -495,7 +495,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var report = await client.ReanalyzeFileAsync("abc");
 
@@ -516,7 +516,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         const string url = "https://example.com";
         var id = VirusTotalClientExtensions.GetUrlId(url);
@@ -545,7 +545,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var jobs = await client.ListRetrohuntJobsAsync(limit: 1);
 
@@ -571,7 +571,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var page = await client.ListRetrohuntJobsAsync(limit: 1, fetchAll: false);
 
@@ -594,7 +594,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var behavior = await client.GetFileBehaviorAsync("abc");
 
@@ -618,7 +618,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetFileBehaviorAsync("abc"));
         Assert.Equal("not found", ex.Message);
@@ -637,7 +637,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var summary = await client.GetFileBehaviorSummaryAsync("abc");
 
@@ -660,7 +660,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await Assert.ThrowsAsync<ApiException>(() => client.GetFileBehaviorSummaryAsync("abc"));
     }
@@ -677,7 +677,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var traffic = await client.GetFileNetworkTrafficAsync("abc");
 
@@ -701,7 +701,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await Assert.ThrowsAsync<ApiException>(() => client.GetFileNetworkTrafficAsync("abc"));
     }
@@ -718,7 +718,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var info = await client.GetFilePeInfoAsync("abc");
 
@@ -744,7 +744,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await Assert.ThrowsAsync<ApiException>(() => client.GetFilePeInfoAsync("abc"));
     }
@@ -761,7 +761,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var classification = await client.GetFileClassificationAsync("abc");
 
@@ -785,7 +785,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var strings = await client.GetFileStringsAsync("abc");
 
@@ -808,7 +808,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await Assert.ThrowsAsync<ApiException>(() => client.GetFileStringsAsync("abc"));
     }
@@ -825,7 +825,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var (names, cursor) = await client.GetFileNamesAsync("abc");
 
@@ -850,7 +850,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetFileNamesAsync("abc"));
         Assert.Equal("NotFoundError", ex.Error?.Code);
@@ -869,7 +869,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var (names, cursor) = await client.GetFileNamesAsync("abc");
 
@@ -894,7 +894,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var (names, cursor) = await client.GetFileNamesAsync("abc", limit: 1);
 
@@ -917,7 +917,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var list = new List<FileNameInfo>();
         await foreach (var name in client.GetFileNamesAsyncEnumerable("abc"))
@@ -945,7 +945,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var enumerable = client.GetFileNamesAsyncEnumerable("abc");
         var ex = await Assert.ThrowsAsync<ApiException>(async () =>
@@ -970,7 +970,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var list = new List<FileNameInfo>();
         await foreach (var name in client.GetFileNamesAsyncEnumerable("abc"))
@@ -998,7 +998,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var list = new List<FileNameInfo>();
         await foreach (var name in client.GetFileNamesAsyncEnumerable("abc", limit: 1))
@@ -1024,7 +1024,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var page = await client.GetFileNamesPagedAsync("abc");
 
@@ -1048,7 +1048,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await Assert.ThrowsAsync<ApiException>(() => client.GetFileNamesPagedAsync("abc"));
     }
@@ -1065,7 +1065,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var page = await client.GetFileNamesPagedAsync("abc", fetchAll: true);
 

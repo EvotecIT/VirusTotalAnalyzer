@@ -16,7 +16,7 @@ public static class SubmitPrivateFileExample
             return;
         }
 
-        var client = VirusTotalClient.Create("YOUR_API_KEY");
+        IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
             using var stream = File.OpenRead(path);

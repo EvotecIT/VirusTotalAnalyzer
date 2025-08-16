@@ -22,7 +22,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var report = await client.SubmitUrlAsync("https://example.com", waitForCompletion: true);
 
@@ -43,7 +43,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var report = await client.SubmitUrlAsync("https://example.com", waitForCompletion: false, analyze: false);
 
@@ -64,7 +64,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
         var options = new SubmitUrlOptions { WaitForCompletion = true, Analyze = true };
 
         var report = await client.SubmitUrlAsync("https://example.com", options);

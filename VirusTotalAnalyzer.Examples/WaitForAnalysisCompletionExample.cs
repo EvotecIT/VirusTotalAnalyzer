@@ -8,7 +8,7 @@ public static class WaitForAnalysisCompletionExample
 {
     public static async Task RunAsync()
     {
-        var client = VirusTotalClient.Create("YOUR_API_KEY");
+        IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
             var report = await client.WaitForAnalysisCompletionAsync("analysis-id", TimeSpan.FromSeconds(30));

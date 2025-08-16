@@ -52,49 +52,49 @@ public static class VirusTotalClientExtensions
         return TryGetUrlId(url, out var id) ? id! : throw new UriFormatException("Invalid URL");
     }
 
-    public static Task<AnalysisReport?> ScanFileAsync(this VirusTotalClient client, string filePath, string? password = null, CancellationToken cancellationToken = default)
+    public static Task<AnalysisReport?> ScanFileAsync(this IVirusTotalClient client, string filePath, string? password = null, CancellationToken cancellationToken = default)
     {
         if (client == null) throw new ArgumentNullException(nameof(client));
         return ScanFileInternalAsync(client, filePath, password, cancellationToken);
     }
 
-    private static async Task<AnalysisReport?> ScanFileInternalAsync(VirusTotalClient client, string filePath, string? password, CancellationToken cancellationToken)
+    private static async Task<AnalysisReport?> ScanFileInternalAsync(IVirusTotalClient client, string filePath, string? password, CancellationToken cancellationToken)
     {
         using var stream = File.OpenRead(filePath);
         return await client.SubmitFileAsync(stream, Path.GetFileName(filePath), password, cancellationToken).ConfigureAwait(false);
     }
 
-    public static Task<AnalysisReport?> ScanUrlAsync(this VirusTotalClient client, string url, CancellationToken cancellationToken = default)
+    public static Task<AnalysisReport?> ScanUrlAsync(this IVirusTotalClient client, string url, CancellationToken cancellationToken = default)
     {
         if (client == null) throw new ArgumentNullException(nameof(client));
         return client.SubmitUrlAsync(url, cancellationToken);
     }
 
-    public static Task<Comment?> AddCommentAsync(this VirusTotalClient client, ResourceType resourceType, string id, string text, CancellationToken cancellationToken = default)
+    public static Task<Comment?> AddCommentAsync(this IVirusTotalClient client, ResourceType resourceType, string id, string text, CancellationToken cancellationToken = default)
     {
         if (client == null) throw new ArgumentNullException(nameof(client));
         return client.CreateCommentAsync(resourceType, id, text, cancellationToken);
     }
 
-    public static Task<Comment?> AddCommentAsync(this VirusTotalClient client, ResourceType resourceType, string id, CreateCommentRequest request, CancellationToken cancellationToken = default)
+    public static Task<Comment?> AddCommentAsync(this IVirusTotalClient client, ResourceType resourceType, string id, CreateCommentRequest request, CancellationToken cancellationToken = default)
     {
         if (client == null) throw new ArgumentNullException(nameof(client));
         return client.CreateCommentAsync(resourceType, id, request, cancellationToken);
     }
 
-    public static Task<Vote?> VoteAsync(this VirusTotalClient client, ResourceType resourceType, string id, VoteVerdict verdict, CancellationToken cancellationToken = default)
+    public static Task<Vote?> VoteAsync(this IVirusTotalClient client, ResourceType resourceType, string id, VoteVerdict verdict, CancellationToken cancellationToken = default)
     {
         if (client == null) throw new ArgumentNullException(nameof(client));
         return client.CreateVoteAsync(resourceType, id, verdict, cancellationToken);
     }
 
-    public static Task<Vote?> VoteAsync(this VirusTotalClient client, ResourceType resourceType, string id, CreateVoteRequest request, CancellationToken cancellationToken = default)
+    public static Task<Vote?> VoteAsync(this IVirusTotalClient client, ResourceType resourceType, string id, CreateVoteRequest request, CancellationToken cancellationToken = default)
     {
         if (client == null) throw new ArgumentNullException(nameof(client));
         return client.CreateVoteAsync(resourceType, id, request, cancellationToken);
     }
 
-    public static Task DeleteAsync(this VirusTotalClient client, ResourceType resourceType, string id, CancellationToken cancellationToken = default)
+    public static Task DeleteAsync(this IVirusTotalClient client, ResourceType resourceType, string id, CancellationToken cancellationToken = default)
     {
         if (client == null) throw new ArgumentNullException(nameof(client));
         return client.DeleteItemAsync(resourceType, id, cancellationToken);
@@ -105,7 +105,7 @@ public static class VirusTotalClientExtensions
     /// Retries up to <paramref name="maxRetries"/> times, waiting for the server-supplied delay when available,
     /// otherwise using <paramref name="defaultRetryDelay"/> (one second if not specified).
     /// </summary>
-    public static async Task<T?> ExecuteWithRateLimitRetryAsync<T>(this VirusTotalClient client, Func<VirusTotalClient, Task<T?>> operation, int maxRetries = 3, TimeSpan? defaultRetryDelay = null, CancellationToken cancellationToken = default)
+    public static async Task<T?> ExecuteWithRateLimitRetryAsync<T>(this IVirusTotalClient client, Func<IVirusTotalClient, Task<T?>> operation, int maxRetries = 3, TimeSpan? defaultRetryDelay = null, CancellationToken cancellationToken = default)
     {
         if (client == null) throw new ArgumentNullException(nameof(client));
         if (operation == null) throw new ArgumentNullException(nameof(operation));
@@ -131,7 +131,7 @@ public static class VirusTotalClientExtensions
     /// Retries up to <paramref name="maxRetries"/> times, waiting for the server-supplied delay when available,
     /// otherwise using <paramref name="defaultRetryDelay"/> (one second if not specified).
     /// </summary>
-    public static async Task ExecuteWithRateLimitRetryAsync(this VirusTotalClient client, Func<VirusTotalClient, Task> operation, int maxRetries = 3, TimeSpan? defaultRetryDelay = null, CancellationToken cancellationToken = default)
+    public static async Task ExecuteWithRateLimitRetryAsync(this IVirusTotalClient client, Func<IVirusTotalClient, Task> operation, int maxRetries = 3, TimeSpan? defaultRetryDelay = null, CancellationToken cancellationToken = default)
     {
         if (client == null) throw new ArgumentNullException(nameof(client));
         if (operation == null) throw new ArgumentNullException(nameof(operation));

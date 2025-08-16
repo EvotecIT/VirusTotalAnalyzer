@@ -22,7 +22,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.ListGraphsAsync();
 
@@ -44,7 +44,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.ListGraphsAsync(limit: 10, cursor: "abc");
 
@@ -68,7 +68,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.ListGraphsAsync(fetchAll: true);
 
@@ -91,7 +91,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var request = new CreateGraphRequest { Data = { Attributes = { Name = "demo" } } };
         var graph = await client.CreateGraphAsync(request);
@@ -114,7 +114,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var request = new UpdateGraphRequest { Data = { Attributes = { Name = "updated" } } };
         var graph = await client.UpdateGraphAsync("g1", request);
@@ -133,7 +133,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await client.DeleteGraphAsync("g1");
 
@@ -153,7 +153,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.GetGraphCommentsAsync("g1");
 
@@ -175,7 +175,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var comment = await client.AddGraphCommentAsync("g1", "hi");
 
@@ -193,7 +193,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await client.DeleteGraphCommentAsync("g1", "c1");
 
@@ -213,7 +213,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.GetGraphCollaboratorsAsync("g1");
 
@@ -235,7 +235,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var request = new AddCollaboratorsRequest
         {
@@ -257,7 +257,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await client.DeleteGraphCollaboratorAsync("g1", "user1");
 
@@ -277,7 +277,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var request = new CreateGraphRequest { Data = { Attributes = { Name = "demo" } } };
         await Assert.ThrowsAsync<ApiException>(() => client.CreateGraphAsync(request));
@@ -295,7 +295,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.ListCollectionsAsync();
 
@@ -317,7 +317,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.ListCollectionsAsync(limit: 10, cursor: "abc");
 
@@ -341,7 +341,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.ListCollectionsAsync(fetchAll: true);
 
@@ -364,7 +364,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var request = new CreateCollectionRequest { Data = { Attributes = { Name = "demo" } } };
         var collection = await client.CreateCollectionAsync(request);
@@ -387,7 +387,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var request = new UpdateCollectionRequest { Data = { Attributes = { Name = "updated" } } };
         var collection = await client.UpdateCollectionAsync("c1", request);
@@ -406,7 +406,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await client.DeleteCollectionAsync("c1");
 
@@ -426,7 +426,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.ListCollectionItemsAsync("c1");
 
@@ -449,7 +449,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.ListCollectionItemsAsync("c1", fetchAll: true);
 
@@ -472,7 +472,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var request = new AddItemsRequest
         {
@@ -494,7 +494,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await client.DeleteCollectionItemAsync("c1", "f1");
 
@@ -514,7 +514,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.ListBundlesAsync();
 
@@ -536,7 +536,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.ListBundlesAsync(limit: 10, cursor: "abc");
 
@@ -560,7 +560,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.ListBundlesAsync(fetchAll: true);
 
@@ -583,7 +583,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var request = new CreateBundleRequest
         {
@@ -609,7 +609,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var request = new UpdateBundleRequest { Data = { Attributes = { Name = "updated" } } };
         var bundle = await client.UpdateBundleAsync("b1", request);
@@ -628,7 +628,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await client.DeleteBundleAsync("b1");
 
@@ -648,7 +648,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.ListBundleItemsAsync("b1");
 
@@ -671,7 +671,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.ListBundleItemsAsync("b1", fetchAll: true);
 
@@ -694,7 +694,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var request = new AddItemsRequest
         {
@@ -716,7 +716,7 @@ public class GraphCollectionBundleTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await client.DeleteBundleItemAsync("b1", "f1");
 

@@ -8,7 +8,7 @@ public static class GetDomainSubmissionsExample
 {
     public static async Task RunAsync()
     {
-        var client = VirusTotalClient.Create("YOUR_API_KEY");
+        IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
             var submissions = await client.GetDomainSubmissionsAsync("example.com", limit: 10);

@@ -21,7 +21,7 @@ public class YaraRulesetTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var page = await client.ListYaraRulesetsAsync();
 
@@ -48,7 +48,7 @@ public class YaraRulesetTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var page = await client.ListYaraRulesetsAsync(limit: 1);
 
@@ -74,7 +74,7 @@ public class YaraRulesetTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var page = await client.ListYaraRulesetsAsync(limit: 1, fetchAll: false);
 
@@ -97,7 +97,7 @@ public class YaraRulesetTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var ruleset = await client.GetYaraRulesetAsync("rs1");
 
@@ -118,7 +118,7 @@ public class YaraRulesetTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
         var request = new YaraRulesetRequest();
         request.Data.Attributes.Name = "demo";
         request.Data.Attributes.Rules = "rule";
@@ -145,7 +145,7 @@ public class YaraRulesetTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
         var request = new YaraRulesetRequest();
         request.Data.Attributes.Name = "demo";
 
@@ -166,7 +166,7 @@ public class YaraRulesetTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await client.DeleteYaraRulesetAsync("rs1");
 
@@ -188,7 +188,7 @@ public class YaraRulesetTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var owner = await client.GetYaraRulesetOwnerAsync("rs1");
 
@@ -211,7 +211,7 @@ public class YaraRulesetTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var editors = await client.GetYaraRulesetEditorsAsync("rs1", limit: 10, cursor: "abc");
 
@@ -236,7 +236,7 @@ public class YaraRulesetTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
 #if NETFRAMEWORK
         using (var stream = await client.DownloadYaraRulesetAsync("rs1"))
@@ -272,7 +272,7 @@ public class YaraRulesetTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var ex = await Assert.ThrowsAsync<ApiException>(async () => await client.DownloadYaraRulesetAsync("rs1"));
 

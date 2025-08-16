@@ -22,7 +22,7 @@ public class PathEncodingTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var id = "user/id?test";
         await client.GetUserAsync(id);
@@ -43,7 +43,7 @@ public class PathEncodingTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var id = "file/id#1";
         var request = new CommentRequestBuilder().WithText("text").Build();
@@ -61,7 +61,7 @@ public class PathEncodingTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var graphId = "graph/id#1";
         var commentId = "comment/id?2";
@@ -79,7 +79,7 @@ public class PathEncodingTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var graphId = "graph/id#1";
         var username = "user/name?2";

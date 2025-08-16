@@ -8,7 +8,7 @@ public static class GetIpAddressResolutionsExample
 {
     public static async Task RunAsync()
     {
-        var client = VirusTotalClient.Create("YOUR_API_KEY");
+        IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
             var resolutions = await client.GetIpAddressResolutionsAsync("1.2.3.4", limit: 10);

@@ -6,7 +6,7 @@ public static class CreateCommentWithBuilderExample
 {
     public static async Task RunAsync()
     {
-        var client = VirusTotalClient.Create("YOUR-API-KEY");
+        IVirusTotalClient client = VirusTotalClient.Create("YOUR-API-KEY");
 
         var request = new CommentRequestBuilder()
             .WithText("Nice file")

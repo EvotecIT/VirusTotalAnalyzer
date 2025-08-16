@@ -8,7 +8,7 @@ public static class CreateCommentExample
 {
     public static async Task RunAsync()
     {
-        var client = VirusTotalClient.Create("YOUR_API_KEY");
+        IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
             var comment = await client.CreateCommentAsync(ResourceType.File, "file-id", "Nice file");

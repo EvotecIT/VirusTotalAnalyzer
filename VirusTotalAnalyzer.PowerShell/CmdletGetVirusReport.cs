@@ -9,7 +9,7 @@ namespace VirusTotalAnalyzer.PowerShell;
 
 /// <summary>Retrieves analysis reports from VirusTotal.</summary>
 /// <para>Queries the VirusTotal API for information about files, hashes, URLs, IP addresses, domains, or existing analyses.</para>
-/// <para>Provide an API key or an existing <see cref="VirusTotalClient"/> to authenticate requests.</para>
+/// <para>Provide an API key or an existing <see cref="IVirusTotalClient"/> to authenticate requests.</para>
 /// <list type="alertSet">
 ///   <item>
 ///     <description>Each request consumes your VirusTotal API quota.</description>
@@ -69,9 +69,9 @@ public sealed class CmdletGetVirusReport : AsyncPSCmdlet
     [Parameter(ParameterSetName = "Search", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
     public string? Search { get; set; }
 
-    /// <summary>Existing <see cref="VirusTotalClient"/> instance to reuse.</summary>
+    /// <summary>Existing <see cref="IVirusTotalClient"/> instance to reuse.</summary>
     [Parameter]
-    public VirusTotalClient? Client { get; set; }
+    public IVirusTotalClient? Client { get; set; }
 
     /// <inheritdoc/>
     protected override async Task ProcessRecordAsync()

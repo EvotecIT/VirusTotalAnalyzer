@@ -8,7 +8,7 @@ public static class GetFileNamesAsyncEnumerableExample
 {
     public static async Task RunAsync()
     {
-        var client = VirusTotalClient.Create("YOUR_API_KEY");
+        IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
             await foreach (var name in client.GetFileNamesAsyncEnumerable("44d88612fea8a8f36de82e1278abb02f"))

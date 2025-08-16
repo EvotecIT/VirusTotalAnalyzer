@@ -8,7 +8,7 @@ public static class GetMonitorEventVotesExample
 {
     public static async Task RunAsync()
     {
-        var client = VirusTotalClient.Create("YOUR_API_KEY");
+        IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
             var votes = await client.GetVotesAsync(ResourceType.MonitorEvent, "monitor-event-id", limit: 10);

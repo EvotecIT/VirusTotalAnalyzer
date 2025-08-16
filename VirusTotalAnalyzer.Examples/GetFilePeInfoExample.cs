@@ -8,7 +8,7 @@ public static class GetFilePeInfoExample
 {
     public static async Task RunAsync()
     {
-        var client = VirusTotalClient.Create("YOUR_API_KEY");
+        IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
             var info = await client.GetFilePeInfoAsync("44d88612fea8a8f36de82e1278abb02f");

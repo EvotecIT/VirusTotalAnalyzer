@@ -24,7 +24,7 @@ public class VirusTotalClientBuilderTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var request = new CommentRequestBuilder()
             .WithText("hello")
@@ -49,7 +49,7 @@ public class VirusTotalClientBuilderTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var request = new VoteRequestBuilder()
             .WithVerdict(VoteVerdict.Malicious)

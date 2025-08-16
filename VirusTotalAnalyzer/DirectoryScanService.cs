@@ -113,6 +113,8 @@ public sealed class DirectoryScanService : IDisposable
     public void Dispose()
     {
         _cts.Cancel();
+        _watcher.Created -= OnCreated;
+        _watcher.EnableRaisingEvents = false;
         _watcher.Dispose();
         Task[] tasks;
         lock (_running)

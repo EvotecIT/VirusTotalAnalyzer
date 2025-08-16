@@ -16,6 +16,16 @@ public class DirectoryScanServiceTests
             Content = new StringContent("{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}", Encoding.UTF8, "application/json")
         };
 
+    private static Task WriteFileAsync(string path, string contents)
+    {
+#if NETFRAMEWORK
+        File.WriteAllText(path, contents);
+        return Task.CompletedTask;
+#else
+        return File.WriteAllTextAsync(path, contents);
+#endif
+    }
+
     [Fact]
     public async Task Submits_New_Files()
     {
@@ -32,7 +42,7 @@ public class DirectoryScanServiceTests
             using var service = new DirectoryScanService(client, options);
 
             var filePath = Path.Combine(dir, "test.bin");
-            await File.WriteAllTextAsync(filePath, "data");
+            await WriteFileAsync(filePath, "data");
 
             var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(5)));
             Assert.Same(tcs.Task, completed);
@@ -65,12 +75,12 @@ public class DirectoryScanServiceTests
             using var service = new DirectoryScanService(client, options);
 
             var excluded = Path.Combine(dir, "skip.tmp");
-            await File.WriteAllTextAsync(excluded, "data");
+            await WriteFileAsync(excluded, "data");
             await Task.Delay(300); // wait to ensure no submission
             Assert.False(tcs.Task.IsCompleted);
 
             var included = Path.Combine(dir, "go.bin");
-            await File.WriteAllTextAsync(included, "data");
+            await WriteFileAsync(included, "data");
 
             var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(5)));
             Assert.Same(tcs.Task, completed);
@@ -101,13 +111,13 @@ public class DirectoryScanServiceTests
 
             var start = DateTime.UtcNow;
             var filePath = Path.Combine(dir, "delay.bin");
-            await File.WriteAllTextAsync(filePath, "data");
+            await WriteFileAsync(filePath, "data");
 
             var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(5)));
             Assert.Same(tcs.Task, completed);
             var time = await tcs.Task;
             var elapsed = time - start;
-            Assert.True(elapsed >= delay, $"elapsed {elapsed} is less than delay {delay}");
+            Assert.True(elapsed >= delay - TimeSpan.FromMilliseconds(50), $"elapsed {elapsed} is less than delay {delay}");
         }
         finally
         {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -58,10 +59,56 @@ public static class VirusTotalClientExtensions
         return ScanFileInternalAsync(client, filePath, password, cancellationToken);
     }
 
+    public static Task<IReadOnlyList<AnalysisReport?>> ScanFilesAsync(
+        this VirusTotalClient client,
+        IEnumerable<string> paths,
+        int maxConcurrency,
+        string? password = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (client == null) throw new ArgumentNullException(nameof(client));
+        if (paths == null) throw new ArgumentNullException(nameof(paths));
+        if (maxConcurrency <= 0) throw new ArgumentOutOfRangeException(nameof(maxConcurrency));
+        return ScanFilesInternalAsync(client, paths, maxConcurrency, password, cancellationToken);
+    }
+
     private static async Task<AnalysisReport?> ScanFileInternalAsync(VirusTotalClient client, string filePath, string? password, CancellationToken cancellationToken)
     {
         using var stream = File.OpenRead(filePath);
         return await client.SubmitFileAsync(stream, Path.GetFileName(filePath), password, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task<IReadOnlyList<AnalysisReport?>> ScanFilesInternalAsync(
+        VirusTotalClient client,
+        IEnumerable<string> paths,
+        int maxConcurrency,
+        string? password,
+        CancellationToken cancellationToken)
+    {
+        using var semaphore = new SemaphoreSlim(maxConcurrency);
+        var tasks = new List<Task<AnalysisReport?>>();
+        foreach (var path in paths)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            tasks.Add(UploadAsync(path));
+        }
+
+        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+        return results;
+
+        async Task<AnalysisReport?> UploadAsync(string filePath)
+        {
+            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                using var stream = File.OpenRead(filePath);
+                return await client.SubmitFileAsync(stream, Path.GetFileName(filePath), password, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
     }
 
     public static Task<AnalysisReport?> ScanUrlAsync(this VirusTotalClient client, string url, CancellationToken cancellationToken = default)

@@ -87,3 +87,45 @@ Describe 'New-VirusScan cmdlet' {
         $handler.LastRequest.RequestUri.AbsolutePath | Should -Be "/api/v3/files/$expected/analyse"
     }
 }
+
+Describe 'Get-VirusComment cmdlet' {
+    It 'retrieves comments for a resource' {
+        $json = '{"data":[{"id":"c1","type":"comment"}]}'
+        $handler = [FakeHandler]::new($json)
+        $httpClient = [System.Net.Http.HttpClient]::new($handler)
+        $httpClient.BaseAddress = [Uri]::new('https://www.virustotal.com/api/v3/')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new($httpClient)
+
+        $result = @(Get-VirusComment -ApiKey 'x' -ResourceType File -Id 'abc' -Client $client)[0]
+        $result.Id | Should -Be 'c1'
+        $handler.LastRequest.RequestUri.AbsolutePath | Should -Be '/api/v3/files/abc/comments'
+    }
+}
+
+Describe 'New-VirusVote cmdlet' {
+    It 'casts a vote for a resource' {
+        $json = '{"data":{"id":"v1","type":"vote"}}'
+        $handler = [FakeHandler]::new($json)
+        $httpClient = [System.Net.Http.HttpClient]::new($handler)
+        $httpClient.BaseAddress = [Uri]::new('https://www.virustotal.com/api/v3/')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new($httpClient)
+
+        $result = New-VirusVote -ApiKey 'x' -ResourceType File -Id 'abc' -Verdict Malicious -Client $client
+        $result.Id | Should -Be 'v1'
+        $handler.LastRequest.RequestUri.AbsolutePath | Should -Be '/api/v3/files/abc/votes'
+    }
+}
+
+Describe 'Get-VirusUser cmdlet' {
+    It 'retrieves user information' {
+        $json = '{"id":"user1","type":"user"}'
+        $handler = [FakeHandler]::new($json)
+        $httpClient = [System.Net.Http.HttpClient]::new($handler)
+        $httpClient.BaseAddress = [Uri]::new('https://www.virustotal.com/api/v3/')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new($httpClient)
+
+        $result = Get-VirusUser -ApiKey 'x' -Id 'user1' -Client $client
+        $result.Id | Should -Be 'user1'
+        $handler.LastRequest.RequestUri.AbsolutePath | Should -Be '/api/v3/users/user1'
+    }
+}

@@ -16,6 +16,7 @@ public sealed class DirectoryScanService : IDisposable
     private readonly DirectoryScanOptions _options;
     private readonly FileSystemWatcher _watcher;
     private readonly CancellationTokenSource _cts = new();
+    private readonly System.Collections.Generic.List<Task> _running = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DirectoryScanService"/> class.
@@ -38,13 +39,30 @@ public sealed class DirectoryScanService : IDisposable
         _watcher.Created += OnCreated;
     }
 
-    private async void OnCreated(object sender, FileSystemEventArgs e)
+    private void OnCreated(object sender, FileSystemEventArgs e)
     {
         if (IsExcluded(e.FullPath))
         {
             return;
         }
 
+        var task = ProcessFileAsync(e.FullPath);
+        lock (_running)
+        {
+            _running.Add(task);
+        }
+        _ = task.ContinueWith(static (t, state) =>
+        {
+            var list = (System.Collections.Generic.List<Task>)state!;
+            lock (list)
+            {
+                list.Remove(t);
+            }
+        }, _running, TaskScheduler.Default);
+    }
+
+    private async Task ProcessFileAsync(string path)
+    {
         try
         {
             if (_options.ScanDelay > TimeSpan.Zero)
@@ -52,8 +70,19 @@ public sealed class DirectoryScanService : IDisposable
                 await Task.Delay(_options.ScanDelay, _cts.Token).ConfigureAwait(false);
             }
 
-            using var stream = new FileStream(e.FullPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            await _client.SubmitFileAsync(stream, Path.GetFileName(e.FullPath), _cts.Token).ConfigureAwait(false);
+            for (var i = 0; i < 5; i++)
+            {
+                try
+                {
+                    using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    await _client.SubmitFileAsync(stream, Path.GetFileName(path), _cts.Token).ConfigureAwait(false);
+                    break;
+                }
+                catch (IOException) when (i < 4)
+                {
+                    await Task.Delay(100, _cts.Token).ConfigureAwait(false);
+                }
+            }
         }
         catch (OperationCanceledException)
         {
@@ -85,6 +114,19 @@ public sealed class DirectoryScanService : IDisposable
     {
         _cts.Cancel();
         _watcher.Dispose();
+        Task[] tasks;
+        lock (_running)
+        {
+            tasks = _running.ToArray();
+        }
+        try
+        {
+            Task.WhenAll(tasks).GetAwaiter().GetResult();
+        }
+        catch
+        {
+            // Ignore any exceptions from outstanding tasks during disposal.
+        }
         _cts.Dispose();
     }
 }

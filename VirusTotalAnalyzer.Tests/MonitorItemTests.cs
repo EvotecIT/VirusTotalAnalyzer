@@ -22,7 +22,7 @@ public class MonitorItemTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.ListMonitorItemsAsync();
 
@@ -44,7 +44,7 @@ public class MonitorItemTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.ListMonitorItemsAsync(limit: 10, cursor: "abc");
 
@@ -68,7 +68,7 @@ public class MonitorItemTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.ListMonitorItemsAsync(fetchAll: true);
 
@@ -91,7 +91,7 @@ public class MonitorItemTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var request = new CreateMonitorItemRequest { Data = { Attributes = { Path = "/foo" } } };
         var item = await client.CreateMonitorItemAsync(request);
@@ -114,7 +114,7 @@ public class MonitorItemTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var request = new UpdateMonitorItemRequest { Data = { Attributes = { Path = "/bar" } } };
         var item = await client.UpdateMonitorItemAsync("m1", request);
@@ -133,7 +133,7 @@ public class MonitorItemTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await client.DeleteMonitorItemAsync("m1");
 

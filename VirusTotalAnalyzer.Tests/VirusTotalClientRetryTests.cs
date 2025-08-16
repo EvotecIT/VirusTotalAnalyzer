@@ -32,7 +32,7 @@ public class VirusTotalClientRetryTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var user = await client.ExecuteWithRateLimitRetryAsync(c => c.GetUserAsync("user-id"));
 
@@ -61,7 +61,7 @@ public class VirusTotalClientRetryTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var sw = Stopwatch.StartNew();
         var user = await client.ExecuteWithRateLimitRetryAsync(
@@ -96,7 +96,7 @@ public class VirusTotalClientRetryTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await Assert.ThrowsAsync<RateLimitExceededException>(() =>
             client.ExecuteWithRateLimitRetryAsync(c => c.GetUserAsync("user-id"), maxRetries: 2));

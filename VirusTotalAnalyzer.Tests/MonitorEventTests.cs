@@ -22,7 +22,7 @@ public class MonitorEventTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.ListMonitorEventsAsync();
 
@@ -44,7 +44,7 @@ public class MonitorEventTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.ListMonitorEventsAsync(filter: "type:foo", limit: 10, cursor: "abc");
 
@@ -68,7 +68,7 @@ public class MonitorEventTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var response = await client.ListMonitorEventsAsync(fetchAll: true);
 
@@ -91,7 +91,7 @@ public class MonitorEventTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var comments = await client.GetCommentsAsync(ResourceType.MonitorEvent, "e1");
 
@@ -111,7 +111,7 @@ public class MonitorEventTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var comment = await client.CreateCommentAsync(ResourceType.MonitorEvent, "e1", "hi");
 
@@ -132,7 +132,7 @@ public class MonitorEventTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var votes = await client.GetVotesAsync(ResourceType.MonitorEvent, "e1");
 
@@ -152,7 +152,7 @@ public class MonitorEventTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var vote = await client.CreateVoteAsync(ResourceType.MonitorEvent, "e1", VoteVerdict.Malicious);
 

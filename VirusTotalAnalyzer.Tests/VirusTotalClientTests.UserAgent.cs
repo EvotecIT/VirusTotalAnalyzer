@@ -21,7 +21,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await client.GetFileReportAsync("abc");
 
@@ -42,7 +42,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient, userAgent: "MyApp/1.0");
+        IVirusTotalClient client = new VirusTotalClient(httpClient, userAgent: "MyApp/1.0");
 
         await client.GetFileReportAsync("abc");
 

@@ -8,7 +8,7 @@ public static class GetIpAddressSubmissionsExample
 {
     public static async Task RunAsync()
     {
-        var client = VirusTotalClient.Create("YOUR_API_KEY");
+        IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
             var submissions = await client.GetIpAddressSubmissionsAsync("1.2.3.4", limit: 10);

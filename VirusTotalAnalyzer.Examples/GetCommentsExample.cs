@@ -8,7 +8,7 @@ public static class GetCommentsExample
 {
     public static async Task RunAsync()
     {
-        var client = VirusTotalClient.Create("YOUR_API_KEY");
+        IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
             var first = await client.GetCommentsAsync(ResourceType.File, "file-id", limit: 10);

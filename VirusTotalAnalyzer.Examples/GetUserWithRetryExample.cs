@@ -8,7 +8,7 @@ public static class GetUserWithRetryExample
 {
     public static async Task RunAsync()
     {
-        var client = VirusTotalClient.Create("YOUR_API_KEY");
+        IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
             // Retries up to 5 times, waiting the server-provided delay when available or 4 seconds otherwise

@@ -8,7 +8,7 @@ public static class GetUrlRelationshipsExample
 {
     public static async Task RunAsync()
     {
-        var client = VirusTotalClient.Create("YOUR_API_KEY");
+        IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
             var downloaded = await client.GetUrlDownloadedFilesAsync("url-id");

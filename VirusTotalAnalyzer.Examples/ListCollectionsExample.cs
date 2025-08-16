@@ -8,7 +8,7 @@ public static class ListCollectionsExample
 {
     public static async Task RunAsync()
     {
-        var client = VirusTotalClient.Create("YOUR_API_KEY");
+        IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
             var page = await client.ListCollectionsAsync(fetchAll: true);

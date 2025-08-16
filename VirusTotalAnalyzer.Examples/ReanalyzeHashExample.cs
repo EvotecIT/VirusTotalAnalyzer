@@ -8,7 +8,7 @@ public static class ReanalyzeHashExample
 {
     public static async Task RunAsync()
     {
-        var client = VirusTotalClient.Create("YOUR_API_KEY");
+        IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
             var report = await client.ReanalyzeHashAsync("44d88612fea8a8f36de82e1278abb02f", AnalysisType.File);

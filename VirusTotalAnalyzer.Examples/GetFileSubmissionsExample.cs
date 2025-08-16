@@ -8,7 +8,7 @@ public static class GetFileSubmissionsExample
 {
     public static async Task RunAsync()
     {
-        var client = VirusTotalClient.Create("YOUR_API_KEY");
+        IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
             var submissions = await client.GetFileSubmissionsAsync("44d88612fea8a8f36de82e1278abb02f", limit: 10);

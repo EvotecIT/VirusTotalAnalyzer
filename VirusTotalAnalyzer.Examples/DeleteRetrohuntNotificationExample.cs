@@ -8,7 +8,7 @@ public static class DeleteRetrohuntNotificationExample
 {
     public static async Task RunAsync()
     {
-        var client = VirusTotalClient.Create("YOUR_API_KEY");
+        IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
             await client.DeleteRetrohuntNotificationAsync("notification-id");

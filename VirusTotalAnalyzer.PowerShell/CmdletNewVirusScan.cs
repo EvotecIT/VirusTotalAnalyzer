@@ -59,9 +59,9 @@ public sealed class CmdletNewVirusScan : AsyncPSCmdlet
     [Parameter]
     public string? Password { get; set; }
 
-    /// <summary>Existing <see cref="VirusTotalClient"/> instance to reuse.</summary>
+    /// <summary>Existing <see cref="IVirusTotalClient"/> instance to reuse.</summary>
     [Parameter]
-    public VirusTotalClient? Client { get; set; }
+    public IVirusTotalClient? Client { get; set; }
 
     /// <inheritdoc/>
     protected override async Task ProcessRecordAsync()

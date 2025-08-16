@@ -9,7 +9,7 @@ public static class GetFileContactedUrlsExample
 {
     public static async Task RunAsync()
     {
-        var client = VirusTotalClient.Create("YOUR_API_KEY");
+        IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
             var page = await client.GetFileContactedUrlsAsync("44d88612fea8a8f36de82e1278abb02f", fetchAll: true);

@@ -14,7 +14,7 @@ public static class UsingExistingHttpClientExample
         };
         httpClient.DefaultRequestHeaders.Add("x-apikey", "YOUR_API_KEY");
 
-        using var client = new VirusTotalClient(httpClient, disposeClient: true);
+        using IVirusTotalClient client = new VirusTotalClient(httpClient, disposeClient: true);
 
         // Use the client here.
         await Task.CompletedTask;

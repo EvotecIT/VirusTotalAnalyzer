@@ -25,7 +25,7 @@ namespace VirusTotalAnalyzer;
 /// dispose it by setting the <c>disposeClient</c> parameter in the constructor.
 /// </para>
 /// </remarks>
-public sealed partial class VirusTotalClient : IDisposable
+public sealed partial class VirusTotalClient : IVirusTotalClient
 {
     private readonly HttpClient _httpClient;
     private readonly JsonSerializerOptions _jsonOptions;

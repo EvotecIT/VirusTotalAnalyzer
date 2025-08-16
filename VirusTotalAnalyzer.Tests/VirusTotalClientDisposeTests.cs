@@ -10,7 +10,7 @@ public class VirusTotalClientDisposeTests
     {
         var handler = new TrackingHandler();
         var httpClient = new HttpClient(handler);
-        var client = new VirusTotalClient(httpClient, disposeClient: true);
+        IVirusTotalClient client = new VirusTotalClient(httpClient, disposeClient: true);
 
         client.Dispose();
 
@@ -22,7 +22,7 @@ public class VirusTotalClientDisposeTests
     {
         var handler = new TrackingHandler();
         var httpClient = new HttpClient(handler);
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         client.Dispose();
 

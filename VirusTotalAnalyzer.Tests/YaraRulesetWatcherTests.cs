@@ -23,7 +23,7 @@ public class YaraRulesetWatcherTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var watchers = await client.GetYaraRulesetWatchersAsync("rs1");
 
@@ -46,7 +46,7 @@ public class YaraRulesetWatcherTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var request = new YaraWatcherRequest
         {
@@ -72,7 +72,7 @@ public class YaraRulesetWatcherTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await client.RemoveYaraRulesetWatcherAsync("rs1", "user1");
 

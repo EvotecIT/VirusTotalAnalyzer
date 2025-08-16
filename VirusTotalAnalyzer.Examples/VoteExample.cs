@@ -8,7 +8,7 @@ public static class VoteExample
 {
     public static async Task RunAsync()
     {
-        var client = VirusTotalClient.Create("YOUR_API_KEY");
+        IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
             var vote = await client.VoteAsync(ResourceType.File, "file-id", VoteVerdict.Malicious);

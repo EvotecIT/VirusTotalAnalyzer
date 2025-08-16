@@ -22,7 +22,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var results = await client.GetCrowdsourcedYaraResultsAsync("abc");
 
@@ -46,7 +46,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetCrowdsourcedYaraResultsAsync("abc"));
         Assert.Equal("NotFoundError", ex.Error?.Code);
@@ -65,7 +65,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var results = await client.GetCrowdsourcedIdsResultsAsync("abc");
 
@@ -90,7 +90,7 @@ public partial class VirusTotalClientTests
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        var client = new VirusTotalClient(httpClient);
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetCrowdsourcedIdsResultsAsync("abc"));
         Assert.Equal("NotFoundError", ex.Error?.Code);

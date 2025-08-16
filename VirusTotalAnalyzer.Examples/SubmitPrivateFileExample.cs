@@ -19,11 +19,7 @@ public static class SubmitPrivateFileExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-#if NET472
             using var stream = File.OpenRead(path);
-#else
-            await using var stream = File.OpenRead(path);
-#endif
             var report = await client.SubmitPrivateFileAsync(stream, Path.GetFileName(path));
             Console.WriteLine(report?.Id);
         }

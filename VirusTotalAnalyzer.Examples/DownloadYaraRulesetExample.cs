@@ -12,15 +12,9 @@ public static class DownloadYaraRulesetExample
         var client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-#if NET472
             using var stream = await client.DownloadYaraRulesetAsync("RULESET_ID");
             using var file = File.Create("ruleset.zip");
             await stream.CopyToAsync(file);
-#else
-            await using var stream = await client.DownloadYaraRulesetAsync("RULESET_ID");
-            await using var file = File.Create("ruleset.zip");
-            await stream.CopyToAsync(file);
-#endif
         }
         catch (RateLimitExceededException ex)
         {

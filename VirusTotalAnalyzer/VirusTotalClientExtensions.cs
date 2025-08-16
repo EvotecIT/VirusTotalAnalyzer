@@ -41,26 +41,14 @@ public static class VirusTotalClientExtensions
     public static Task<AnalysisReport?> ScanFileAsync(this VirusTotalClient client, string filePath, string? password = null, CancellationToken cancellationToken = default)
     {
         if (client == null) throw new ArgumentNullException(nameof(client));
-#if NET472
-        return ScanFileFrameworkAsync(client, filePath, password, cancellationToken);
-#else
         return ScanFileInternalAsync(client, filePath, password, cancellationToken);
-#endif
     }
 
-#if NET472
-    private static async Task<AnalysisReport?> ScanFileFrameworkAsync(VirusTotalClient client, string filePath, string? password, CancellationToken cancellationToken)
+    private static async Task<AnalysisReport?> ScanFileInternalAsync(VirusTotalClient client, string filePath, string? password, CancellationToken cancellationToken)
     {
         using var stream = File.OpenRead(filePath);
         return await client.SubmitFileAsync(stream, Path.GetFileName(filePath), password, cancellationToken).ConfigureAwait(false);
     }
-#else
-    private static async Task<AnalysisReport?> ScanFileInternalAsync(VirusTotalClient client, string filePath, string? password, CancellationToken cancellationToken)
-    {
-        await using var stream = File.OpenRead(filePath);
-        return await client.SubmitFileAsync(stream, Path.GetFileName(filePath), password, cancellationToken).ConfigureAwait(false);
-    }
-#endif
 
     public static Task<AnalysisReport?> ScanUrlAsync(this VirusTotalClient client, string url, CancellationToken cancellationToken = default)
     {
@@ -119,11 +107,7 @@ public static class VirusTotalClientExtensions
             {
                 attempts++;
                 var delay = ex.RetryAfter ?? defaultRetryDelay ?? TimeSpan.FromSeconds(1);
-#if NET472
-                await Task.Delay(delay).ConfigureAwait(false);
-#else
                 await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
-#endif
             }
         }
     }
@@ -150,11 +134,7 @@ public static class VirusTotalClientExtensions
             {
                 attempts++;
                 var delay = ex.RetryAfter ?? defaultRetryDelay ?? TimeSpan.FromSeconds(1);
-#if NET472
-                await Task.Delay(delay).ConfigureAwait(false);
-#else
                 await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
-#endif
             }
         }
     }

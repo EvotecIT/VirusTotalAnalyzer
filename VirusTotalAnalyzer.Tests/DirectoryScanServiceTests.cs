@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -25,6 +26,33 @@ public class DirectoryScanServiceTests
 #else
         return File.WriteAllTextAsync(path, contents);
 #endif
+    }
+
+    private static void DeleteDirectory(string path)
+    {
+        if (!Directory.Exists(path))
+        {
+            return;
+        }
+
+        for (var i = 0; i < 5; i++)
+        {
+            try
+            {
+                Directory.Delete(path, true);
+                return;
+            }
+            catch (IOException) when (i < 4)
+            {
+                Thread.Sleep(100);
+            }
+            catch (UnauthorizedAccessException) when (i < 4)
+            {
+                Thread.Sleep(100);
+            }
+        }
+
+        Directory.Delete(path, true);
     }
 
     [Fact]
@@ -52,7 +80,7 @@ public class DirectoryScanServiceTests
         }
         finally
         {
-            Directory.Delete(dir, true);
+            DeleteDirectory(dir);
         }
     }
 
@@ -90,7 +118,7 @@ public class DirectoryScanServiceTests
         }
         finally
         {
-            Directory.Delete(dir, true);
+            DeleteDirectory(dir);
         }
     }
 
@@ -122,7 +150,7 @@ public class DirectoryScanServiceTests
         }
         finally
         {
-            Directory.Delete(dir, true);
+            DeleteDirectory(dir);
         }
     }
 

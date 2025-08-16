@@ -122,7 +122,7 @@ public class DirectoryScanServiceTests
         }
     }
 
-    [Fact(Skip = "Flaky in CI environments")]
+    [Fact]
     public async Task Waits_For_Scan_Delay()
     {
         var tcs = new TaskCompletionSource<DateTime>();
@@ -135,15 +135,15 @@ public class DirectoryScanServiceTests
         try
         {
             var delay = TimeSpan.FromMilliseconds(300);
+            var filePath = Path.Combine(dir, "delay.bin");
+            await WriteFileAsync(filePath, "data");
+
             var options = new DirectoryScanOptions { DirectoryPath = dir, ScanDelay = delay };
             using var service = new DirectoryScanService(client, options);
 
             var start = DateTime.UtcNow;
-            var filePath = Path.Combine(dir, "delay.bin");
-            await WriteFileAsync(filePath, "data");
+            await service.ProcessFileAsync(filePath);
 
-            var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(5)));
-            Assert.Same(tcs.Task, completed);
             var time = await tcs.Task;
             var elapsed = time - start;
             Assert.True(elapsed >= delay - TimeSpan.FromMilliseconds(50), $"elapsed {elapsed} is less than delay {delay}");

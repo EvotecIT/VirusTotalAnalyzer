@@ -61,7 +61,7 @@ public sealed class DirectoryScanService : IDisposable
         }, _running, TaskScheduler.Default);
     }
 
-    private async Task ProcessFileAsync(string path)
+    internal async Task ProcessFileAsync(string path)
     {
         try
         {

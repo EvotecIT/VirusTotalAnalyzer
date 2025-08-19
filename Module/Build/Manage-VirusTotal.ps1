@@ -104,4 +104,13 @@ Build-Module -ModuleName 'VirusTotalAnalyzer' {
     # global options for publishing to github/psgallery
     #New-ConfigurationPublish -Type PowerShellGallery -FilePath 'C:\Support\Important\PowerShellGalleryAPI.txt' -Enabled:$true
     #New-ConfigurationPublish -Type GitHub -FilePath 'C:\Support\Important\GitHubAPI.txt' -UserName 'EvotecIT' -Enabled:$true
+} 
+
+# Ensure help files are copied alongside the module assembly
+$binRoot = Join-Path $PSScriptRoot '..' '..' 'VirusTotalAnalyzer.PowerShell' 'bin'
+$helpFiles = Get-ChildItem -Path $binRoot -Recurse -Filter '*.psm1-Help.xml' -ErrorAction SilentlyContinue
+if ($helpFiles) {
+    $dest = Join-Path $PSScriptRoot '..' 'en-US'
+    New-Item -ItemType Directory -Path $dest -Force | Out-Null
+    Copy-Item -Path $helpFiles.FullName -Destination $dest -Force
 }

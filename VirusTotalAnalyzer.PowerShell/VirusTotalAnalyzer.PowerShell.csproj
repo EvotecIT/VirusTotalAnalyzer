@@ -5,11 +5,11 @@
     <LangVersion>latest</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)'=='net8.0'">
+  <PropertyGroup Condition="'$(TargetFramework)'!='net9.0'">
     <XmlDoc2CmdletDocArguments>-strict</XmlDoc2CmdletDocArguments>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="MatejKafka.XmlDoc2CmdletDoc" Version="0.7.0" Condition="'$(TargetFramework)'=='net8.0'">
+    <PackageReference Include="MatejKafka.XmlDoc2CmdletDoc" Version="0.7.0" Condition="'$(TargetFramework)'!='net9.0'">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -17,4 +17,19 @@
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
     <PackageReference Include="PowerShellStandard.Library" Version="5.1.0" />
   </ItemGroup>
+  <Target Name="MoveHelpToCulture" AfterTargets="XmlDoc2CmdletDoc">
+    <ItemGroup>
+      <HelpFile Include="$(TargetPath)-Help.xml" />
+    </ItemGroup>
+    <MakeDir Directories="$(TargetDir)en-US" />
+    <Copy SourceFiles="@(HelpFile)" DestinationFiles="$(TargetDir)en-US/$(TargetName).dll-Help.xml" Condition="Exists('%(HelpFile.Identity)')" />
+    <Copy SourceFiles="@(HelpFile)" DestinationFiles="$(TargetDir)en-US/$(TargetName).psm1-Help.xml" Condition="Exists('%(HelpFile.Identity)')" />
+  </Target>
+  <Target Name="CopyHelpFromNet8" AfterTargets="Build" Condition="'$(TargetFramework)'=='net9.0'">
+    <ItemGroup>
+      <Net8Help Include="$(OutputPath)..\net8.0\en-US\$(TargetName).psm1-Help.xml" />
+    </ItemGroup>
+    <MakeDir Directories="$(TargetDir)en-US" />
+    <Copy SourceFiles="@(Net8Help)" DestinationFolder="$(TargetDir)en-US" Condition="Exists('%(Net8Help.Identity)')" />
+  </Target>
 </Project>

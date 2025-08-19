@@ -7,6 +7,12 @@ namespace VirusTotalAnalyzer.PowerShell;
 
 /// <summary>Retrieves information about a VirusTotal user.</summary>
 /// <para>Fetches public profile data for the specified username.</para>
+/// <example>
+///   <code>
+///     <para><prefix>PS&gt; </prefix>Get-VirusUser -ApiKey $ApiKey -Id 'user1'</para>
+///   </code>
+///   <para>Returns details for the given user identifier.</para>
+/// </example>
 [Cmdlet(VerbsCommon.Get, "VirusUser")]
 public sealed class CmdletGetVirusUser : AsyncPSCmdlet
 {

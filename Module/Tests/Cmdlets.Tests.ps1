@@ -54,6 +54,18 @@ Describe 'Get-VirusReport cmdlet' {
         Get-VirusReport -ApiKey 'x' -File $file -Client $client | Out-Null
         $handler.LastRequest.RequestUri.AbsolutePath | Should -Be "/api/v3/files/$expected"
     }
+
+    It 'maps First and Skip to search limit and cursor' {
+        $json = '{"data":[]}'
+        $handler = [FakeHandler]::new($json)
+        $httpClient = [System.Net.Http.HttpClient]::new($handler)
+        $httpClient.BaseAddress = [Uri]::new('https://www.virustotal.com/api/v3/')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new($httpClient)
+
+        Get-VirusReport -ApiKey 'x' -Search 'demo query' -Client $client -First 10 -Skip 3 | Out-Null
+        $handler.LastRequest.RequestUri.AbsolutePath | Should -Be '/api/v3/intelligence/search'
+        $handler.LastRequest.RequestUri.Query | Should -Be '?query=demo%20query&limit=10&cursor=3'
+    }
 }
 
 Describe 'New-VirusScan cmdlet' {
@@ -99,6 +111,17 @@ Describe 'Get-VirusComment cmdlet' {
         $result = @(Get-VirusComment -ApiKey 'x' -ResourceType File -Id 'abc' -Client $client)[0]
         $result.Id | Should -Be 'c1'
         $handler.LastRequest.RequestUri.AbsolutePath | Should -Be '/api/v3/files/abc/comments'
+    }
+
+    It 'supports paging with First and Skip' {
+        $json = '{"data":[{"id":"c1","type":"comment"}]}'
+        $handler = [FakeHandler]::new($json)
+        $httpClient = [System.Net.Http.HttpClient]::new($handler)
+        $httpClient.BaseAddress = [Uri]::new('https://www.virustotal.com/api/v3/')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new($httpClient)
+
+        Get-VirusComment -ApiKey 'x' -ResourceType File -Id 'abc' -Client $client -First 10 -Skip 5 | Out-Null
+        $handler.LastRequest.RequestUri.Query | Should -Be '?limit=10&cursor=5'
     }
 }
 

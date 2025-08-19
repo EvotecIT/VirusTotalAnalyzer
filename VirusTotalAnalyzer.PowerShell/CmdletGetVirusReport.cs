@@ -31,8 +31,9 @@ namespace VirusTotalAnalyzer.PowerShell;
 /// </example>
 /// <seealso href="https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/invoke-restmethod" />
 /// <seealso href="https://github.com/EvotecIT/VirusTotalAnalyzer" />
-[Cmdlet(VerbsCommon.Get, "VirusReport", DefaultParameterSetName = "FileInformation")]
+[Cmdlet(VerbsCommon.Get, "VirusReport", DefaultParameterSetName = "FileInformation", SupportsPaging = true)]
 [Alias("Get-VirusScan")]
+[CmdletBinding(SupportsPaging = true)]
 public sealed class CmdletGetVirusReport : AsyncPSCmdlet
 {
     /// <summary>VirusTotal API key.</summary>
@@ -125,7 +126,10 @@ public sealed class CmdletGetVirusReport : AsyncPSCmdlet
                     break;
 
                 case "Search":
-                    var search = await client.SearchAsync(Search!, cancellationToken: CancelToken).ConfigureAwait(false);
+                    var paging = PagingParameters;
+                    var limit = paging?.First > 0 ? (int?)paging.First : null;
+                    var cursor = paging?.Skip > 0 ? paging.Skip.ToString() : null;
+                    var search = await client.SearchAsync(Search!, limit, cursor, cancellationToken: CancelToken).ConfigureAwait(false);
                     WriteObject(search);
                     break;
             }

@@ -7,7 +7,8 @@ namespace VirusTotalAnalyzer.PowerShell;
 
 /// <summary>Retrieves comments for a specified resource.</summary>
 /// <para>Fetches community comments associated with files, URLs, IP addresses or domains.</para>
-[Cmdlet(VerbsCommon.Get, "VirusComment")]
+[Cmdlet(VerbsCommon.Get, "VirusComment", SupportsPaging = true)]
+[CmdletBinding(SupportsPaging = true)]
 public sealed class CmdletGetVirusComment : AsyncPSCmdlet
 {
     /// <summary>VirusTotal API key.</summary>
@@ -40,7 +41,10 @@ public sealed class CmdletGetVirusComment : AsyncPSCmdlet
         var client = Client ?? VirusTotalClient.Create(ApiKey);
         try
         {
-            var comments = await client.GetCommentsAsync(ResourceType, Id, Limit, Cursor, CancelToken).ConfigureAwait(false);
+            var paging = PagingParameters;
+            var limit = Limit ?? (paging?.First > 0 ? (int?)paging.First : null);
+            var cursor = Cursor ?? (paging?.Skip > 0 ? paging.Skip.ToString() : null);
+            var comments = await client.GetCommentsAsync(ResourceType, Id, limit, cursor, CancelToken).ConfigureAwait(false);
             if (comments is not null)
             {
                 WriteObject(comments.Data, true);

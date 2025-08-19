@@ -7,6 +7,12 @@ namespace VirusTotalAnalyzer.PowerShell;
 
 /// <summary>Casts a vote for a resource.</summary>
 /// <para>Submits a harmless or malicious verdict for the specified resource.</para>
+/// <example>
+///   <code>
+///     <para><prefix>PS&gt; </prefix>New-VirusVote -ApiKey $ApiKey -ResourceType File -Id 'abc' -Verdict Malicious</para>
+///   </code>
+///   <para>Marks the file identified by the given hash as malicious.</para>
+/// </example>
 [Cmdlet(VerbsCommon.New, "VirusVote")]
 public sealed class CmdletNewVirusVote : AsyncPSCmdlet
 {

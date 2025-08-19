@@ -180,3 +180,21 @@ Describe 'Get-VirusUser cmdlet' {
         $handler.LastRequest.RequestUri.AbsolutePath | Should -Be '/api/v3/users/user1'
     }
 }
+
+Describe 'Cmdlet help content' {
+    It 'includes examples for Get-VirusReport' {
+        (Get-Help Get-VirusReport -Examples).Examples | Should -Not -BeNullOrEmpty
+    }
+    It 'includes examples for New-VirusScan' {
+        (Get-Help New-VirusScan -Examples).Examples | Should -Not -BeNullOrEmpty
+    }
+    It 'includes examples for Get-VirusComment' {
+        (Get-Help Get-VirusComment -Examples).Examples | Should -Not -BeNullOrEmpty
+    }
+    It 'includes examples for New-VirusVote' {
+        (Get-Help New-VirusVote -Examples).Examples | Should -Not -BeNullOrEmpty
+    }
+    It 'includes examples for Get-VirusUser' {
+        (Get-Help Get-VirusUser -Examples).Examples | Should -Not -BeNullOrEmpty
+    }
+}

@@ -7,6 +7,12 @@ namespace VirusTotalAnalyzer.PowerShell;
 
 /// <summary>Retrieves comments for a specified resource.</summary>
 /// <para>Fetches community comments associated with files, URLs, IP addresses or domains.</para>
+/// <example>
+///   <code>
+///     <para><prefix>PS&gt; </prefix>Get-VirusComment -ApiKey $ApiKey -ResourceType File -Id 'abc'</para>
+///   </code>
+///   <para>Displays community feedback for the file with the given hash.</para>
+/// </example>
 [Cmdlet(VerbsCommon.Get, "VirusComment")]
 public sealed class CmdletGetVirusComment : AsyncPSCmdlet
 {

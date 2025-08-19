@@ -85,15 +85,35 @@ public sealed class CmdletGetVirusReport : AsyncPSCmdlet
                     if (!EnsureFileExists(File!, GetErrorActionPreference()))
                         return;
                     string hash;
-                    using (var sha256 = SHA256.Create())
-                    using (var stream = System.IO.File.OpenRead(File!))
+                    var progress = new ProgressRecord(1, "Hashing file", File!);
+                    WriteProgress(progress);
+                    try
                     {
-                        var bytes = sha256.ComputeHash(stream);
+                        using var sha256 = SHA256.Create();
+                        using var stream = System.IO.File.OpenRead(File!);
+                        var length = stream.Length;
+                        var buffer = new byte[81920];
+                        int read;
+                        long total = 0;
+                        while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, CancelToken).ConfigureAwait(false)) > 0)
+                        {
+                            sha256.TransformBlock(buffer, 0, read, null, 0);
+                            total += read;
+                            progress.PercentComplete = length > 0 ? (int)(total * 100 / length) : 0;
+                            WriteProgress(progress);
+                        }
+                        sha256.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+                        var bytes = sha256.Hash!;
 #if NET472
                         hash = BitConverter.ToString(bytes).Replace("-", string.Empty).ToLowerInvariant();
 #else
                         hash = Convert.ToHexString(bytes).ToLowerInvariant();
 #endif
+                    }
+                    finally
+                    {
+                        progress.RecordType = ProgressRecordType.Completed;
+                        WriteProgress(progress);
                     }
                     var fileReport = await client.GetFileReportAsync(hash, cancellationToken: CancelToken).ConfigureAwait(false);
                     WriteObject(fileReport);

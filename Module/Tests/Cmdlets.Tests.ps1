@@ -1,8 +1,9 @@
 # Pester tests for compiled cmdlets
 
 $binPath = Join-Path $PSScriptRoot '..' '..' 'VirusTotalAnalyzer.PowerShell' 'bin' 'Debug' 'net8.0'
+$modulePath = Join-Path $binPath 'VirusTotalAnalyzer.PowerShell.dll'
 [Reflection.Assembly]::LoadFrom((Join-Path $binPath 'VirusTotalAnalyzer.dll')) | Out-Null
-Import-Module (Join-Path $binPath 'VirusTotalAnalyzer.PowerShell.dll')
+Import-Module $modulePath
 
 Add-Type @"
 using System.Net;
@@ -54,6 +55,31 @@ Describe 'Get-VirusReport cmdlet' {
         Get-VirusReport -ApiKey 'x' -File $file -Client $client | Out-Null
         $handler.LastRequest.RequestUri.AbsolutePath | Should -Be "/api/v3/files/$expected"
     }
+
+    It 'reports progress when hashing a file' {
+        $json = '{"data":{"id":"ghi","type":"file"}}'
+        $handler = [FakeHandler]::new($json)
+        $httpClient = [System.Net.Http.HttpClient]::new($handler)
+        $httpClient.BaseAddress = [Uri]::new('https://www.virustotal.com/api/v3/')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new($httpClient)
+
+        $file = New-TemporaryFile
+        Set-Content -Path $file -Value 'test'
+
+        $assemblyPath = Join-Path $PSScriptRoot '..' '..' 'VirusTotalAnalyzer.PowerShell' 'bin' 'Debug' 'net8.0' 'VirusTotalAnalyzer.dll'
+        $modulePath = Join-Path $PSScriptRoot '..' '..' 'VirusTotalAnalyzer.PowerShell' 'bin' 'Debug' 'net8.0' 'VirusTotalAnalyzer.PowerShell.dll'
+        $ps = [powershell]::Create()
+        try {
+            $null = $ps.AddScript("[Reflection.Assembly]::LoadFrom('$assemblyPath') | Out-Null; Import-Module '$modulePath'").Invoke()
+            $ps.Commands.Clear()
+            $null = $ps.AddCommand('Get-VirusReport').AddParameter('ApiKey','x').AddParameter('File',$file).AddParameter('Client',$client).Invoke()
+            $ps.Streams.Progress.Count | Should -BeGreaterThan 0
+            $ps.Streams.Progress[-1].RecordType | Should -Be ([System.Management.Automation.ProgressRecordType]::Completed)
+        }
+        finally {
+            $ps.Dispose()
+        }
+    }
 }
 
 Describe 'New-VirusScan cmdlet' {
@@ -85,6 +111,31 @@ Describe 'New-VirusScan cmdlet' {
 
         New-VirusScan -ApiKey 'x' -FileHash $file -Client $client | Out-Null
         $handler.LastRequest.RequestUri.AbsolutePath | Should -Be "/api/v3/files/$expected/analyse"
+    }
+
+    It 'reports progress when hashing a file for reanalysis' {
+        $json = '{"id":"analysis3","type":"analysis"}'
+        $handler = [FakeHandler]::new($json)
+        $httpClient = [System.Net.Http.HttpClient]::new($handler)
+        $httpClient.BaseAddress = [Uri]::new('https://www.virustotal.com/api/v3/')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new($httpClient)
+
+        $file = New-TemporaryFile
+        Set-Content -Path $file -Value 'test'
+
+        $assemblyPath = Join-Path $PSScriptRoot '..' '..' 'VirusTotalAnalyzer.PowerShell' 'bin' 'Debug' 'net8.0' 'VirusTotalAnalyzer.dll'
+        $modulePath = Join-Path $PSScriptRoot '..' '..' 'VirusTotalAnalyzer.PowerShell' 'bin' 'Debug' 'net8.0' 'VirusTotalAnalyzer.PowerShell.dll'
+        $ps = [powershell]::Create()
+        try {
+            $null = $ps.AddScript("[Reflection.Assembly]::LoadFrom('$assemblyPath') | Out-Null; Import-Module '$modulePath'").Invoke()
+            $ps.Commands.Clear()
+            $null = $ps.AddCommand('New-VirusScan').AddParameter('ApiKey','x').AddParameter('FileHash',$file).AddParameter('Client',$client).Invoke()
+            $ps.Streams.Progress.Count | Should -BeGreaterThan 0
+            $ps.Streams.Progress[-1].RecordType | Should -Be ([System.Management.Automation.ProgressRecordType]::Completed)
+        }
+        finally {
+            $ps.Dispose()
+        }
     }
 }
 

@@ -103,6 +103,18 @@ public class GraphCollectionBundleTests
     }
 
     [Fact]
+    public async Task CreateGraphAsync_NullRequest_Throws()
+    {
+        var httpClient = new HttpClient(new StubHandler("{}"))
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.CreateGraphAsync(null!));
+    }
+
+    [Fact]
     public async Task UpdateGraphAsync_PatchesGraph()
     {
         var json = "{\"id\":\"g1\",\"type\":\"graph\",\"data\":{\"attributes\":{\"name\":\"updated\"}}}";
@@ -123,6 +135,18 @@ public class GraphCollectionBundleTests
         Assert.Equal("PATCH", handler.Request!.Method.Method);
         Assert.Equal("/api/v3/graphs/g1", handler.Request.RequestUri!.AbsolutePath);
         Assert.Contains("\"name\":\"updated\"", handler.Content);
+    }
+
+    [Fact]
+    public async Task UpdateGraphAsync_NullRequest_Throws()
+    {
+        var httpClient = new HttpClient(new StubHandler("{}"))
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.UpdateGraphAsync("g1", null!));
     }
 
     [Fact]
@@ -183,6 +207,18 @@ public class GraphCollectionBundleTests
         Assert.Equal(HttpMethod.Post, handler.Request!.Method);
         Assert.Equal("/api/v3/graphs/g1/comments", handler.Request.RequestUri!.AbsolutePath);
         Assert.Contains("\"text\":\"hi\"", handler.Content);
+    }
+
+    [Fact]
+    public async Task AddGraphCommentAsync_NullRequest_Throws()
+    {
+        var httpClient = new HttpClient(new StubHandler("{}"))
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.AddGraphCommentAsync("g1", null!));
     }
 
     [Fact]
@@ -247,6 +283,18 @@ public class GraphCollectionBundleTests
         Assert.Equal(HttpMethod.Post, handler.Request!.Method);
         Assert.Equal("/api/v3/graphs/g1/collaborators", handler.Request.RequestUri!.AbsolutePath);
         Assert.Contains("\"u1\"", handler.Content);
+    }
+
+    [Fact]
+    public async Task AddGraphCollaboratorsAsync_NullRequest_Throws()
+    {
+        var httpClient = new HttpClient(new StubHandler("{}"))
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.AddGraphCollaboratorsAsync("g1", null!));
     }
 
     [Fact]
@@ -376,6 +424,18 @@ public class GraphCollectionBundleTests
     }
 
     [Fact]
+    public async Task CreateCollectionAsync_NullRequest_Throws()
+    {
+        var httpClient = new HttpClient(new StubHandler("{}"))
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.CreateCollectionAsync(null!));
+    }
+
+    [Fact]
     public async Task UpdateCollectionAsync_PatchesCollection()
     {
         var json = "{\"id\":\"c1\",\"type\":\"collection\",\"data\":{\"attributes\":{\"name\":\"updated\"}}}";
@@ -396,6 +456,18 @@ public class GraphCollectionBundleTests
         Assert.Equal("PATCH", handler.Request!.Method.Method);
         Assert.Equal("/api/v3/collections/c1", handler.Request.RequestUri!.AbsolutePath);
         Assert.Contains("\"name\":\"updated\"", handler.Content);
+    }
+
+    [Fact]
+    public async Task UpdateCollectionAsync_NullRequest_Throws()
+    {
+        var httpClient = new HttpClient(new StubHandler("{}"))
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.UpdateCollectionAsync("c1", null!));
     }
 
     [Fact]
@@ -484,6 +556,18 @@ public class GraphCollectionBundleTests
         Assert.Equal(HttpMethod.Post, handler.Request!.Method);
         Assert.Equal("/api/v3/collections/c1/items", handler.Request.RequestUri!.AbsolutePath);
         Assert.Contains("\"id\":\"f1\"", handler.Content);
+    }
+
+    [Fact]
+    public async Task AddCollectionItemsAsync_NullRequest_Throws()
+    {
+        var httpClient = new HttpClient(new StubHandler("{}"))
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.AddCollectionItemsAsync("c1", null!));
     }
 
     [Fact]
@@ -598,6 +682,18 @@ public class GraphCollectionBundleTests
     }
 
     [Fact]
+    public async Task CreateBundleAsync_NullRequest_Throws()
+    {
+        var httpClient = new HttpClient(new StubHandler("{}"))
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.CreateBundleAsync(null!));
+    }
+
+    [Fact]
     public async Task UpdateBundleAsync_PatchesBundle()
     {
         var json = "{\"id\":\"b1\",\"type\":\"bundle\",\"data\":{\"attributes\":{\"name\":\"updated\"}}}";
@@ -618,6 +714,18 @@ public class GraphCollectionBundleTests
         Assert.Equal("PATCH", handler.Request!.Method.Method);
         Assert.Equal("/api/v3/bundles/b1", handler.Request.RequestUri!.AbsolutePath);
         Assert.Contains("\"name\":\"updated\"", handler.Content);
+    }
+
+    [Fact]
+    public async Task UpdateBundleAsync_NullRequest_Throws()
+    {
+        var httpClient = new HttpClient(new StubHandler("{}"))
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.UpdateBundleAsync("b1", null!));
     }
 
     [Fact]
@@ -706,6 +814,18 @@ public class GraphCollectionBundleTests
         Assert.Equal(HttpMethod.Post, handler.Request!.Method);
         Assert.Equal("/api/v3/bundles/b1/items", handler.Request.RequestUri!.AbsolutePath);
         Assert.Contains("\"id\":\"f1\"", handler.Content);
+    }
+
+    [Fact]
+    public async Task AddBundleItemsAsync_NullRequest_Throws()
+    {
+        var httpClient = new HttpClient(new StubHandler("{}"))
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.AddBundleItemsAsync("b1", null!));
     }
 
     [Fact]

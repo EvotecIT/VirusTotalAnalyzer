@@ -64,6 +64,18 @@ public class YaraRulesetWatcherTests
     }
 
     [Fact]
+    public async Task AddYaraRulesetWatchersAsync_NullRequest_Throws()
+    {
+        var httpClient = new HttpClient(new StubHandler("{}"))
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.AddYaraRulesetWatchersAsync("rs1", null!));
+    }
+
+    [Fact]
     public async Task RemoveYaraRulesetWatcherAsync_UsesCorrectPath()
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK);

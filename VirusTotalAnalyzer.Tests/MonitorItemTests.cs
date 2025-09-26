@@ -103,6 +103,18 @@ public class MonitorItemTests
     }
 
     [Fact]
+    public async Task CreateMonitorItemAsync_NullRequest_Throws()
+    {
+        var httpClient = new HttpClient(new StubHandler("{}"))
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.CreateMonitorItemAsync(null!));
+    }
+
+    [Fact]
     public async Task UpdateMonitorItemAsync_PatchesItem()
     {
         var json = "{\"id\":\"m1\",\"type\":\"monitor_item\",\"data\":{\"attributes\":{\"path\":\"/bar\"}}}";
@@ -123,6 +135,18 @@ public class MonitorItemTests
         Assert.Equal("PATCH", handler.Request!.Method.Method);
         Assert.Equal("/api/v3/monitor/items/m1", handler.Request.RequestUri!.AbsolutePath);
         Assert.Contains("\"path\":\"/bar\"", handler.Content);
+    }
+
+    [Fact]
+    public async Task UpdateMonitorItemAsync_NullRequest_Throws()
+    {
+        var httpClient = new HttpClient(new StubHandler("{}"))
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.UpdateMonitorItemAsync("m1", null!));
     }
 
     [Fact]

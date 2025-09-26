@@ -29,6 +29,7 @@ public sealed partial class VirusTotalClient
         IEnumerable<string>? relationships = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         var idArray = ValidateIds(ids, nameof(ids));
         var url = new StringBuilder("files?ids=")
             .Append(string.Join(",", idArray.Select(Uri.EscapeDataString)));
@@ -57,6 +58,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         IEnumerable<string>? relationships = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         var url = new StringBuilder($"files/{Uri.EscapeDataString(id)}");
         var hasQuery = false;
@@ -84,6 +86,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
 
     public async Task<FileBehavior?> GetFileBehaviorAsync(string id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/behaviour", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
@@ -94,6 +97,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
 
     public async Task<FileBehaviorSummary?> GetFileBehaviorSummaryAsync(string id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/behaviour_summary", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
@@ -104,6 +108,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
 
     public async Task<FileNetworkTraffic?> GetFileNetworkTrafficAsync(string id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/network-traffic", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
@@ -114,6 +119,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
 
     public async Task<FilePeInfo?> GetFilePeInfoAsync(string id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/pe_info", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
@@ -124,6 +130,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
 
     public async Task<FileClassification?> GetFileClassificationAsync(string id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/classification", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
@@ -134,6 +141,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
 
     public async Task<IReadOnlyList<string>?> GetFileStringsAsync(string id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/strings", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
@@ -145,6 +153,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
 
     public async Task<IReadOnlyList<CrowdsourcedYaraResult>?> GetCrowdsourcedYaraResultsAsync(string id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/crowdsourced_yara_results", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
@@ -155,6 +164,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
 
     public async Task<IReadOnlyList<CrowdsourcedIdsResult>?> GetCrowdsourcedIdsResultsAsync(string id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/crowdsourced_ids_results", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
@@ -170,6 +180,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         bool fetchAll = false,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         return GetPagedAsync<UrlSummary>(async (c, token) =>
         {
@@ -198,6 +209,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         bool fetchAll = false,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         return GetPagedAsync<DomainSummary>(async (c, token) =>
         {
@@ -226,6 +238,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         bool fetchAll = false,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         return GetPagedAsync<IpAddressSummary>(async (c, token) =>
         {
@@ -254,6 +267,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         bool fetchAll = false,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         return GetPagedAsync<FileReport>(async (c, token) =>
         {
@@ -282,6 +296,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         bool fetchAll = false,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         return GetPagedAsync<FileReport>(async (c, token) =>
         {
@@ -310,6 +325,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         bool fetchAll = false,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         return GetPagedAsync<FileReport>(async (c, token) =>
         {
@@ -338,6 +354,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         bool fetchAll = false,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         return GetPagedAsync<FileReport>(async (c, token) =>
         {
@@ -366,6 +383,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         bool fetchAll = false,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         return GetPagedAsync<FileReport>(async (c, token) =>
         {
@@ -389,6 +407,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
 
     public async Task<Uri?> GetFileDownloadUrlAsync(string id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/download_url", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
@@ -404,6 +423,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
 
     public async Task<Stream> DownloadFileAsync(string id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         var response = await _httpClient
             .GetAsync($"files/{Uri.EscapeDataString(id)}/download", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
@@ -427,6 +447,7 @@ var stream = await response.Content.ReadContentStreamAsync(cancellationToken).Co
         IEnumerable<string>? relationships = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         var idArray = ValidateIds(ids, nameof(ids));
         var url = new StringBuilder("urls?ids=")
             .Append(string.Join(",", idArray.Select(Uri.EscapeDataString)));
@@ -455,6 +476,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         IEnumerable<string>? relationships = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         var url = new StringBuilder($"urls/{Uri.EscapeDataString(id)}");
         var hasQuery = false;
@@ -500,6 +522,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         string? cursor = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         if (limit == 0)
         {
@@ -554,6 +577,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         string? cursor = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         var path = new System.Text.StringBuilder($"urls/{Uri.EscapeDataString(id)}/downloaded_files");
         var hasQuery = false;
@@ -579,6 +603,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         string? cursor = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         var path = new System.Text.StringBuilder($"urls/{Uri.EscapeDataString(id)}/referrer_files");
         var hasQuery = false;
@@ -604,6 +629,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         string? cursor = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         var path = new System.Text.StringBuilder($"urls/{Uri.EscapeDataString(id)}/redirecting_urls");
         var hasQuery = false;
@@ -629,6 +655,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         string? cursor = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         var path = new System.Text.StringBuilder($"urls/{Uri.EscapeDataString(id)}/contacted_ips");
         var hasQuery = false;
@@ -650,6 +677,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
 
     public async Task<IpAddressSummary?> GetUrlLastServingIpAddressAsync(string id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"urls/{Uri.EscapeDataString(id)}/last_serving_ip_address", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
@@ -673,6 +701,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         IEnumerable<string>? relationships = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         var idArray = ValidateIds(ids, nameof(ids));
         var url = new StringBuilder("ip_addresses?ids=")
             .Append(string.Join(",", idArray.Select(Uri.EscapeDataString)));
@@ -701,6 +730,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         IEnumerable<string>? relationships = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         var url = new StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}");
         var hasQuery = false;
@@ -728,6 +758,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
 
     public async Task<IpWhois?> GetIpAddressWhoisAsync(string id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"ip_addresses/{Uri.EscapeDataString(id)}/whois", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
@@ -750,6 +781,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         IEnumerable<string>? relationships = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         var idArray = ValidateIds(ids, nameof(ids));
         var url = new StringBuilder("domains?ids=")
             .Append(string.Join(",", idArray.Select(Uri.EscapeDataString)));
@@ -778,6 +810,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         IEnumerable<string>? relationships = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         var url = new StringBuilder($"domains/{Uri.EscapeDataString(id)}");
         var hasQuery = false;
@@ -805,6 +838,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
 
     public async Task<DomainWhois?> GetDomainWhoisAsync(string id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"domains/{Uri.EscapeDataString(id)}/whois", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
@@ -827,6 +861,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         IEnumerable<string>? relationships = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         var idArray = ValidateIds(ids, nameof(ids));
         var url = new StringBuilder("analyses?ids=")
             .Append(string.Join(",", idArray.Select(Uri.EscapeDataString)));
@@ -851,6 +886,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
 
     public async Task<AnalysisReport?> GetAnalysisAsync(string id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"analyses/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
@@ -861,6 +897,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
 
     public async Task<PrivateAnalysis?> GetPrivateAnalysisAsync(string id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"private/analyses/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);

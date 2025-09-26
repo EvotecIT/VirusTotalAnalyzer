@@ -11,6 +11,7 @@ public sealed partial class VirusTotalClient
 {
     public async Task<SslCertificate?> GetSslCertificateAsync(string id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"ssl_certificates/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);

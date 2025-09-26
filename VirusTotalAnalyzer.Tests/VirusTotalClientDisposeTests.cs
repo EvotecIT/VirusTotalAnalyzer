@@ -1,3 +1,4 @@
+using System;
 using System.Net.Http;
 using Xunit;
 
@@ -27,6 +28,34 @@ public class VirusTotalClientDisposeTests
         client.Dispose();
 
         Assert.False(handler.Disposed);
+        httpClient.Dispose();
+    }
+
+    [Fact]
+    public async Task GetFileReportAsync_ThrowsObjectDisposedException_WhenDisposed()
+    {
+        var handler = new TrackingHandler();
+        var httpClient = new HttpClient(handler);
+        var client = new VirusTotalClient(httpClient);
+
+        client.Dispose();
+
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => client.GetFileReportAsync("file-id"));
+
+        httpClient.Dispose();
+    }
+
+    [Fact]
+    public void GetFileNamesPagedAsync_ThrowsObjectDisposedException_WhenDisposed()
+    {
+        var handler = new TrackingHandler();
+        var httpClient = new HttpClient(handler);
+        var client = new VirusTotalClient(httpClient);
+
+        client.Dispose();
+
+        Assert.Throws<ObjectDisposedException>(() => client.GetFileNamesPagedAsync("file-id"));
+
         httpClient.Dispose();
     }
 }

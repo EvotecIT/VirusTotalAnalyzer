@@ -17,6 +17,7 @@ public sealed partial class VirusTotalClient
 {
     public async Task<Uri?> GetUploadUrlAsync(CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         using var response = await _httpClient.GetAsync("files/upload_url", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -39,6 +40,7 @@ public sealed partial class VirusTotalClient
     /// <returns>An <see cref="AnalysisReport"/> for the submitted file or <see langword="null"/> if the response is empty.</returns>
     public async Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, string? password = null, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         if (stream is null)
         {
             throw new ArgumentNullException(nameof(stream));
@@ -161,6 +163,7 @@ public sealed partial class VirusTotalClient
         string? password = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         if (stream is null)
         {
             throw new ArgumentNullException(nameof(stream));
@@ -193,6 +196,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<AnalysisReport?> ReanalyzeHashAsync(string hash, AnalysisType analysisType = AnalysisType.File, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         if (hash is null)
         {
             throw new ArgumentNullException(nameof(hash));
@@ -270,6 +274,7 @@ public sealed partial class VirusTotalClient
         SubmitUrlOptions? options,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         if (url is null)
         {
             throw new ArgumentNullException(nameof(url));

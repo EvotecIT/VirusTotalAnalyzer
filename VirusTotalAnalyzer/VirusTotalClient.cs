@@ -32,6 +32,14 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
     private readonly bool _disposeClient;
     private bool _disposed;
 
+    private void ThrowIfDisposed()
+    {
+        if (_disposed)
+        {
+            throw new ObjectDisposedException(nameof(VirusTotalClient));
+        }
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="VirusTotalClient"/> class using an existing
     /// <see cref="HttpClient"/>.
@@ -211,6 +219,7 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
         bool fetchAll = false,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         return GetPagedAsync<FileNameInfo>(async (c, token) =>
         {
@@ -310,6 +319,7 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
 
     public async Task<Stream> DownloadLivehuntNotificationFileAsync(string id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         var response = await _httpClient
             .GetAsync($"intelligence/hunting_notification_files/{Uri.EscapeDataString(id)}", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
@@ -321,6 +331,7 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
 
     public async Task<Stream> DownloadRetrohuntNotificationFileAsync(string id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         var response = await _httpClient
             .GetAsync($"intelligence/retrohunt_notification_files/{Uri.EscapeDataString(id)}", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
@@ -332,6 +343,7 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
 
     public async Task<Stream> DownloadPcapAsync(string analysisId, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         var response = await _httpClient
             .GetAsync($"analyses/{Uri.EscapeDataString(analysisId)}/pcap", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);

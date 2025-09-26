@@ -133,6 +133,7 @@ public sealed partial class VirusTotalClient
         string? cursor = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         var path = new System.Text.StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}/communicating_files");
         var hasQuery = false;
@@ -158,6 +159,7 @@ public sealed partial class VirusTotalClient
         string? cursor = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         var path = new System.Text.StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}/downloaded_files");
         var hasQuery = false;
@@ -183,6 +185,7 @@ public sealed partial class VirusTotalClient
         string? cursor = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         var path = new System.Text.StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}/referrer_files");
         var hasQuery = false;
@@ -208,6 +211,7 @@ public sealed partial class VirusTotalClient
         string? cursor = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         var path = new System.Text.StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}/urls");
         var hasQuery = false;
@@ -233,6 +237,7 @@ public sealed partial class VirusTotalClient
         string? cursor = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         var path = new System.Text.StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}/ssl_certificates");
         var hasQuery = false;

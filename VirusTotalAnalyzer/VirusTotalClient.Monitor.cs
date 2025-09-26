@@ -12,7 +12,9 @@ namespace VirusTotalAnalyzer;
 public sealed partial class VirusTotalClient
 {
     public Task<PagedResponse<MonitorEvent>?> ListMonitorEventsAsync(string? filter = null, int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken ct = default)
-        => GetPagedAsync<MonitorEvent>(async (c, token) =>
+    {
+        ThrowIfDisposed();
+        return GetPagedAsync<MonitorEvent>(async (c, token) =>
         {
             var path = new StringBuilder("monitor/events");
             var hasQuery = false;
@@ -35,9 +37,12 @@ public sealed partial class VirusTotalClient
             using var stream = await response.Content.ReadContentStreamAsync(token).ConfigureAwait(false);
             return await JsonSerializer.DeserializeAsync<PagedResponse<MonitorEvent>>(stream, _jsonOptions, token).ConfigureAwait(false);
         }, cursor, fetchAll, ct);
+    }
 
     public Task<PagedResponse<MonitorItem>?> ListMonitorItemsAsync(int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken cancellationToken = default)
-        => GetPagedAsync<MonitorItem>(async (c, token) =>
+    {
+        ThrowIfDisposed();
+        return GetPagedAsync<MonitorItem>(async (c, token) =>
         {
             var path = new StringBuilder("monitor/items");
             var hasQuery = false;
@@ -55,9 +60,11 @@ public sealed partial class VirusTotalClient
             using var stream = await response.Content.ReadContentStreamAsync(token).ConfigureAwait(false);
             return await JsonSerializer.DeserializeAsync<PagedResponse<MonitorItem>>(stream, _jsonOptions, token).ConfigureAwait(false);
         }, cursor, fetchAll, cancellationToken);
+    }
 
     public async Task<MonitorItem?> CreateMonitorItemAsync(CreateMonitorItemRequest request, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var response = await _httpClient.PostAsync("monitor/items", content, cancellationToken).ConfigureAwait(false);
@@ -68,6 +75,7 @@ public sealed partial class VirusTotalClient
 
     public async Task<MonitorItem?> UpdateMonitorItemAsync(string id, UpdateMonitorItemRequest request, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -80,6 +88,7 @@ public sealed partial class VirusTotalClient
 
     public async Task DeleteMonitorItemAsync(string id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ValidateId(id, nameof(id));
         using var response = await _httpClient.DeleteAsync($"monitor/items/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);

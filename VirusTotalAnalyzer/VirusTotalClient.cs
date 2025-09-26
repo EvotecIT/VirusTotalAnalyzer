@@ -332,6 +332,7 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
 
     public async Task<Stream> DownloadPcapAsync(string analysisId, CancellationToken cancellationToken = default)
     {
+        ValidateId(analysisId, nameof(analysisId));
         var response = await _httpClient
             .GetAsync($"analyses/{Uri.EscapeDataString(analysisId)}/pcap", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);

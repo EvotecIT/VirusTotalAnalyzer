@@ -46,6 +46,10 @@ public sealed partial class VirusTotalClient
 
     public async Task<Graph?> CreateGraphAsync(CreateGraphRequest request, CancellationToken cancellationToken = default)
     {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var response = await _httpClient.PostAsync("graphs", content, cancellationToken).ConfigureAwait(false);
@@ -57,6 +61,10 @@ public sealed partial class VirusTotalClient
     public async Task<Graph?> UpdateGraphAsync(string id, UpdateGraphRequest request, CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var message = new HttpRequestMessage(new HttpMethod("PATCH"), $"graphs/{Uri.EscapeDataString(id)}") { Content = content };
@@ -80,7 +88,13 @@ public sealed partial class VirusTotalClient
         => CreateCommentAsync(ResourceType.Graph, id, text, cancellationToken);
 
     public Task<Comment?> AddGraphCommentAsync(string id, CreateCommentRequest request, CancellationToken cancellationToken = default)
-        => CreateCommentAsync(ResourceType.Graph, id, request, cancellationToken);
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+        return CreateCommentAsync(ResourceType.Graph, id, request, cancellationToken);
+    }
 
     public async Task DeleteGraphCommentAsync(string graphId, string commentId, CancellationToken cancellationToken = default)
     {
@@ -119,6 +133,10 @@ public sealed partial class VirusTotalClient
 
     public async Task<Collection?> CreateCollectionAsync(CreateCollectionRequest request, CancellationToken cancellationToken = default)
     {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var response = await _httpClient.PostAsync("collections", content, cancellationToken).ConfigureAwait(false);
@@ -130,6 +148,10 @@ public sealed partial class VirusTotalClient
     public async Task<Collection?> UpdateCollectionAsync(string id, UpdateCollectionRequest request, CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var message = new HttpRequestMessage(new HttpMethod("PATCH"), $"collections/{Uri.EscapeDataString(id)}") { Content = content };
@@ -172,6 +194,10 @@ public sealed partial class VirusTotalClient
     public async Task<RelationshipResponse?> AddCollectionItemsAsync(string id, AddItemsRequest request, CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var response = await _httpClient.PostAsync($"collections/{Uri.EscapeDataString(id)}/items", content, cancellationToken).ConfigureAwait(false);
@@ -218,6 +244,10 @@ public sealed partial class VirusTotalClient
 
     public async Task<Bundle?> CreateBundleAsync(CreateBundleRequest request, CancellationToken cancellationToken = default)
     {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var response = await _httpClient.PostAsync("bundles", content, cancellationToken).ConfigureAwait(false);
@@ -229,6 +259,10 @@ public sealed partial class VirusTotalClient
     public async Task<Bundle?> UpdateBundleAsync(string id, UpdateBundleRequest request, CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var message = new HttpRequestMessage(new HttpMethod("PATCH"), $"bundles/{Uri.EscapeDataString(id)}") { Content = content };
@@ -271,6 +305,10 @@ public sealed partial class VirusTotalClient
     public async Task<RelationshipResponse?> AddBundleItemsAsync(string id, AddItemsRequest request, CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var response = await _httpClient.PostAsync($"bundles/{Uri.EscapeDataString(id)}/items", content, cancellationToken).ConfigureAwait(false);

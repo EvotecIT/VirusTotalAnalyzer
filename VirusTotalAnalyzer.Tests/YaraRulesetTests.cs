@@ -134,6 +134,18 @@ public class YaraRulesetTests
     }
 
     [Fact]
+    public async Task CreateYaraRulesetAsync_NullRequest_Throws()
+    {
+        var httpClient = new HttpClient(new StubHandler("{}"))
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.CreateYaraRulesetAsync(null!));
+    }
+
+    [Fact]
     public async Task UpdateYaraRulesetAsync_SendsPatch()
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK)
@@ -155,6 +167,18 @@ public class YaraRulesetTests
         Assert.Equal("PATCH", handler.Request!.Method.Method);
         Assert.Equal("/api/v3/intelligence/hunting_rulesets/rs1", handler.Request.RequestUri!.AbsolutePath);
         Assert.NotNull(ruleset);
+    }
+
+    [Fact]
+    public async Task UpdateYaraRulesetAsync_NullRequest_Throws()
+    {
+        var httpClient = new HttpClient(new StubHandler("{}"))
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.UpdateYaraRulesetAsync("rs1", null!));
     }
 
     [Fact]

@@ -106,5 +106,12 @@ public partial class VirusTotalClientTests
         var client = CreateClient();
         await Assert.ThrowsAsync<ArgumentException>(async () => await client.SubmitUrlAsync(string.Empty, CancellationToken.None));
     }
+
+    [Fact]
+    public async Task CreateRetrohuntJobAsync_NullRequest_Throws()
+    {
+        var client = CreateClient();
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.CreateRetrohuntJobAsync(null!));
+    }
 }
 

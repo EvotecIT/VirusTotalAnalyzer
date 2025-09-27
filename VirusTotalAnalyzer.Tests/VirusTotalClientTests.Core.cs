@@ -482,6 +482,18 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task CreateCommentAsync_NullRequest_Throws()
+    {
+        var httpClient = new HttpClient(new StubHandler("{}"))
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.CreateCommentAsync(ResourceType.File, "abc", (CreateCommentRequest)null!));
+    }
+
+    [Fact]
     public async Task CreateVoteAsync_PostsVerdict()
     {
         var json = @"{""data"":{""id"":""v1"",""type"":""vote"",""data"":{""attributes"":{""date"":1,""verdict"":""malicious""}}}}";
@@ -552,6 +564,18 @@ public partial class VirusTotalClientTests
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/files/abc/votes", handler.Request!.RequestUri!.AbsolutePath);
         Assert.Contains("\"verdict\":\"malicious\"", handler.Content);
+    }
+
+    [Fact]
+    public async Task CreateVoteAsync_NullRequest_Throws()
+    {
+        var httpClient = new HttpClient(new StubHandler("{}"))
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.CreateVoteAsync(ResourceType.File, "abc", null!));
     }
 
     [Fact]

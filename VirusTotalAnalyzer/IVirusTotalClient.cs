@@ -48,14 +48,20 @@ public partial interface IVirusTotalClient : IDisposable
     Task<AnalysisReport?> SubmitUrlAsync(string url, CancellationToken cancellationToken = default);
     Task<AnalysisReport?> SubmitUrlAsync(string url, SubmitUrlOptions? options, CancellationToken cancellationToken = default);
     Task<AnalysisReport?> WaitForAnalysisCompletionAsync(string id, TimeSpan timeout, TimeSpan? pollingInterval = null, CancellationToken cancellationToken = default);
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
     Task<Bundle?> CreateBundleAsync(CreateBundleRequest request, CancellationToken cancellationToken = default);
     Task<Bundle?> GetBundleAsync(string id, CancellationToken cancellationToken = default);
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
     Task<Bundle?> UpdateBundleAsync(string id, UpdateBundleRequest request, CancellationToken cancellationToken = default);
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
     Task<Collection?> CreateCollectionAsync(CreateCollectionRequest request, CancellationToken cancellationToken = default);
     Task<Collection?> GetCollectionAsync(string id, CancellationToken cancellationToken = default);
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
     Task<Collection?> UpdateCollectionAsync(string id, UpdateCollectionRequest request, CancellationToken cancellationToken = default);
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
     Task<Comment?> AddGraphCommentAsync(string id, CreateCommentRequest request, CancellationToken cancellationToken = default);
     Task<Comment?> AddGraphCommentAsync(string id, string text, CancellationToken cancellationToken = default);
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
     Task<Comment?> CreateCommentAsync(ResourceType resourceType, string id, CreateCommentRequest request, CancellationToken cancellationToken = default);
     Task<Comment?> CreateCommentAsync(ResourceType resourceType, string id, string text, CancellationToken cancellationToken = default);
     Task<Comment?> GetCommentAsync(string id, CancellationToken cancellationToken = default);
@@ -71,8 +77,10 @@ public partial interface IVirusTotalClient : IDisposable
     Task<FileNetworkTraffic?> GetFileNetworkTrafficAsync(string id, CancellationToken cancellationToken = default);
     Task<FilePeInfo?> GetFilePeInfoAsync(string id, CancellationToken cancellationToken = default);
     Task<FileReport?> GetFileReportAsync(string id, IEnumerable<string>? fields = null, IEnumerable<string>? relationships = null, CancellationToken cancellationToken = default);
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
     Task<Graph?> CreateGraphAsync(CreateGraphRequest request, CancellationToken cancellationToken = default);
     Task<Graph?> GetGraphAsync(string id, CancellationToken cancellationToken = default);
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
     Task<Graph?> UpdateGraphAsync(string id, UpdateGraphRequest request, CancellationToken cancellationToken = default);
     Task<IocStreamResponse?> GetIocStreamAsync(string filter, int? limit = null, bool descriptorsOnly = false, string? cursor = null, CancellationToken ct = default);
     Task<IpAddressReport?> GetIpAddressReportAsync(string id, IEnumerable<string>? fields = null, IEnumerable<string>? relationships = null, CancellationToken cancellationToken = default);
@@ -111,11 +119,14 @@ public partial interface IVirusTotalClient : IDisposable
     Task<IReadOnlyList<UrlSummary>?> GetDomainUrlsAsync(string id, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<UrlSummary>?> GetIpAddressUrlsAsync(string id, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<UrlSummary>?> GetUrlRedirectingUrlsAsync(string id, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default);
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
     Task<IReadOnlyList<YaraWatcher>?> AddYaraRulesetWatchersAsync(string id, YaraWatcherRequest request, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<YaraWatcher>?> GetYaraRulesetWatchersAsync(string id, CancellationToken cancellationToken = default);
     Task<LivehuntNotification?> GetLivehuntNotificationAsync(string id, CancellationToken cancellationToken = default);
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
     Task<MonitorItem?> CreateMonitorItemAsync(CreateMonitorItemRequest request, CancellationToken cancellationToken = default);
     Task<MonitorItem?> GetMonitorItemAsync(string id, CancellationToken cancellationToken = default);
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
     Task<MonitorItem?> UpdateMonitorItemAsync(string id, UpdateMonitorItemRequest request, CancellationToken cancellationToken = default);
     Task<Page<LivehuntNotification>> ListLivehuntNotificationsAsync(int limit = 10, string? cursor = null, bool fetchAll = true, CancellationToken cancellationToken = default);
     Task<Page<RetrohuntJob>> ListRetrohuntJobsAsync(int limit = 10, string? cursor = null, bool fetchAll = true, CancellationToken cancellationToken = default);
@@ -141,10 +152,14 @@ public partial interface IVirusTotalClient : IDisposable
     Task<PrivateAnalysis?> GetPrivateAnalysisAsync(string id, CancellationToken cancellationToken = default);
     Task<PrivateAnalysis?> SubmitPrivateFileAsync(Stream stream, string fileName, string? password = null, CancellationToken cancellationToken = default);
     Task<Relationship?> GetYaraRulesetOwnerAsync(string id, CancellationToken cancellationToken = default);
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
     Task<RelationshipResponse?> AddBundleItemsAsync(string id, AddItemsRequest request, CancellationToken cancellationToken = default);
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
     Task<RelationshipResponse?> AddCollectionItemsAsync(string id, AddItemsRequest request, CancellationToken cancellationToken = default);
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
     Task<RelationshipResponse?> AddGraphCollaboratorsAsync(string id, AddCollaboratorsRequest request, CancellationToken cancellationToken = default);
     Task<RelationshipResponse?> GetRelationshipsAsync(ResourceType resourceType, string id, string relationship, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default);
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
     Task<RetrohuntJob?> CreateRetrohuntJobAsync(RetrohuntJobRequest request, CancellationToken cancellationToken = default);
     Task<RetrohuntJob?> GetRetrohuntJobAsync(string id, CancellationToken cancellationToken = default);
     Task<RetrohuntNotification?> GetRetrohuntNotificationAsync(string id, CancellationToken cancellationToken = default);
@@ -162,11 +177,14 @@ public partial interface IVirusTotalClient : IDisposable
     Task<User?> GetUserAsync(string id, CancellationToken cancellationToken = default);
     Task<UserPrivileges?> GetUserPrivilegesAsync(string id, CancellationToken cancellationToken = default);
     Task<UserQuota?> GetUserQuotaAsync(string id, CancellationToken cancellationToken = default);
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
     Task<Vote?> CreateVoteAsync(ResourceType resourceType, string id, CreateVoteRequest request, CancellationToken cancellationToken = default);
     Task<Vote?> CreateVoteAsync(ResourceType resourceType, string id, VoteVerdict verdict, CancellationToken cancellationToken = default);
     Task<Vote?> GetVoteAsync(string id, CancellationToken cancellationToken = default);
     Task<VotesResponse?> GetVotesAsync(ResourceType resourceType, string id, int? limit = null, string? cursor = null, CancellationToken cancellationToken = default);
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
     Task<YaraRuleset?> CreateYaraRulesetAsync(YaraRulesetRequest request, CancellationToken cancellationToken = default);
     Task<YaraRuleset?> GetYaraRulesetAsync(string id, CancellationToken cancellationToken = default);
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
     Task<YaraRuleset?> UpdateYaraRulesetAsync(string id, YaraRulesetRequest request, CancellationToken cancellationToken = default);
 }

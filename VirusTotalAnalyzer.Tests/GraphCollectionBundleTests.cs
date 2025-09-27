@@ -218,7 +218,7 @@ public class GraphCollectionBundleTests
         };
         IVirusTotalClient client = new VirusTotalClient(httpClient);
 
-        await Assert.ThrowsAsync<ArgumentNullException>(() => client.AddGraphCommentAsync("g1", null!));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.AddGraphCommentAsync("g1", (CreateCommentRequest)null!));
     }
 
     [Fact]

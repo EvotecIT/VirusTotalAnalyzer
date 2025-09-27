@@ -33,7 +33,10 @@ public sealed partial class VirusTotalClient
     public async Task<RelationshipResponse?> AddGraphCollaboratorsAsync(string id, AddCollaboratorsRequest request, CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        ArgumentNullException.ThrowIfNull(request);
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var response = await _httpClient.PostAsync($"graphs/{Uri.EscapeDataString(id)}/collaborators", content, cancellationToken).ConfigureAwait(false);

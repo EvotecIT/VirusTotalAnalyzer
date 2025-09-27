@@ -490,7 +490,7 @@ public partial class VirusTotalClientTests
         };
         IVirusTotalClient client = new VirusTotalClient(httpClient);
 
-        await Assert.ThrowsAsync<ArgumentNullException>(() => client.CreateCommentAsync(ResourceType.File, "abc", null!));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.CreateCommentAsync(ResourceType.File, "abc", (CreateCommentRequest)null!));
     }
 
     [Fact]

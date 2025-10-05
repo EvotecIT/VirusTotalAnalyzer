@@ -55,6 +55,9 @@ public static class VirusTotalClientExtensions
     public static Task<AnalysisReport?> ScanFileAsync(this IVirusTotalClient client, string filePath, string? password = null, CancellationToken cancellationToken = default)
     {
         if (client == null) throw new ArgumentNullException(nameof(client));
+        if (filePath == null) throw new ArgumentNullException(nameof(filePath));
+        if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentException("File path must not be empty.", nameof(filePath));
+        if (!File.Exists(filePath)) throw new FileNotFoundException("File not found.", filePath);
         return ScanFileInternalAsync(client, filePath, password, cancellationToken);
     }
 

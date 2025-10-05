@@ -399,7 +399,8 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         {
             return null;
         }
-        return new Uri(result.Data);
+
+        return Uri.TryCreate(result.Data, UriKind.Absolute, out var uri) ? uri : null;
     }
 
     public async Task<Stream> DownloadFileAsync(string id, CancellationToken cancellationToken = default)

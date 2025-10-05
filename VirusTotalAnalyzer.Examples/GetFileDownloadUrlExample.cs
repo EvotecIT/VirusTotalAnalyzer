@@ -12,7 +12,14 @@ public static class GetFileDownloadUrlExample
         try
         {
             var url = await client.GetFileDownloadUrlAsync("44d88612fea8a8f36de82e1278abb02f");
-            Console.WriteLine(url);
+            if (url is null)
+            {
+                Console.WriteLine("Download URL was not provided or was invalid.");
+            }
+            else
+            {
+                Console.WriteLine(url);
+            }
         }
         catch (RateLimitExceededException ex)
         {

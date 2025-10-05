@@ -10,6 +10,11 @@ public static class ScanFileExample
     public static async Task RunAsync()
     {
         var path = "sample.txt";
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            Console.WriteLine("Please provide a valid file path.");
+            return;
+        }
         if (!File.Exists(path))
         {
             Console.WriteLine($"File not found: {path}");

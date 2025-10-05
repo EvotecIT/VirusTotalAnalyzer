@@ -41,6 +41,7 @@ public partial interface IVirusTotalClient : IDisposable
     Task<AnalysisReport?> ReanalyzeFileAsync(string hash, CancellationToken cancellationToken = default);
     Task<AnalysisReport?> ReanalyzeHashAsync(string hash, AnalysisType analysisType = AnalysisType.File, CancellationToken cancellationToken = default);
     Task<AnalysisReport?> ReanalyzeUrlAsync(string id, CancellationToken cancellationToken = default);
+    Task<AnalysisReport?> ReanalyzeUrlAsync(string url, CancellationToken cancellationToken);
     Task<AnalysisReport?> ReanalyzeUrlAsync(string url);
     Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, CancellationToken cancellationToken);
     Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, string? password = null, CancellationToken cancellationToken = default);

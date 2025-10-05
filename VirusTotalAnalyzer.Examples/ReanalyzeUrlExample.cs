@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using VirusTotalAnalyzer.Models;
 
@@ -11,7 +12,8 @@ public static class ReanalyzeUrlExample
         IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var report = await client.ReanalyzeUrlAsync("https://www.example.com");
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            var report = await client.ReanalyzeUrlAsync("https://www.example.com", cts.Token);
             Console.WriteLine(report?.Id);
         }
         catch (RateLimitExceededException ex)

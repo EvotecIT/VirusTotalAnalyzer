@@ -528,6 +528,29 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task ReanalyzeUrlAsync_WithCancellationToken_UsesUrlPath()
+    {
+        var json = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        const string url = "https://example.com";
+        var id = VirusTotalClientExtensions.GetUrlId(url);
+        var report = await client.ReanalyzeUrlAsync(url, CancellationToken.None);
+
+        Assert.NotNull(report);
+        Assert.NotNull(handler.Request);
+        Assert.Equal($"/api/v3/urls/{id}/analyse", handler.Request!.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
     public async Task ListRetrohuntJobsAsync_PagesThroughResults()
     {
         var first = "{\"data\":[{\"id\":\"j1\",\"type\":\"retrohunt_job\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}],\"meta\":{\"cursor\":\"abc\"}}";

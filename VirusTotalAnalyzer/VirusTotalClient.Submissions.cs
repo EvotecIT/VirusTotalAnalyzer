@@ -235,7 +235,7 @@ public sealed partial class VirusTotalClient
         return ReanalyzeHashAsync(id, AnalysisType.Url, cancellationToken);
     }
 
-    public Task<AnalysisReport?> ReanalyzeUrlAsync(string url)
+    public Task<AnalysisReport?> ReanalyzeUrlAsync(string url, CancellationToken cancellationToken)
     {
         if (url is null)
         {
@@ -245,8 +245,11 @@ public sealed partial class VirusTotalClient
         {
             throw new ArgumentException("Url must not be empty.", nameof(url));
         }
-        return ReanalyzeUrlAsync(VirusTotalClientExtensions.GetUrlId(url), cancellationToken: default);
+        return ReanalyzeUrlAsync(VirusTotalClientExtensions.GetUrlId(url), cancellationToken);
     }
+
+    public Task<AnalysisReport?> ReanalyzeUrlAsync(string url)
+        => ReanalyzeUrlAsync(url, CancellationToken.None);
 
     public Task<AnalysisReport?> SubmitUrlAsync(string url, CancellationToken cancellationToken = default)
         => SubmitUrlAsync(url, options: null, cancellationToken);

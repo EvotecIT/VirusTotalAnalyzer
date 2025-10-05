@@ -26,7 +26,8 @@ public sealed partial class VirusTotalClient
         {
             return null;
         }
-        return new Uri(result.Data);
+
+        return Uri.TryCreate(result.Data, UriKind.Absolute, out var uri) ? uri : null;
     }
 
     /// <summary>

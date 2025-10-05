@@ -409,9 +409,21 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         var response = await _httpClient
             .GetAsync($"files/{Uri.EscapeDataString(id)}/download", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return new StreamWithResponse(response, stream);
+        var disposeResponse = true;
+        try
+        {
+            await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+            disposeResponse = false;
+            return new StreamWithResponse(response, stream);
+        }
+        finally
+        {
+            if (disposeResponse)
+            {
+                response.Dispose();
+            }
+        }
     }
 
     /// <summary>

@@ -314,9 +314,21 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
         var response = await _httpClient
             .GetAsync($"intelligence/hunting_notification_files/{Uri.EscapeDataString(id)}", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-        var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return new StreamWithResponse(response, stream);
+        var disposeResponse = true;
+        try
+        {
+            await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+            disposeResponse = false;
+            return new StreamWithResponse(response, stream);
+        }
+        finally
+        {
+            if (disposeResponse)
+            {
+                response.Dispose();
+            }
+        }
     }
 
     public async Task<Stream> DownloadRetrohuntNotificationFileAsync(string id, CancellationToken cancellationToken = default)
@@ -325,9 +337,21 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
         var response = await _httpClient
             .GetAsync($"intelligence/retrohunt_notification_files/{Uri.EscapeDataString(id)}", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-        var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return new StreamWithResponse(response, stream);
+        var disposeResponse = true;
+        try
+        {
+            await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+            disposeResponse = false;
+            return new StreamWithResponse(response, stream);
+        }
+        finally
+        {
+            if (disposeResponse)
+            {
+                response.Dispose();
+            }
+        }
     }
 
     public async Task<Stream> DownloadPcapAsync(string analysisId, CancellationToken cancellationToken = default)
@@ -336,9 +360,21 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
         var response = await _httpClient
             .GetAsync($"analyses/{Uri.EscapeDataString(analysisId)}/pcap", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-        var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return new StreamWithResponse(response, stream);
+        var disposeResponse = true;
+        try
+        {
+            await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+            disposeResponse = false;
+            return new StreamWithResponse(response, stream);
+        }
+        finally
+        {
+            if (disposeResponse)
+            {
+                response.Dispose();
+            }
+        }
     }
 
     /// <summary>

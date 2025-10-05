@@ -934,6 +934,14 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
             throw new ArgumentException("A maximum of 4 ids is allowed.", paramName);
         }
 
+        for (var i = 0; i < array.Length; i++)
+        {
+            if (string.IsNullOrWhiteSpace(array[i]))
+            {
+                throw new ArgumentException("The collection cannot contain null, empty, or whitespace ids.", paramName);
+            }
+        }
+
         return array;
     }
 }

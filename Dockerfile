@@ -1,5 +1,5 @@
 # Multi-stage build for smaller image size
-FROM mcr.microsoft.com/powershell:7.4-alpine-3.19 AS base
+FROM mcr.microsoft.com/powershell:7.4-alpine-3.18 AS base
 
 # Install required dependencies
 RUN apk add --no-cache \

@@ -1,0 +1,14 @@
+# Domain Monitoring List
+# One domain per line
+# Lines starting with # are ignored
+# Empty lines are ignored
+
+# Example domains for monitoring
+google.com
+microsoft.com
+github.com
+
+# Add your domains below:
+# example.com
+# mycompany.com
+# partner-site.com

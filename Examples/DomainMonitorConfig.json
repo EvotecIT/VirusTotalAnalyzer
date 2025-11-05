@@ -1,0 +1,45 @@
+{
+  "ApiKey": "YOUR_VIRUSTOTAL_API_KEY_HERE",
+  "DomainsFile": "domains.txt",
+  "LogFile": "DomainMonitor.log",
+  "RateLimitDelayMs": 1000,
+  "Thresholds": {
+    "MaliciousCount": 0,
+    "SuspiciousCount": 3,
+    "MinReputation": -10
+  },
+  "EmailSettings": {
+    "From": "monitoring@example.com",
+    "To": [
+      "admin@example.com",
+      "security@example.com"
+    ],
+    "Cc": [],
+    "SmtpServer": "smtp.example.com",
+    "Port": 587,
+    "UseSsl": true,
+    "Username": "monitoring@example.com",
+    "Password": "YOUR_EMAIL_PASSWORD_HERE"
+  },
+  "_comments": {
+    "ApiKey": "Get your API key from https://www.virustotal.com/gui/user/YOUR_USERNAME/apikey",
+    "DomainsFile": "Path to text file with one domain per line (relative to script directory or absolute path)",
+    "LogFile": "Path to log file (relative to script directory or absolute path, set to null to disable logging)",
+    "RateLimitDelayMs": "Delay in milliseconds between API requests (free tier: 4 requests/min = 15000ms recommended)",
+    "Thresholds": {
+      "MaliciousCount": "Number of malicious detections to trigger alert (0 = any malicious detection)",
+      "SuspiciousCount": "Number of suspicious detections to trigger alert",
+      "MinReputation": "Minimum reputation score (-10 means alert if reputation is below -10)"
+    },
+    "EmailSettings": {
+      "From": "Sender email address",
+      "To": "Array of recipient email addresses",
+      "Cc": "Optional: Array of CC email addresses",
+      "SmtpServer": "SMTP server hostname",
+      "Port": "SMTP port (25, 587, or 465)",
+      "UseSsl": "Use SSL/TLS encryption (true/false)",
+      "Username": "SMTP authentication username (optional, remove if not needed)",
+      "Password": "SMTP authentication password (optional, remove if not needed)"
+    }
+  }
+}

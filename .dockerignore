@@ -1,0 +1,79 @@
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Documentation (not needed in container)
+*.md
+!DOMAIN-MONITORING-README.md
+!COOLIFY-DEPLOYMENT.md
+docs/
+
+# Development files
+.vscode/
+.vs/
+*.csproj.user
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build artifacts
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa]rtifacts/
+build/
+dist/
+out/
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# Tests
+Tests/
+*.Tests/
+test/
+tests/
+
+# Environment files (NEVER include in container)
+.env
+.env.local
+.env.*.local
+*.env
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+logs/
+temp/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.idea/
+*.swp
+*.swo
+*~
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+azure-pipelines.yml
+
+# Examples (we copy specific files we need)
+Examples/*.log
+Examples/data/
+
+# Module binaries (we install fresh in container)
+Module/

@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # Main monitoring service - runs as a scheduled task
+  domain-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: virustotal-domain-monitor
+    restart: "no"  # Don't auto-restart, Coolify scheduled tasks will handle execution
+    environment:
+      # Timezone configuration
+      - TZ=${TZ:-UTC}
+
+      # These will be replaced by Coolify environment variables
+      # Do not hardcode secrets here!
+      - VIRUSTOTAL_API_KEY=${VIRUSTOTAL_API_KEY}
+      - SMTP_SERVER=${SMTP_SERVER}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_FROM=${SMTP_FROM}
+      - SMTP_TO=${SMTP_TO}
+      - SMTP_CC=${SMTP_CC:-}
+      - SMTP_USE_SSL=${SMTP_USE_SSL:-true}
+
+      # Threshold configuration
+      - THRESHOLD_MALICIOUS=${THRESHOLD_MALICIOUS:-0}
+      - THRESHOLD_SUSPICIOUS=${THRESHOLD_SUSPICIOUS:-3}
+      - THRESHOLD_MIN_REPUTATION=${THRESHOLD_MIN_REPUTATION:--10}
+
+      # Rate limiting (milliseconds between requests)
+      - RATE_LIMIT_DELAY_MS=${RATE_LIMIT_DELAY_MS:-15000}
+
+    volumes:
+      # Persistent storage for logs
+      - domain-monitor-logs:/app/data
+
+      # Mount config and domains file
+      # These should be created as volume files in Coolify
+      - domain-monitor-config:/app/config:ro
+      - domain-monitor-domains:/app/domains:ro
+
+    command: >
+      pwsh -Command "
+        # Create config from environment variables
+        $$config = @{
+          ApiKey = '$$env:VIRUSTOTAL_API_KEY'
+          DomainsFile = '/app/domains/domains.txt'
+          LogFile = '/app/data/DomainMonitor.log'
+          RateLimitDelayMs = [int]$$env:RATE_LIMIT_DELAY_MS
+          Thresholds = @{
+            MaliciousCount = [int]$$env:THRESHOLD_MALICIOUS
+            SuspiciousCount = [int]$$env:THRESHOLD_SUSPICIOUS
+            MinReputation = [int]$$env:THRESHOLD_MIN_REPUTATION
+          }
+          EmailSettings = @{
+            From = '$$env:SMTP_FROM'
+            To = ($$env:SMTP_TO -split ',').Trim()
+            Cc = if ($$env:SMTP_CC) { ($$env:SMTP_CC -split ',').Trim() } else { @() }
+            SmtpServer = '$$env:SMTP_SERVER'
+            Port = [int]$$env:SMTP_PORT
+            UseSsl = [bool]::Parse('$$env:SMTP_USE_SSL')
+            Username = '$$env:SMTP_USERNAME'
+            Password = '$$env:SMTP_PASSWORD'
+          }
+        }
+
+        # Save config to file
+        $$config | ConvertTo-Json -Depth 10 | Set-Content '/app/config/DomainMonitorConfig.json'
+
+        # Run the monitoring script
+        & /app/Monitor-DomainsWithVirusTotal.ps1 -ConfigFile '/app/config/DomainMonitorConfig.json'
+      "
+
+    # Labels for Coolify (optional metadata)
+    labels:
+      - "coolify.managed=true"
+      - "coolify.service=virustotal-domain-monitor"
+
+volumes:
+  domain-monitor-logs:
+    driver: local
+  domain-monitor-config:
+    driver: local
+  domain-monitor-domains:
+    driver: local

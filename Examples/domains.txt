@@ -1,5 +1,12 @@
 # Domain Monitoring List
-# One domain per line
+# Format: domain.com[,additional-recipient@email.com,...]
+#
+# Simple format (sends alerts to default recipients only):
+#   google.com
+#
+# With additional recipients (sends to default + specified emails):
+#   critical-domain.com,ceo@company.com,security-team@company.com
+#
 # Lines starting with # are ignored
 # Empty lines are ignored
 
@@ -10,5 +17,6 @@ github.com
 
 # Add your domains below:
 # example.com
-# mycompany.com
-# partner-site.com
+# mycompany.com,team@mycompany.com
+# partner-site.com,partner@external.com,admin@external.com
+# critical-app.com,oncall@company.com

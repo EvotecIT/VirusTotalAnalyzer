@@ -142,7 +142,13 @@ function Get-Configuration {
 function Get-DomainList {
     <#
     .SYNOPSIS
-        Reads domains from a text file.
+        Reads domains from a text file with optional per-domain email recipients.
+    .DESCRIPTION
+        Parses domains file supporting two formats:
+        1. Simple: domain.com
+        2. With additional recipients: domain.com,email1@example.com,email2@example.com
+
+        Additional recipients are added to the default recipients for that domain's alerts.
     #>
     [CmdletBinding()]
     param(
@@ -154,15 +160,36 @@ function Get-DomainList {
         throw "Domains file not found: $Path"
     }
 
-    $domains = Get-Content -Path $Path | Where-Object {
-        $_ -match '\S' -and $_ -notmatch '^\s*#'
-    } | ForEach-Object { $_.Trim() }
+    $domainList = @()
 
-    if ($domains.Count -eq 0) {
+    Get-Content -Path $Path | Where-Object {
+        $_ -match '\S' -and $_ -notmatch '^\s*#'
+    } | ForEach-Object {
+        $line = $_.Trim()
+        $parts = $line -split ',' | ForEach-Object { $_.Trim() }
+
+        # First part is always the domain
+        $domain = $parts[0]
+
+        # Remaining parts are additional email recipients (if any)
+        $additionalEmails = @()
+        if ($parts.Count -gt 1) {
+            $additionalEmails = $parts[1..($parts.Count - 1)] | Where-Object {
+                $_ -match '^[\w\.-]+@[\w\.-]+\.\w+$'
+            }
+        }
+
+        $domainList += [PSCustomObject]@{
+            Domain = $domain
+            AdditionalRecipients = $additionalEmails
+        }
+    }
+
+    if ($domainList.Count -eq 0) {
         throw "No domains found in file: $Path"
     }
 
-    return $domains
+    return $domainList
 }
 
 function Test-DomainThreat {
@@ -240,7 +267,13 @@ function Send-ThreatAlert {
         $EmailSettings,
 
         [Parameter(Mandatory = $false)]
-        [switch]$IsTest
+        [array]$AdditionalRecipients = @(),
+
+        [Parameter(Mandatory = $false)]
+        [switch]$IsTest,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$IsDomainSpecific
     )
 
     $subject = if ($IsTest) {
@@ -328,10 +361,26 @@ function Send-ThreatAlert {
 </html>
 "@
 
+    # Prepare recipients list
+    $recipients = @()
+    if ($IsDomainSpecific -and $AdditionalRecipients.Count -gt 0) {
+        # For domain-specific alerts, send ONLY to additional recipients
+        $recipients = $AdditionalRecipients
+    }
+    else {
+        # For main alerts, send to default recipients
+        $recipients = $EmailSettings.To
+
+        # Add any additional recipients
+        if ($AdditionalRecipients.Count -gt 0) {
+            $recipients = @($recipients) + @($AdditionalRecipients) | Select-Object -Unique
+        }
+    }
+
     # Prepare email parameters
     $mailParams = @{
         From       = $EmailSettings.From
-        To         = $EmailSettings.To
+        To         = $recipients
         Subject    = $subject
         Body       = $htmlBody
         BodyAsHtml = $true
@@ -339,8 +388,8 @@ function Send-ThreatAlert {
         Port       = $EmailSettings.Port
     }
 
-    # Add CC if specified
-    if ($EmailSettings.Cc) {
+    # Add CC if specified (only for main alerts, not domain-specific)
+    if ($EmailSettings.Cc -and -not $IsDomainSpecific) {
         $mailParams['Cc'] = $EmailSettings.Cc
     }
 
@@ -601,13 +650,19 @@ try {
     $checkedCount = 0
     $errorCount = 0
 
-    foreach ($domain in $domains) {
+    foreach ($domainEntry in $domains) {
         $checkedCount++
-        Write-Log -Message "[$checkedCount/$($domains.Count)] Checking domain: $domain" -Level Info -LogFile $logFile
+        $domainName = $domainEntry.Domain
+        $additionalRecipients = $domainEntry.AdditionalRecipients
+
+        Write-Log -Message "[$checkedCount/$($domains.Count)] Checking domain: $domainName" -Level Info -LogFile $logFile
+        if ($additionalRecipients.Count -gt 0) {
+            Write-Log -Message "  Additional recipients: $($additionalRecipients -join ', ')" -Level Info -LogFile $logFile
+        }
 
         try {
             # Get domain report from VirusTotal
-            $report = Get-VirusReport -ApiKey $config.ApiKey -DomainName $domain
+            $report = Get-VirusReport -ApiKey $config.ApiKey -DomainName $domainName
 
             if ($report -and $report.Data) {
                 # Analyze the report
@@ -615,26 +670,27 @@ try {
 
                 # Store result for all domains (for daily summary)
                 $domainResult = @{
-                    Domain   = $domain
+                    Domain   = $domainName
                     Analysis = $analysis
                     IsThreat = $analysis.IsThreat
+                    AdditionalRecipients = $additionalRecipients
                 }
                 $allDomainResults += $domainResult
 
                 if ($analysis.IsThreat) {
-                    Write-Log -Message "THREAT DETECTED - $domain" -Level Warning -LogFile $logFile
+                    Write-Log -Message "THREAT DETECTED - $domainName" -Level Warning -LogFile $logFile
                     $threatenedDomains += $domainResult
                 }
                 else {
-                    Write-Log -Message "OK - $domain (Malicious: $($analysis.Stats.Malicious), Reputation: $($analysis.Reputation))" -Level Success -LogFile $logFile
+                    Write-Log -Message "OK - $domainName (Malicious: $($analysis.Stats.Malicious), Reputation: $($analysis.Reputation))" -Level Success -LogFile $logFile
                 }
             }
             else {
-                Write-Log -Message "No data returned for domain: $domain" -Level Warning -LogFile $logFile
+                Write-Log -Message "No data returned for domain: $domainName" -Level Warning -LogFile $logFile
 
                 # Add to results with N/A status
                 $allDomainResults += @{
-                    Domain   = $domain
+                    Domain   = $domainName
                     Analysis = @{
                         IsThreat = $false
                         Stats = @{ Malicious = 0; Suspicious = 0 }
@@ -642,6 +698,7 @@ try {
                         Reasons = @("No data available")
                     }
                     IsThreat = $false
+                    AdditionalRecipients = $additionalRecipients
                 }
             }
 
@@ -652,11 +709,11 @@ try {
         }
         catch {
             $errorCount++
-            Write-Log -Message "Error checking domain $domain : $_" -Level Error -LogFile $logFile
+            Write-Log -Message "Error checking domain $domainName : $_" -Level Error -LogFile $logFile
 
             # Add to results with error status
             $allDomainResults += @{
-                Domain   = $domain
+                Domain   = $domainName
                 Analysis = @{
                     IsThreat = $false
                     Stats = @{ Malicious = 0; Suspicious = 0 }
@@ -664,6 +721,7 @@ try {
                     Reasons = @("Error during check: $_")
                 }
                 IsThreat = $false
+                AdditionalRecipients = $additionalRecipients
             }
 
             # Continue with next domain unless too many errors
@@ -678,8 +736,32 @@ try {
         Write-Log -Message "Sending alert email for $($threatenedDomains.Count) threatened domains" -Level Warning -LogFile $logFile
 
         try {
+            # Send main alert to default recipients with ALL threatened domains
             Send-ThreatAlert -ThreatenedDomains $threatenedDomains -EmailSettings $config.EmailSettings
-            Write-Log -Message "Alert email sent successfully" -Level Success -LogFile $logFile
+            Write-Log -Message "Main alert email sent to default recipients" -Level Success -LogFile $logFile
+
+            # Send domain-specific alerts to additional recipients
+            $domainsWithAdditionalRecipients = $threatenedDomains | Where-Object { $_.AdditionalRecipients.Count -gt 0 }
+            if ($domainsWithAdditionalRecipients.Count -gt 0) {
+                Write-Log -Message "Sending $($domainsWithAdditionalRecipients.Count) domain-specific alerts" -Level Info -LogFile $logFile
+
+                foreach ($domainThreat in $domainsWithAdditionalRecipients) {
+                    try {
+                        # Send alert for this specific domain to its additional recipients
+                        Send-ThreatAlert `
+                            -ThreatenedDomains @($domainThreat) `
+                            -EmailSettings $config.EmailSettings `
+                            -AdditionalRecipients $domainThreat.AdditionalRecipients `
+                            -IsDomainSpecific
+
+                        Write-Log -Message "Domain-specific alert sent for $($domainThreat.Domain) to $($domainThreat.AdditionalRecipients -join ', ')" -Level Success -LogFile $logFile
+                    }
+                    catch {
+                        Write-Log -Message "Failed to send domain-specific alert for $($domainThreat.Domain): $_" -Level Error -LogFile $logFile
+                        # Continue with other alerts even if one fails
+                    }
+                }
+            }
         }
         catch {
             Write-Log -Message "Failed to send alert email: $_" -Level Error -LogFile $logFile

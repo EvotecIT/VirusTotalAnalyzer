@@ -15,9 +15,9 @@ WORKDIR /app
 RUN pwsh -Command "Install-Module -Name VirusTotalAnalyzer -Force -Scope AllUsers -Verbose"
 
 # Copy scripts and configuration
-COPY ../Examples/Monitor-DomainsWithVirusTotal.ps1 /app/
-COPY ../Examples/DomainMonitorConfig.json /app/config-template.json
-COPY ../Examples/domains.txt /app/domains-template.txt
+COPY Examples/Monitor-DomainsWithVirusTotal.ps1 /app/
+COPY Examples/DomainMonitorConfig.json /app/config-template.json
+COPY Examples/domains.txt /app/domains-template.txt
 
 # Create data directory for logs
 RUN mkdir -p /app/data /app/config

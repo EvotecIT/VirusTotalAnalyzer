@@ -32,7 +32,9 @@ ENV CHECK_INTERVAL_MINUTES=60 \
     THRESHOLD_MALICIOUS=0 \
     THRESHOLD_SUSPICIOUS=3 \
     THRESHOLD_MIN_REPUTATION=-10 \
-    RATE_LIMIT_DELAY_MS=15000
+    RATE_LIMIT_DELAY_MS=15000 \
+    DAILY_SUMMARY_ENABLED=true \
+    DAILY_SUMMARY_HOUR=8
 
 # Health check - verify the entrypoint process is running
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \

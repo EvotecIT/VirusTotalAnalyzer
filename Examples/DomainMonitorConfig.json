@@ -21,6 +21,10 @@
     "Username": "monitoring@example.com",
     "Password": "YOUR_EMAIL_PASSWORD_HERE"
   },
+  "DailySummary": {
+    "Enabled": true,
+    "SendAtHour": 8
+  },
   "_comments": {
     "ApiKey": "Get your API key from https://www.virustotal.com/gui/user/YOUR_USERNAME/apikey",
     "DomainsFile": "Path to text file with one domain per line (relative to script directory or absolute path)",
@@ -40,6 +44,10 @@
       "UseSsl": "Use SSL/TLS encryption (true/false)",
       "Username": "SMTP authentication username (optional, remove if not needed)",
       "Password": "SMTP authentication password (optional, remove if not needed)"
+    },
+    "DailySummary": {
+      "Enabled": "Enable daily summary email (true/false)",
+      "SendAtHour": "Hour of day to send summary (0-23, e.g., 8 = 8:00 AM)"
     }
   }
 }

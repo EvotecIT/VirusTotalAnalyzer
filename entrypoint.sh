@@ -30,6 +30,10 @@ pwsh -Command "
     Username = '\$env:SMTP_USERNAME'
     Password = '\$env:SMTP_PASSWORD'
   }
+  DailySummary = @{
+    Enabled = if (\$env:DAILY_SUMMARY_ENABLED -eq 'false') { \$false } else { \$true }
+    SendAtHour = if (\$env:DAILY_SUMMARY_HOUR) { [int]\$env:DAILY_SUMMARY_HOUR } else { 8 }
+  }
 }
 
 \$config | ConvertTo-Json -Depth 10 | Set-Content '/app/config/DomainMonitorConfig.json'

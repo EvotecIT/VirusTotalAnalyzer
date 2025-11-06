@@ -1,5 +1,6 @@
 # Use Ubuntu-based PowerShell image for better compatibility
-FROM mcr.microsoft.com/powershell:7.4-ubuntu-22.04 AS base
+# Specify platform for ARM64 compatibility
+FROM --platform=linux/arm64 mcr.microsoft.com/powershell:7.4-ubuntu-22.04 AS base
 
 # Install required dependencies
 RUN apt-get update && apt-get install -y \

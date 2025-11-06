@@ -27,9 +27,16 @@ RUN mkdir -p /app/data /app/config /app/domains
 RUN chmod +x /app/Monitor-DomainsWithVirusTotal.ps1 && \
     chmod +x /app/entrypoint.sh
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD pwsh -Command "exit 0"
+# Environment variable defaults
+ENV CHECK_INTERVAL_MINUTES=60 \
+    THRESHOLD_MALICIOUS=0 \
+    THRESHOLD_SUSPICIOUS=3 \
+    THRESHOLD_MIN_REPUTATION=-10 \
+    RATE_LIMIT_DELAY_MS=15000
+
+# Health check - verify the entrypoint process is running
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD pgrep -f "entrypoint.sh" > /dev/null || exit 1
 
 # Set entrypoint script
 ENTRYPOINT ["/app/entrypoint.sh"]

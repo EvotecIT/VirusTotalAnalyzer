@@ -56,8 +56,33 @@ if [ ! -s /app/domains/domains.txt ]; then
     echo "WARNING: domains.txt is empty. Add domains to monitor."
 fi
 
-echo "Starting VirusTotal Domain Monitor..."
+echo "Starting VirusTotal Domain Monitor in continuous mode..."
+echo "Check interval: ${CHECK_INTERVAL_MINUTES:-60} minutes"
 echo "---"
 
-# Execute the monitoring script (or any command passed to the container)
-exec "$@"
+# Convert interval to seconds (default 60 minutes = 3600 seconds)
+CHECK_INTERVAL_SECONDS=$((${CHECK_INTERVAL_MINUTES:-60} * 60))
+
+# Continuous loop - run the monitoring script repeatedly
+while true; do
+    echo "=========================================="
+    echo "Starting monitoring run at $(date)"
+    echo "=========================================="
+
+    # Run the monitoring script and capture exit code
+    if "$@"; then
+        echo "Monitoring run completed successfully at $(date)"
+    else
+        EXIT_CODE=$?
+        echo "WARNING: Monitoring run failed with exit code $EXIT_CODE at $(date)"
+        echo "Container will continue running and retry on next interval..."
+    fi
+
+    echo ""
+    echo "Next check will run in ${CHECK_INTERVAL_MINUTES:-60} minutes"
+    echo "Sleeping until $(date -d "+${CHECK_INTERVAL_MINUTES:-60} minutes" 2>/dev/null || date)"
+    echo ""
+
+    # Sleep until next check
+    sleep $CHECK_INTERVAL_SECONDS
+done

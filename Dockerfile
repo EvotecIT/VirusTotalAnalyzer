@@ -1,11 +1,12 @@
-# Multi-stage build for smaller image size
-FROM mcr.microsoft.com/powershell:lts-alpine AS base
+# Use Ubuntu-based PowerShell image for better compatibility
+FROM mcr.microsoft.com/powershell:7.4-ubuntu-22.04 AS base
 
 # Install required dependencies
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y \
     ca-certificates \
     tzdata \
-    curl
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app

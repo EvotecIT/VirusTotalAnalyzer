@@ -326,6 +326,26 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task Client_ThrowsRateLimitExceededException_WithoutRetryAfterOrQuotaHeaders()
+    {
+        var errorJson = @"{""error"":{""code"":""RateLimitExceeded"",""message"":""too many""}}";
+        var response = new HttpResponseMessage((HttpStatusCode)429)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<RateLimitExceededException>(() => client.GetFileReportAsync("abc"));
+        Assert.Null(ex.RetryAfter);
+        Assert.Null(ex.RemainingQuota);
+    }
+
+    [Fact]
     public async Task GetLivehuntNotificationAsync_DeserializesResponse()
     {
         var json = "{\"data\":{\"id\":\"ln1\",\"type\":\"livehunt_notification\",\"attributes\":{\"rule_name\":\"r1\"}}}";

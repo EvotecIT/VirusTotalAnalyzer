@@ -131,6 +131,24 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetFileReportAsync_ThrowsApiException_WithJsonWithoutErrorNode()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.InternalServerError)
+        {
+            Content = new StringContent("{}", Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetFileReportAsync("abc"));
+        Assert.StartsWith("Raw error response: {}", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task GetFileReportAsync_ThrowsApiException_Unauthorized()
     {
         var errorJson = @"{""error"":{""code"":""AuthenticationError"",""message"":""invalid api key""}}";
@@ -220,6 +238,26 @@ public partial class VirusTotalClientTests
         Assert.Equal(123, ex.RemainingQuota);
         Assert.Equal((HttpStatusCode)429, ex.StatusCode);
         Assert.Equal("req-429", ex.RequestId);
+    }
+
+    [Fact]
+    public async Task Client_ThrowsRateLimitExceededException_WithNegativeRetryAfterSeconds()
+    {
+        var errorJson = @"{""error"":{""code"":""RateLimitExceeded"",""message"":""too many""}}";
+        var response = new HttpResponseMessage((HttpStatusCode)429)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        response.Headers.TryAddWithoutValidation("Retry-After", "-5");
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<RateLimitExceededException>(() => client.GetFileReportAsync("abc"));
+        Assert.Equal(TimeSpan.Zero, ex.RetryAfter);
     }
 
     [Fact]

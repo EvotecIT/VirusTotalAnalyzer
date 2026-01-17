@@ -69,6 +69,68 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetFileReportAsync_ThrowsApiException_UsesCorrelationIdHeader()
+    {
+        var errorJson = @"{""error"":{""code"":""ServerError"",""message"":""failure""}}";
+        var response = new HttpResponseMessage(HttpStatusCode.InternalServerError)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        response.Headers.Add("X-Correlation-Id", "corr-500");
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetFileReportAsync("abc"));
+        Assert.Equal(HttpStatusCode.InternalServerError, ex.StatusCode);
+        Assert.Equal("corr-500", ex.RequestId);
+    }
+
+    [Fact]
+    public async Task GetFileReportAsync_ThrowsApiException_WithWhitespaceBody()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.BadRequest)
+        {
+            Content = new StringContent("   ", Encoding.UTF8, "text/plain")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetFileReportAsync("abc"));
+        Assert.Null(ex.Error);
+        Assert.Equal(HttpStatusCode.BadRequest, ex.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetFileReportAsync_ThrowsApiException_WithLongRawBody_Truncates()
+    {
+        var longBody = new string('a', 2050);
+        var response = new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
+        {
+            Content = new StringContent(longBody, Encoding.UTF8, "text/plain")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetFileReportAsync("abc"));
+        const string prefix = "Raw error response: ";
+        Assert.StartsWith(prefix, ex.Message);
+        Assert.EndsWith("...", ex.Message);
+        Assert.Equal(prefix.Length + 2048 + 3, ex.Message.Length);
+    }
+
+    [Fact]
     public async Task GetFileReportAsync_ThrowsApiException_Unauthorized()
     {
         var errorJson = @"{""error"":{""code"":""AuthenticationError"",""message"":""invalid api key""}}";

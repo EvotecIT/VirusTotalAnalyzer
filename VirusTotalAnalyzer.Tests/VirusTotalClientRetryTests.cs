@@ -103,4 +103,51 @@ public class VirusTotalClientRetryTests
 
         Assert.Equal(3, handler.Requests.Count);
     }
+
+    [Fact]
+    public async Task ExecuteWithRateLimitRetryAsync_ClampsNegativeRetryAfter()
+    {
+        using var client = new VirusTotalClient(new HttpClient(new StubHandler("{}"))
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        });
+
+        var attempts = 0;
+        var result = await client.ExecuteWithRateLimitRetryAsync<string?>(_ =>
+        {
+            attempts++;
+            if (attempts == 1)
+            {
+                throw new RateLimitExceededException(new ApiError { Message = "too many" }, TimeSpan.FromSeconds(-5), null);
+            }
+
+            return Task.FromResult<string?>("ok");
+        }, maxRetries: 1);
+
+        Assert.Equal("ok", result);
+        Assert.Equal(2, attempts);
+    }
+
+    [Fact]
+    public async Task ExecuteWithRateLimitRetryAsync_Void_ClampsNegativeRetryAfter()
+    {
+        using var client = new VirusTotalClient(new HttpClient(new StubHandler("{}"))
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        });
+
+        var attempts = 0;
+        await client.ExecuteWithRateLimitRetryAsync(_ =>
+        {
+            attempts++;
+            if (attempts == 1)
+            {
+                throw new RateLimitExceededException(new ApiError { Message = "too many" }, TimeSpan.FromSeconds(-1), null);
+            }
+
+            return Task.CompletedTask;
+        }, maxRetries: 1);
+
+        Assert.Equal(2, attempts);
+    }
 }

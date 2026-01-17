@@ -228,9 +228,10 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
             return null;
         }
 
+        var body = rawBody!;
         try
         {
-            var wrapper = JsonSerializer.Deserialize<ApiErrorResponse>(rawBody, _jsonOptions);
+            var wrapper = JsonSerializer.Deserialize<ApiErrorResponse>(body, _jsonOptions);
             if (wrapper?.Error != null)
             {
                 return wrapper.Error;
@@ -241,7 +242,7 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
             // ignore deserialization errors
         }
 
-        return new ApiError { Message = BuildRawErrorMessage(rawBody) };
+        return new ApiError { Message = BuildRawErrorMessage(body) };
     }
 
     private static string BuildRawErrorMessage(string rawBody)

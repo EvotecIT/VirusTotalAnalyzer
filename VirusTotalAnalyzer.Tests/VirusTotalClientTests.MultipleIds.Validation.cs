@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 using VirusTotalAnalyzer;
 using Xunit;
 
@@ -29,9 +30,9 @@ public partial class VirusTotalClientTests
 
     public static IEnumerable<object[]> InvalidIdsOperations()
     {
-        var idsWithNull = new[] { "valid", null };
-        var idsWithEmpty = new[] { "valid", string.Empty };
-        var idsWithWhitespace = new[] { "valid", "   " };
+        var idsWithNull = NonNullable(new string?[] { "valid", null });
+        var idsWithEmpty = NonNullable(new string?[] { "valid", string.Empty });
+        var idsWithWhitespace = NonNullable(new string?[] { "valid", "   " });
 
         yield return new object[] { new Func<IVirusTotalClient, Task>(c => c.GetFileReportsAsync(idsWithNull)) };
         yield return new object[] { new Func<IVirusTotalClient, Task>(c => c.GetUrlReportsAsync(idsWithNull)) };
@@ -76,4 +77,7 @@ public partial class VirusTotalClientTests
         var exception = await Assert.ThrowsAsync<ArgumentException>(async () => await operation(client));
         Assert.StartsWith("The collection cannot contain null, empty, or whitespace ids.", exception.Message);
     }
+
+    private static IEnumerable<string> NonNullable(IEnumerable<string?> ids)
+        => ids.Select(id => id!);
 }

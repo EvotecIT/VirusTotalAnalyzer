@@ -42,6 +42,12 @@ jobs:
       - name: Run tests
         run: dotnet test VirusTotalAnalyzer.Tests/VirusTotalAnalyzer.Tests.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --no-build --verbosity normal --logger trx --collect:"XPlat Code Coverage"
 
+      - name: Install Pester
+        run: pwsh -NoLogo -NoProfile -Command "Install-Module Pester -Force -Scope CurrentUser -SkipPublisherCheck"
+
+      - name: Run PowerShell cmdlet tests
+        run: pwsh -NoLogo -NoProfile -Command "Invoke-Pester -Path 'Module/Tests' -Output Detailed -CI"
+
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
@@ -83,6 +89,12 @@ jobs:
       - name: Run tests
         run: dotnet test VirusTotalAnalyzer.Tests/VirusTotalAnalyzer.Tests.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --no-build --verbosity normal --logger trx --collect:"XPlat Code Coverage"
 
+      - name: Install Pester
+        run: pwsh -NoLogo -NoProfile -Command "Install-Module Pester -Force -Scope CurrentUser -SkipPublisherCheck"
+
+      - name: Run PowerShell cmdlet tests
+        run: pwsh -NoLogo -NoProfile -Command "Invoke-Pester -Path 'Module/Tests' -Output Detailed -CI"
+
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
@@ -123,6 +135,12 @@ jobs:
 
       - name: Run tests
         run: dotnet test VirusTotalAnalyzer.Tests/VirusTotalAnalyzer.Tests.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --no-build --verbosity normal --logger trx --collect:"XPlat Code Coverage"
+
+      - name: Install Pester
+        run: pwsh -NoLogo -NoProfile -Command "Install-Module Pester -Force -Scope CurrentUser -SkipPublisherCheck"
+
+      - name: Run PowerShell cmdlet tests
+        run: pwsh -NoLogo -NoProfile -Command "Invoke-Pester -Path 'Module/Tests' -Output Detailed -CI"
 
       - name: Upload test results
         uses: actions/upload-artifact@v4

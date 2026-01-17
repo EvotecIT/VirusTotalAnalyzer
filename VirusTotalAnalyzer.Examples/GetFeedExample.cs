@@ -12,11 +12,12 @@ public static class GetFeedExample
         try
         {
             var feed = await client.GetFeedAsync(ResourceType.File, limit: 10);
-            Console.WriteLine(feed?.Data.Count);
-            if (!string.IsNullOrEmpty(feed?.Meta?.Cursor))
+            Console.WriteLine(feed?.Data?.Count);
+            var cursor = feed?.Meta?.Cursor;
+            if (!string.IsNullOrEmpty(cursor))
             {
-                var next = await client.GetFeedAsync(ResourceType.File, cursor: feed.Meta.Cursor);
-                Console.WriteLine(next?.Data.Count);
+                var next = await client.GetFeedAsync(ResourceType.File, cursor: cursor);
+                Console.WriteLine(next?.Data?.Count);
             }
         }
         catch (RateLimitExceededException ex)

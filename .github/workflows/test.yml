@@ -48,6 +48,17 @@ jobs:
       - name: Run PowerShell cmdlet tests
         run: pwsh -NoLogo -NoProfile -Command "Invoke-Pester -Path 'Module/Tests' -Output Detailed -CI"
 
+      - name: Install Pester (Windows PowerShell)
+        shell: powershell
+        run: Install-Module Pester -Force -Scope CurrentUser -SkipPublisherCheck
+
+      - name: Run Windows PowerShell 5.1 cmdlet tests
+        shell: powershell
+        env:
+          POWERSHELL_TFM: net472
+          BUILD_CONFIGURATION: ${{ env.BUILD_CONFIGURATION }}
+        run: Invoke-Pester -Path 'Module/Tests' -Output Detailed -CI
+
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()

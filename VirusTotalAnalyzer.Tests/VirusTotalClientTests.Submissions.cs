@@ -88,6 +88,50 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task Client_ThrowsRateLimitExceededException_WithDateRetryAfter()
+    {
+        var errorJson = @"{""error"":{""code"":""RateLimitExceeded"",""message"":""too many""}}";
+        var response = new HttpResponseMessage((HttpStatusCode)429)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        var retryAt = DateTimeOffset.UtcNow.AddSeconds(5).ToString("R");
+        response.Headers.Add("Retry-After", retryAt);
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<RateLimitExceededException>(() => client.GetFileReportAsync("abc"));
+        Assert.NotNull(ex.RetryAfter);
+        Assert.InRange(ex.RetryAfter!.Value.TotalSeconds, 0, 60);
+    }
+
+    [Fact]
+    public async Task Client_ThrowsRateLimitExceededException_WithInvalidRemainingQuota()
+    {
+        var errorJson = @"{""error"":{""code"":""RateLimitExceeded"",""message"":""too many""}}";
+        var response = new HttpResponseMessage((HttpStatusCode)429)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        response.Headers.Add("Retry-After", "0");
+        response.Headers.Add("X-RateLimit-Remaining", "not-a-number");
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<RateLimitExceededException>(() => client.GetFileReportAsync("abc"));
+        Assert.Equal(TimeSpan.Zero, ex.RetryAfter);
+        Assert.Null(ex.RemainingQuota);
+    }
+
+    [Fact]
     public async Task GetLivehuntNotificationAsync_DeserializesResponse()
     {
         var json = "{\"data\":{\"id\":\"ln1\",\"type\":\"livehunt_notification\",\"attributes\":{\"rule_name\":\"r1\"}}}";

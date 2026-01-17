@@ -1,39 +1,41 @@
 # Pester tests for compiled cmdlets
 
-function Get-TestModulePaths {
-    $configuration = $env:BUILD_CONFIGURATION
-    if ([string]::IsNullOrWhiteSpace($configuration)) {
-        $configuration = 'Release'
+Describe 'VirusTotalAnalyzer cmdlets' {
+BeforeAll {
+    function Get-TestModulePaths {
+        $configuration = $env:BUILD_CONFIGURATION
+        if ([string]::IsNullOrWhiteSpace($configuration)) {
+            $configuration = 'Release'
+        }
+        $targetFramework = $env:POWERSHELL_TFM
+        if ([string]::IsNullOrWhiteSpace($targetFramework)) {
+            $targetFramework = 'net8.0'
+        }
+        $binRoot = Join-Path $PSScriptRoot '..' '..' 'VirusTotalAnalyzer.PowerShell' 'bin' $configuration
+        if (-not (Test-Path $binRoot)) {
+            $binRoot = Join-Path $PSScriptRoot '..' '..' 'VirusTotalAnalyzer.PowerShell' 'bin' 'Debug'
+        }
+        $binPath = Join-Path $binRoot $targetFramework
+        if (-not (Test-Path $binPath)) {
+            $binPath = Get-ChildItem -Path $binRoot -Directory | Where-Object { $_.Name -like 'net*' } | Select-Object -First 1 -ExpandProperty FullName
+        }
+        if (-not $binPath -or -not (Test-Path $binPath)) {
+            throw "Unable to locate module build output under $binRoot."
+        }
+        [pscustomobject]@{
+            BinPath = $binPath
+            ModulePath = Join-Path $binPath 'VirusTotalAnalyzer.PowerShell.dll'
+            AssemblyPath = Join-Path $binPath 'VirusTotalAnalyzer.dll'
+        }
     }
-    $targetFramework = $env:POWERSHELL_TFM
-    if ([string]::IsNullOrWhiteSpace($targetFramework)) {
-        $targetFramework = 'net8.0'
-    }
-    $binRoot = Join-Path $PSScriptRoot '..' '..' 'VirusTotalAnalyzer.PowerShell' 'bin' $configuration
-    if (-not (Test-Path $binRoot)) {
-        $binRoot = Join-Path $PSScriptRoot '..' '..' 'VirusTotalAnalyzer.PowerShell' 'bin' 'Debug'
-    }
-    $binPath = Join-Path $binRoot $targetFramework
-    if (-not (Test-Path $binPath)) {
-        $binPath = Get-ChildItem -Path $binRoot -Directory | Where-Object { $_.Name -like 'net*' } | Select-Object -First 1 -ExpandProperty FullName
-    }
-    if (-not $binPath -or -not (Test-Path $binPath)) {
-        throw "Unable to locate module build output under $binRoot."
-    }
-    [pscustomobject]@{
-        BinPath = $binPath
-        ModulePath = Join-Path $binPath 'VirusTotalAnalyzer.PowerShell.dll'
-        AssemblyPath = Join-Path $binPath 'VirusTotalAnalyzer.dll'
-    }
-}
 
-$paths = Get-TestModulePaths
-$script:modulePath = $paths.ModulePath
-$script:assemblyPath = $paths.AssemblyPath
-[Reflection.Assembly]::LoadFrom($script:assemblyPath) | Out-Null
-Import-Module $script:modulePath
+    $paths = Get-TestModulePaths
+    $script:modulePath = $paths.ModulePath
+    $script:assemblyPath = $paths.AssemblyPath
+    [Reflection.Assembly]::LoadFrom($script:assemblyPath) | Out-Null
+    Import-Module $script:modulePath -Force
 
-Add-Type @"
+    Add-Type @"
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -55,6 +57,7 @@ public class FakeHandler : HttpMessageHandler
     }
 }
 "@ | Out-Null
+}
 
 Describe 'Get-VirusReport cmdlet' {
     It 'retrieves a file report by hash' {
@@ -96,27 +99,7 @@ Describe 'Get-VirusReport cmdlet' {
 
         $ps = [powershell]::Create()
         try {
-            $configuration = $env:BUILD_CONFIGURATION
-            if ([string]::IsNullOrWhiteSpace($configuration)) {
-                $configuration = 'Release'
-            }
-            $targetFramework = $env:POWERSHELL_TFM
-            if ([string]::IsNullOrWhiteSpace($targetFramework)) {
-                $targetFramework = 'net8.0'
-            }
-            $binRoot = Join-Path $PSScriptRoot '..' '..' 'VirusTotalAnalyzer.PowerShell' 'bin' $configuration
-            if (-not (Test-Path $binRoot)) {
-                $binRoot = Join-Path $PSScriptRoot '..' '..' 'VirusTotalAnalyzer.PowerShell' 'bin' 'Debug'
-            }
-            $binPath = Join-Path $binRoot $targetFramework
-            if (-not (Test-Path $binPath)) {
-                $binPath = Get-ChildItem -Path $binRoot -Directory | Where-Object { $_.Name -like 'net*' } | Select-Object -First 1 -ExpandProperty FullName
-            }
-            if (-not $binPath -or -not (Test-Path $binPath)) {
-                throw "Unable to locate module build output under $binRoot."
-            }
-            $modulePath = Join-Path $binPath 'VirusTotalAnalyzer.PowerShell.dll'
-            $null = $ps.AddCommand('Import-Module').AddParameter('Name', $modulePath).AddParameter('Force', $true).AddParameter('ErrorAction', 'Stop').Invoke()
+            $null = $ps.AddCommand('Import-Module').AddParameter('Name', $script:modulePath).AddParameter('Force', $true).AddParameter('ErrorAction', 'Stop').Invoke()
             $ps.Commands.Clear()
             $null = $ps.AddCommand('Get-VirusReport').AddParameter('ApiKey','x').AddParameter('File',$file).AddParameter('Client',$client).Invoke()
             $ps.Streams.Progress.Count | Should -BeGreaterThan 0
@@ -171,27 +154,7 @@ Describe 'New-VirusScan cmdlet' {
 
         $ps = [powershell]::Create()
         try {
-            $configuration = $env:BUILD_CONFIGURATION
-            if ([string]::IsNullOrWhiteSpace($configuration)) {
-                $configuration = 'Release'
-            }
-            $targetFramework = $env:POWERSHELL_TFM
-            if ([string]::IsNullOrWhiteSpace($targetFramework)) {
-                $targetFramework = 'net8.0'
-            }
-            $binRoot = Join-Path $PSScriptRoot '..' '..' 'VirusTotalAnalyzer.PowerShell' 'bin' $configuration
-            if (-not (Test-Path $binRoot)) {
-                $binRoot = Join-Path $PSScriptRoot '..' '..' 'VirusTotalAnalyzer.PowerShell' 'bin' 'Debug'
-            }
-            $binPath = Join-Path $binRoot $targetFramework
-            if (-not (Test-Path $binPath)) {
-                $binPath = Get-ChildItem -Path $binRoot -Directory | Where-Object { $_.Name -like 'net*' } | Select-Object -First 1 -ExpandProperty FullName
-            }
-            if (-not $binPath -or -not (Test-Path $binPath)) {
-                throw "Unable to locate module build output under $binRoot."
-            }
-            $modulePath = Join-Path $binPath 'VirusTotalAnalyzer.PowerShell.dll'
-            $null = $ps.AddCommand('Import-Module').AddParameter('Name', $modulePath).AddParameter('Force', $true).AddParameter('ErrorAction', 'Stop').Invoke()
+            $null = $ps.AddCommand('Import-Module').AddParameter('Name', $script:modulePath).AddParameter('Force', $true).AddParameter('ErrorAction', 'Stop').Invoke()
             $ps.Commands.Clear()
             $null = $ps.AddCommand('New-VirusScan').AddParameter('ApiKey','x').AddParameter('FileHash',$file).AddParameter('Client',$client).Invoke()
             $ps.Streams.Progress.Count | Should -BeGreaterThan 0
@@ -261,4 +224,5 @@ Describe 'Cmdlet help content' {
     It 'includes examples for Get-VirusUser' {
         (Get-Help Get-VirusUser -Examples).Examples | Should -Not -BeNullOrEmpty
     }
+}
 }

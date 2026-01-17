@@ -40,6 +40,10 @@ public sealed class CmdletGetVirusUser : AsyncPSCmdlet
                 WriteObject(user);
             }
         }
+        catch (ApiException ex)
+        {
+            WriteApiError(ex, Id);
+        }
         finally
         {
             if (Client is null)

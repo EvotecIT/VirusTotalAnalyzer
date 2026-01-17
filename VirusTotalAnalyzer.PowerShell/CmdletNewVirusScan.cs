@@ -4,6 +4,7 @@ using System.Management.Automation;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using VirusTotalAnalyzer;
+using VirusTotalAnalyzer.Models;
 
 namespace VirusTotalAnalyzer.PowerShell;
 
@@ -126,6 +127,18 @@ public sealed class CmdletNewVirusScan : AsyncPSCmdlet
                     WriteObject(urlAnalysis);
                     break;
             }
+        }
+        catch (ApiException ex)
+        {
+            var target = ParameterSetName switch
+            {
+                "FileInformation" => File,
+                "Hash" => Hash,
+                "FileHash" => FileHash,
+                "Url" => Url?.ToString(),
+                _ => null
+            };
+            WriteApiError(ex, target);
         }
         finally
         {

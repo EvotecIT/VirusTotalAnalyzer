@@ -159,18 +159,20 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
             return;
         }
 
-        ApiError? error = null;
+        var requestId = TryGetHeaderValue(response.Headers, "x-request-id")
+            ?? TryGetHeaderValue(response.Headers, "x-correlation-id");
+
+        string? rawBody = null;
         try
         {
-            using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-            var wrapper = await JsonSerializer.DeserializeAsync<ApiErrorResponse>(stream, _jsonOptions, cancellationToken)
-                .ConfigureAwait(false);
-            error = wrapper?.Error;
+            rawBody = await response.Content.ReadContentStringAsync(cancellationToken).ConfigureAwait(false);
         }
         catch
         {
-            // ignore deserialization errors
+            // ignore content read errors
         }
+
+        var error = TryParseApiError(rawBody);
 
         if ((int)response.StatusCode == 429)
         {
@@ -180,11 +182,16 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
                 var raw = values.FirstOrDefault();
                 if (int.TryParse(raw, out var seconds))
                 {
+                    if (seconds < 0)
+                    {
+                        seconds = 0;
+                    }
                     retryAfter = TimeSpan.FromSeconds(seconds);
                 }
                 else if (DateTimeOffset.TryParse(raw, out var date))
                 {
-                    retryAfter = date - DateTimeOffset.UtcNow;
+                    var delta = date - DateTimeOffset.UtcNow;
+                    retryAfter = delta < TimeSpan.Zero ? TimeSpan.Zero : delta;
                 }
             }
 
@@ -198,10 +205,55 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
                 }
             }
 
-            throw new RateLimitExceededException(error, retryAfter, remainingQuota);
+            throw new RateLimitExceededException(error, retryAfter, remainingQuota, response.StatusCode, requestId);
         }
 
-        throw new ApiException(error);
+        throw new ApiException(error, null, response.StatusCode, requestId);
+    }
+
+    private static string? TryGetHeaderValue(HttpHeaders headers, string name)
+    {
+        if (headers.TryGetValues(name, out var values))
+        {
+            return values.FirstOrDefault();
+        }
+
+        return null;
+    }
+
+    private ApiError? TryParseApiError(string? rawBody)
+    {
+        if (string.IsNullOrWhiteSpace(rawBody))
+        {
+            return null;
+        }
+
+        try
+        {
+            var wrapper = JsonSerializer.Deserialize<ApiErrorResponse>(rawBody, _jsonOptions);
+            if (wrapper?.Error != null)
+            {
+                return wrapper.Error;
+            }
+        }
+        catch
+        {
+            // ignore deserialization errors
+        }
+
+        return new ApiError { Message = BuildRawErrorMessage(rawBody) };
+    }
+
+    private static string BuildRawErrorMessage(string rawBody)
+    {
+        var trimmed = rawBody.Trim();
+        const int maxLength = 2048;
+        if (trimmed.Length > maxLength)
+        {
+            trimmed = trimmed.Substring(0, maxLength) + "...";
+        }
+
+        return $"Raw error response: {trimmed}";
     }
 
     public Task<PagedResponse<FileNameInfo>?> GetFileNamesPagedAsync(
@@ -396,4 +448,3 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
         GC.SuppressFinalize(this);
     }
 }
-

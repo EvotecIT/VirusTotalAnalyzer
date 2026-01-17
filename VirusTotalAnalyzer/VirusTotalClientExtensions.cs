@@ -124,6 +124,10 @@ public static class VirusTotalClientExtensions
             {
                 attempts++;
                 var delay = ex.RetryAfter ?? defaultRetryDelay ?? TimeSpan.FromSeconds(1);
+                if (delay < TimeSpan.Zero)
+                {
+                    delay = TimeSpan.Zero;
+                }
                 await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
             }
         }
@@ -151,6 +155,10 @@ public static class VirusTotalClientExtensions
             {
                 attempts++;
                 var delay = ex.RetryAfter ?? defaultRetryDelay ?? TimeSpan.FromSeconds(1);
+                if (delay < TimeSpan.Zero)
+                {
+                    delay = TimeSpan.Zero;
+                }
                 await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
             }
         }

@@ -53,6 +53,7 @@ public partial class VirusTotalClientTests
         {
             Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
         };
+        response.Headers.Add("X-Request-Id", "req-404");
         var handler = new SingleResponseHandler(response);
         var httpClient = new HttpClient(handler)
         {
@@ -63,6 +64,75 @@ public partial class VirusTotalClientTests
         var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetFileReportAsync("abc"));
         Assert.Equal("not found", ex.Message);
         Assert.Equal("NotFoundError", ex.Error?.Code);
+        Assert.Equal(HttpStatusCode.NotFound, ex.StatusCode);
+        Assert.Equal("req-404", ex.RequestId);
+    }
+
+    [Fact]
+    public async Task GetFileReportAsync_ThrowsApiException_Unauthorized()
+    {
+        var errorJson = @"{""error"":{""code"":""AuthenticationError"",""message"":""invalid api key""}}";
+        var response = new HttpResponseMessage(HttpStatusCode.Unauthorized)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        response.Headers.Add("X-Request-Id", "req-401");
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetFileReportAsync("abc"));
+        Assert.Equal("invalid api key", ex.Message);
+        Assert.Equal("AuthenticationError", ex.Error?.Code);
+        Assert.Equal(HttpStatusCode.Unauthorized, ex.StatusCode);
+        Assert.Equal("req-401", ex.RequestId);
+    }
+
+    [Fact]
+    public async Task GetFileReportAsync_ThrowsApiException_Forbidden()
+    {
+        var errorJson = @"{""error"":{""code"":""ForbiddenError"",""message"":""not allowed""}}";
+        var response = new HttpResponseMessage(HttpStatusCode.Forbidden)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        response.Headers.Add("X-Request-Id", "req-403");
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetFileReportAsync("abc"));
+        Assert.Equal("not allowed", ex.Message);
+        Assert.Equal("ForbiddenError", ex.Error?.Code);
+        Assert.Equal(HttpStatusCode.Forbidden, ex.StatusCode);
+        Assert.Equal("req-403", ex.RequestId);
+    }
+
+    [Fact]
+    public async Task GetFileReportAsync_ThrowsApiException_ServiceUnavailable_IncludesRawBody()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
+        {
+            Content = new StringContent("service unavailable", Encoding.UTF8, "text/plain")
+        };
+        response.Headers.Add("X-Request-Id", "req-503");
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetFileReportAsync("abc"));
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, ex.StatusCode);
+        Assert.Equal("req-503", ex.RequestId);
+        Assert.Contains("service unavailable", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -75,6 +145,7 @@ public partial class VirusTotalClientTests
         };
         response.Headers.Add("Retry-After", "10");
         response.Headers.Add("X-RateLimit-Remaining", "123");
+        response.Headers.Add("X-Request-Id", "req-429");
         var handler = new SingleResponseHandler(response);
         var httpClient = new HttpClient(handler)
         {
@@ -85,6 +156,8 @@ public partial class VirusTotalClientTests
         var ex = await Assert.ThrowsAsync<RateLimitExceededException>(() => client.GetFileReportAsync("abc"));
         Assert.Equal(TimeSpan.FromSeconds(10), ex.RetryAfter);
         Assert.Equal(123, ex.RemainingQuota);
+        Assert.Equal((HttpStatusCode)429, ex.StatusCode);
+        Assert.Equal("req-429", ex.RequestId);
     }
 
     [Fact]
@@ -107,6 +180,27 @@ public partial class VirusTotalClientTests
         var ex = await Assert.ThrowsAsync<RateLimitExceededException>(() => client.GetFileReportAsync("abc"));
         Assert.NotNull(ex.RetryAfter);
         Assert.InRange(ex.RetryAfter!.Value.TotalSeconds, 0, 60);
+    }
+
+    [Fact]
+    public async Task Client_ThrowsRateLimitExceededException_WithPastDateRetryAfter()
+    {
+        var errorJson = @"{""error"":{""code"":""RateLimitExceeded"",""message"":""too many""}}";
+        var response = new HttpResponseMessage((HttpStatusCode)429)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        var retryAt = DateTimeOffset.UtcNow.AddSeconds(-30).ToString("R");
+        response.Headers.Add("Retry-After", retryAt);
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<RateLimitExceededException>(() => client.GetFileReportAsync("abc"));
+        Assert.Equal(TimeSpan.Zero, ex.RetryAfter);
     }
 
     [Fact]

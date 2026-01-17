@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Management.Automation;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.IO;
+using VirusTotalAnalyzer.Models;
 
 namespace VirusTotalAnalyzer.PowerShell;
 
@@ -282,6 +284,36 @@ public abstract class AsyncPSCmdlet : PSCmdlet, IDisposable {
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Writes a standardized API error that includes request context when available.
+    /// </summary>
+    /// <param name="exception">The API exception to report.</param>
+    /// <param name="targetObject">Optional target associated with the failure.</param>
+    protected void WriteApiError(ApiException exception, object? targetObject = null) {
+        if (exception == null) {
+            throw new ArgumentNullException(nameof(exception));
+        }
+
+        var errorId = exception.Error?.Code ?? "VirusTotalApiError";
+        var record = new ErrorRecord(exception, errorId, ErrorCategory.InvalidOperation, targetObject);
+
+        var details = new StringBuilder();
+        if (exception.StatusCode.HasValue) {
+            details.Append($"StatusCode: {(int)exception.StatusCode.Value} ({exception.StatusCode})");
+        }
+        if (!string.IsNullOrWhiteSpace(exception.RequestId)) {
+            if (details.Length > 0) {
+                details.AppendLine();
+            }
+            details.Append($"RequestId: {exception.RequestId}");
+        }
+        if (details.Length > 0) {
+            record.ErrorDetails = new ErrorDetails(details.ToString());
+        }
+
+        WriteError(record);
     }
 
     /// <summary>

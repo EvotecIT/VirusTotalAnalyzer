@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 
 namespace VirusTotalAnalyzer.Models;
 
@@ -8,7 +9,12 @@ public sealed class RateLimitExceededException : ApiException
     public int? RemainingQuota { get; }
 
     public RateLimitExceededException(ApiError? error, TimeSpan? retryAfter, int? remainingQuota)
-        : base(error)
+        : this(error, retryAfter, remainingQuota, null, null)
+    {
+    }
+
+    public RateLimitExceededException(ApiError? error, TimeSpan? retryAfter, int? remainingQuota, HttpStatusCode? statusCode, string? requestId)
+        : base(error, null, statusCode, requestId)
     {
         RetryAfter = retryAfter;
         RemainingQuota = remainingQuota;

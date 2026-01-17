@@ -52,6 +52,10 @@ public sealed class CmdletGetVirusComment : AsyncPSCmdlet
                 WriteObject(comments.Data, true);
             }
         }
+        catch (ApiException ex)
+        {
+            WriteApiError(ex, Id);
+        }
         finally
         {
             if (Client is null)

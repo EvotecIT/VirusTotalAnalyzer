@@ -45,6 +45,10 @@ public sealed class CmdletNewVirusVote : AsyncPSCmdlet
             var vote = await client.CreateVoteAsync(ResourceType, Id, Verdict, CancelToken).ConfigureAwait(false);
             WriteObject(vote);
         }
+        catch (ApiException ex)
+        {
+            WriteApiError(ex, Id);
+        }
         finally
         {
             if (Client is null)

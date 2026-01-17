@@ -15,4 +15,13 @@ internal static class HttpContentExtensions
         return content.ReadAsStreamAsync(cancellationToken);
 #endif
     }
+
+    public static Task<string> ReadContentStringAsync(this HttpContent content, CancellationToken cancellationToken)
+    {
+#if NET472
+        return content.ReadAsStringAsync();
+#else
+        return content.ReadAsStringAsync(cancellationToken);
+#endif
+    }
 }

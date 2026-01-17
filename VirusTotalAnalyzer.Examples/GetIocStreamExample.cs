@@ -12,11 +12,12 @@ public static class GetIocStreamExample
         try
         {
             var stream = await client.GetIocStreamAsync("type:file", limit: 10, descriptorsOnly: true);
-            Console.WriteLine(stream?.Data.Count);
-            if (!string.IsNullOrEmpty(stream?.Meta?.Cursor))
+            Console.WriteLine(stream?.Data?.Count);
+            var cursor = stream?.Meta?.Cursor;
+            if (!string.IsNullOrEmpty(cursor))
             {
-                var next = await client.GetIocStreamAsync("type:file", cursor: stream.Meta.Cursor);
-                Console.WriteLine(next?.Data.Count);
+                var next = await client.GetIocStreamAsync("type:file", cursor: cursor);
+                Console.WriteLine(next?.Data?.Count);
             }
         }
         catch (RateLimitExceededException ex)

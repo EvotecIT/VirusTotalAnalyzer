@@ -12,11 +12,12 @@ public static class SearchExample
         try
         {
             var response = await client.SearchAsync("type:file", limit: 10, order: "last_analysis_date", descriptor: "asc");
-            Console.WriteLine(response?.Data.Count);
-            if (!string.IsNullOrEmpty(response?.Meta?.Cursor))
+            Console.WriteLine(response?.Data?.Count);
+            var cursor = response?.Meta?.Cursor;
+            if (!string.IsNullOrEmpty(cursor))
             {
-                var nextPage = await client.SearchAsync("type:file", cursor: response.Meta.Cursor, order: "last_analysis_date", descriptor: "asc");
-                Console.WriteLine(nextPage?.Data.Count);
+                var nextPage = await client.SearchAsync("type:file", cursor: cursor, order: "last_analysis_date", descriptor: "asc");
+                Console.WriteLine(nextPage?.Data?.Count);
             }
         }
         catch (RateLimitExceededException ex)

@@ -55,7 +55,7 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
         };
         _jsonOptions.Converters.Add(new JsonStringEnumMemberConverter());
         _jsonOptions.Converters.Add(new UnixTimestampConverter());
-        UserAgent = userAgent;
+        UserAgent = userAgent ?? string.Empty;
     }
 
     /// <summary>

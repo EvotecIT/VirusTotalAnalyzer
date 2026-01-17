@@ -15,11 +15,16 @@ public static class GetFileContactedUrlsExample
             var page = await client.GetFileContactedUrlsAsync("44d88612fea8a8f36de82e1278abb02f", fetchAll: true);
             foreach (var url in page?.Data ?? new List<UrlSummary>())
             {
-                Console.WriteLine(url.Data.Attributes.Url);
+                var resolvedUrl = url.Data?.Attributes?.Url;
+                if (!string.IsNullOrEmpty(resolvedUrl))
+                {
+                    Console.WriteLine(resolvedUrl);
+                }
             }
-            if (!string.IsNullOrEmpty(page?.NextCursor))
+            var cursor = page?.NextCursor;
+            if (!string.IsNullOrEmpty(cursor))
             {
-                Console.WriteLine($"More URLs available. Next cursor: {page.NextCursor}");
+                Console.WriteLine($"More URLs available. Next cursor: {cursor}");
             }
         }
         catch (ApiException ex)

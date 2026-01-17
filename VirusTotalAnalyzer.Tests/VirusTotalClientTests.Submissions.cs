@@ -149,6 +149,24 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task GetFileReportAsync_ThrowsApiException_WithNullJsonBody()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.InternalServerError)
+        {
+            Content = new StringContent("null", Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetFileReportAsync("abc"));
+        Assert.StartsWith("Raw error response: null", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task GetFileReportAsync_ThrowsApiException_Unauthorized()
     {
         var errorJson = @"{""error"":{""code"":""AuthenticationError"",""message"":""invalid api key""}}";
@@ -214,6 +232,7 @@ public partial class VirusTotalClientTests
         Assert.Equal("req-503", ex.RequestId);
         Assert.Contains("service unavailable", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
+
 
     [Fact]
     public async Task Client_ThrowsRateLimitExceededException()
@@ -430,6 +449,7 @@ public partial class VirusTotalClientTests
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/retrohunt_jobs/rj1", handler.Request!.RequestUri!.AbsolutePath);
     }
+
 
     [Fact]
     public async Task GetRetrohuntJobAsync_ThrowsApiException()

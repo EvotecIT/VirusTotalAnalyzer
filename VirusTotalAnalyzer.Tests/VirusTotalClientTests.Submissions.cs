@@ -326,6 +326,26 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
+    public async Task Client_ThrowsRateLimitExceededException_WithInvalidRetryAfterHeader()
+    {
+        var errorJson = @"{""error"":{""code"":""RateLimitExceeded"",""message"":""too many""}}";
+        var response = new HttpResponseMessage((HttpStatusCode)429)
+        {
+            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
+        };
+        response.Headers.TryAddWithoutValidation("Retry-After", "not-a-date");
+        var handler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        var ex = await Assert.ThrowsAsync<RateLimitExceededException>(() => client.GetFileReportAsync("abc"));
+        Assert.Null(ex.RetryAfter);
+    }
+
+    [Fact]
     public async Task Client_ThrowsRateLimitExceededException_WithoutRetryAfterOrQuotaHeaders()
     {
         var errorJson = @"{""error"":{""code"":""RateLimitExceeded"",""message"":""too many""}}";

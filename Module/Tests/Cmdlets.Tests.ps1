@@ -11,11 +11,11 @@ BeforeAll {
         if ([string]::IsNullOrWhiteSpace($targetFramework)) {
             $targetFramework = 'net8.0'
         }
-        $binRoot = Join-Path $PSScriptRoot '..' '..' 'VirusTotalAnalyzer.PowerShell' 'bin' $configuration
+        $binRoot = [System.IO.Path]::Combine($PSScriptRoot, '..', '..', 'VirusTotalAnalyzer.PowerShell', 'bin', $configuration)
         if (-not (Test-Path $binRoot)) {
-            $binRoot = Join-Path $PSScriptRoot '..' '..' 'VirusTotalAnalyzer.PowerShell' 'bin' 'Debug'
+            $binRoot = [System.IO.Path]::Combine($PSScriptRoot, '..', '..', 'VirusTotalAnalyzer.PowerShell', 'bin', 'Debug')
         }
-        $binPath = Join-Path $binRoot $targetFramework
+        $binPath = [System.IO.Path]::Combine($binRoot, $targetFramework)
         if (-not (Test-Path $binPath)) {
             $binPath = Get-ChildItem -Path $binRoot -Directory | Where-Object { $_.Name -like 'net*' } | Select-Object -First 1 -ExpandProperty FullName
         }
@@ -24,8 +24,8 @@ BeforeAll {
         }
         [pscustomobject]@{
             BinPath = $binPath
-            ModulePath = Join-Path $binPath 'VirusTotalAnalyzer.PowerShell.dll'
-            AssemblyPath = Join-Path $binPath 'VirusTotalAnalyzer.dll'
+            ModulePath = [System.IO.Path]::Combine($binPath, 'VirusTotalAnalyzer.PowerShell.dll')
+            AssemblyPath = [System.IO.Path]::Combine($binPath, 'VirusTotalAnalyzer.dll')
         }
     }
 

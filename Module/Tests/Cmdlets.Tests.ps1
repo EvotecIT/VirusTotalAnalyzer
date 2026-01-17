@@ -35,7 +35,7 @@ BeforeAll {
     [Reflection.Assembly]::LoadFrom($script:assemblyPath) | Out-Null
     Import-Module $script:modulePath -Force
 
-    Add-Type -ReferencedAssemblies 'System.Net.Http' @"
+    Add-Type -ReferencedAssemblies 'System.Net.Http','System.Net.Primitives' @"
 using System.Net;
 using System.Net.Http;
 using System.Threading;

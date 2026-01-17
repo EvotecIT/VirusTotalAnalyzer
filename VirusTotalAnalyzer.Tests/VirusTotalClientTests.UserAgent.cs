@@ -49,5 +49,27 @@ public partial class VirusTotalClientTests
         Assert.NotNull(handler.Request);
         Assert.Equal("MyApp/1.0", handler.Request!.Headers.UserAgent.ToString());
     }
+
+    [Fact]
+    public async Task UserAgent_Whitespace_UsesDefault()
+    {
+        var json = "{\"data\":{}}";
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        var client = new VirusTotalClient(httpClient, userAgent: "Custom/1.0");
+        client.UserAgent = " ";
+
+        await client.GetFileReportAsync("abc");
+
+        Assert.NotNull(handler.Request);
+        var expected = $"{typeof(VirusTotalClient).Assembly.GetName().Name}/{typeof(VirusTotalClient).Assembly.GetName().Version}";
+        Assert.Equal(expected, handler.Request!.Headers.UserAgent.ToString());
+    }
 }
 

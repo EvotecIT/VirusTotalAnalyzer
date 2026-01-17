@@ -46,7 +46,10 @@ public class FakeHandler : HttpMessageHandler
     private readonly string _response;
     public HttpRequestMessage LastRequest { get; private set; }
 
-    public FakeHandler(string response) => _response = response;
+    public FakeHandler(string response)
+    {
+        _response = response;
+    }
 
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {

@@ -39,6 +39,7 @@ public abstract class AsyncPSCmdlet : PSCmdlet, IDisposable
         Verbose,
         Debug,
         Information,
+        InformationWithTags,
         Progress,
         ShouldProcessTarget,
         ShouldProcess,
@@ -125,6 +126,7 @@ public abstract class AsyncPSCmdlet : PSCmdlet, IDisposable
     private bool _cancelSourceDisposed;
     private bool _disposeRequested;
     private int _activeBlocks;
+    private int _asyncLifecycleStarted;
     private int _pipelineThreadId;
 
     /// <summary>Cancellation token triggered when PowerShell stops the cmdlet.</summary>
@@ -162,7 +164,7 @@ public abstract class AsyncPSCmdlet : PSCmdlet, IDisposable
     public new bool ShouldProcess(string? target)
     {
         ThrowIfStopped();
-        if (IsPipelineThread || Volatile.Read(ref _currentOutPipe) is null)
+        if (CanAccessPipelineDirectly)
             return base.ShouldProcess(target ?? string.Empty);
 
         return (bool)RequestPipelineReply(target ?? string.Empty, PipelineType.ShouldProcessTarget)!;
@@ -172,7 +174,7 @@ public abstract class AsyncPSCmdlet : PSCmdlet, IDisposable
     public new bool ShouldProcess(string? target, string action)
     {
         ThrowIfStopped();
-        if (IsPipelineThread || Volatile.Read(ref _currentOutPipe) is null)
+        if (CanAccessPipelineDirectly)
             return base.ShouldProcess(target ?? string.Empty, action);
 
         return (bool)RequestPipelineReply((target ?? string.Empty, action), PipelineType.ShouldProcess)!;
@@ -182,7 +184,7 @@ public abstract class AsyncPSCmdlet : PSCmdlet, IDisposable
     public new bool ShouldProcess(string verboseDescription, string verboseWarning, string caption)
     {
         ThrowIfStopped();
-        if (IsPipelineThread || Volatile.Read(ref _currentOutPipe) is null)
+        if (CanAccessPipelineDirectly)
             return base.ShouldProcess(verboseDescription, verboseWarning, caption);
 
         return (bool)RequestPipelineReply(
@@ -198,7 +200,7 @@ public abstract class AsyncPSCmdlet : PSCmdlet, IDisposable
         out ShouldProcessReason shouldProcessReason)
     {
         ThrowIfStopped();
-        if (IsPipelineThread || Volatile.Read(ref _currentOutPipe) is null)
+        if (CanAccessPipelineDirectly)
             return base.ShouldProcess(verboseDescription, verboseWarning, caption, out shouldProcessReason);
 
         var reply = ((bool Result, ShouldProcessReason Reason))RequestPipelineReply(
@@ -212,7 +214,7 @@ public abstract class AsyncPSCmdlet : PSCmdlet, IDisposable
     public new bool ShouldContinue(string query, string caption)
     {
         ThrowIfStopped();
-        if (IsPipelineThread || Volatile.Read(ref _currentOutPipe) is null)
+        if (CanAccessPipelineDirectly)
             return base.ShouldContinue(query, caption);
 
         return (bool)RequestPipelineReply((query, caption), PipelineType.ShouldContinue)!;
@@ -222,7 +224,7 @@ public abstract class AsyncPSCmdlet : PSCmdlet, IDisposable
     public new bool ShouldContinue(string query, string caption, ref bool yesToAll, ref bool noToAll)
     {
         ThrowIfStopped();
-        if (IsPipelineThread || Volatile.Read(ref _currentOutPipe) is null)
+        if (CanAccessPipelineDirectly)
             return base.ShouldContinue(query, caption, ref yesToAll, ref noToAll);
 
         var reply = ((bool Result, bool YesToAll, bool NoToAll))RequestPipelineReply(
@@ -242,7 +244,7 @@ public abstract class AsyncPSCmdlet : PSCmdlet, IDisposable
         ref bool noToAll)
     {
         ThrowIfStopped();
-        if (IsPipelineThread || Volatile.Read(ref _currentOutPipe) is null)
+        if (CanAccessPipelineDirectly)
             return base.ShouldContinue(query, caption, hasSecurityImpact, ref yesToAll, ref noToAll);
 
         var reply = ((bool Result, bool YesToAll, bool NoToAll))RequestPipelineReply(
@@ -257,7 +259,7 @@ public abstract class AsyncPSCmdlet : PSCmdlet, IDisposable
     public PSCredential? PromptForCredential(string caption, string message, string userName, string targetName)
     {
         ThrowIfStopped();
-        if (IsPipelineThread || Volatile.Read(ref _currentOutPipe) is null)
+        if (CanAccessPipelineDirectly)
             return Host.UI.PromptForCredential(caption, message, userName, targetName);
 
         return (PSCredential?)RequestPipelineReply(
@@ -272,16 +274,17 @@ public abstract class AsyncPSCmdlet : PSCmdlet, IDisposable
     /// <summary>Thread-safe output bridge for asynchronous cmdlet code.</summary>
     public new void WriteObject(object? sendToPipeline, bool enumerateCollection)
     {
-        if (!IsPipelineThread && Volatile.Read(ref _currentOutPipe) is null)
-            return;
-
-        ThrowIfStopped();
-        if (IsPipelineThread)
+        if (CanAccessPipelineDirectly)
         {
+            ThrowIfStopped();
             base.WriteObject(sendToPipeline, enumerateCollection);
             return;
         }
 
+        if (Volatile.Read(ref _currentOutPipe) is null)
+            return;
+
+        ThrowIfStopped();
         _ = TryQueue(new PipelineItem(
             sendToPipeline,
             enumerateCollection ? PipelineType.OutputEnumerate : PipelineType.Output));
@@ -290,16 +293,17 @@ public abstract class AsyncPSCmdlet : PSCmdlet, IDisposable
     /// <summary>Thread-safe error bridge for asynchronous cmdlet code.</summary>
     public new void WriteError(ErrorRecord errorRecord)
     {
-        if (!IsPipelineThread && Volatile.Read(ref _currentOutPipe) is null)
-            return;
-
-        ThrowIfStopped();
-        if (IsPipelineThread)
+        if (CanAccessPipelineDirectly)
         {
+            ThrowIfStopped();
             base.WriteError(errorRecord);
             return;
         }
 
+        if (Volatile.Read(ref _currentOutPipe) is null)
+            return;
+
+        ThrowIfStopped();
         _ = TryQueue(new PipelineItem(errorRecord, PipelineType.Error));
     }
 
@@ -307,93 +311,121 @@ public abstract class AsyncPSCmdlet : PSCmdlet, IDisposable
     public new void ThrowTerminatingError(ErrorRecord errorRecord)
     {
         ThrowIfStopped();
-        if (IsPipelineThread)
+        if (CanAccessPipelineDirectly)
         {
             base.ThrowTerminatingError(errorRecord);
             return;
         }
 
-        _ = TryQueue(new PipelineItem(errorRecord, PipelineType.TerminatingError));
+        if (!TryQueue(new PipelineItem(errorRecord, PipelineType.TerminatingError)))
+        {
+            ThrowIfStopped();
+            throw new InvalidOperationException(
+                "No active PowerShell pipeline is available for the terminating error.");
+        }
+
         throw new PipelineStoppedException();
     }
 
     /// <summary>Thread-safe warning bridge for asynchronous cmdlet code.</summary>
     public new void WriteWarning(string text)
     {
-        if (!IsPipelineThread && Volatile.Read(ref _currentOutPipe) is null)
-            return;
-
-        ThrowIfStopped();
-        if (IsPipelineThread)
+        if (CanAccessPipelineDirectly)
         {
+            ThrowIfStopped();
             base.WriteWarning(text);
             return;
         }
 
+        if (Volatile.Read(ref _currentOutPipe) is null)
+            return;
+
+        ThrowIfStopped();
         _ = TryQueue(new PipelineItem(text, PipelineType.Warning));
     }
 
     /// <summary>Thread-safe verbose bridge for asynchronous cmdlet code.</summary>
     public new void WriteVerbose(string text)
     {
-        if (!IsPipelineThread && Volatile.Read(ref _currentOutPipe) is null)
-            return;
-
-        ThrowIfStopped();
-        if (IsPipelineThread)
+        if (CanAccessPipelineDirectly)
         {
+            ThrowIfStopped();
             base.WriteVerbose(text);
             return;
         }
 
+        if (Volatile.Read(ref _currentOutPipe) is null)
+            return;
+
+        ThrowIfStopped();
         _ = TryQueue(new PipelineItem(text, PipelineType.Verbose));
     }
 
     /// <summary>Thread-safe debug bridge for asynchronous cmdlet code.</summary>
     public new void WriteDebug(string text)
     {
-        if (!IsPipelineThread && Volatile.Read(ref _currentOutPipe) is null)
-            return;
-
-        ThrowIfStopped();
-        if (IsPipelineThread)
+        if (CanAccessPipelineDirectly)
         {
+            ThrowIfStopped();
             base.WriteDebug(text);
             return;
         }
 
+        if (Volatile.Read(ref _currentOutPipe) is null)
+            return;
+
+        ThrowIfStopped();
         _ = TryQueue(new PipelineItem(text, PipelineType.Debug));
     }
 
     /// <summary>Thread-safe information bridge for asynchronous cmdlet code.</summary>
     public new void WriteInformation(InformationRecord informationRecord)
     {
-        if (!IsPipelineThread && Volatile.Read(ref _currentOutPipe) is null)
-            return;
-
-        ThrowIfStopped();
-        if (IsPipelineThread)
+        if (CanAccessPipelineDirectly)
         {
+            ThrowIfStopped();
             base.WriteInformation(informationRecord);
             return;
         }
 
+        if (Volatile.Read(ref _currentOutPipe) is null)
+            return;
+
+        ThrowIfStopped();
         _ = TryQueue(new PipelineItem(informationRecord, PipelineType.Information));
+    }
+
+    /// <summary>Thread-safe information bridge for asynchronous cmdlet code.</summary>
+    public new void WriteInformation(object messageData, string[] tags)
+    {
+        if (CanAccessPipelineDirectly)
+        {
+            ThrowIfStopped();
+            base.WriteInformation(messageData, tags);
+            return;
+        }
+
+        if (Volatile.Read(ref _currentOutPipe) is null)
+            return;
+
+        ThrowIfStopped();
+        _ = TryQueue(new PipelineItem((messageData, tags), PipelineType.InformationWithTags));
     }
 
     /// <summary>Thread-safe progress bridge for asynchronous cmdlet code.</summary>
     public new void WriteProgress(ProgressRecord progressRecord)
     {
-        if (!IsPipelineThread && Volatile.Read(ref _currentOutPipe) is null)
-            return;
-
-        ThrowIfStopped();
-        if (IsPipelineThread)
+        if (CanAccessPipelineDirectly)
         {
+            ThrowIfStopped();
             base.WriteProgress(progressRecord);
             return;
         }
 
+        if (Volatile.Read(ref _currentOutPipe) is null)
+            return;
+
+        ThrowIfStopped();
         _ = TryQueue(new PipelineItem(progressRecord, PipelineType.Progress));
     }
 
@@ -495,6 +527,9 @@ public abstract class AsyncPSCmdlet : PSCmdlet, IDisposable
 
     private bool IsPipelineThread
         => _pipelineThreadId != 0 && Environment.CurrentManagedThreadId == _pipelineThreadId;
+
+    private bool CanAccessPipelineDirectly
+        => IsPipelineThread || Volatile.Read(ref _asyncLifecycleStarted) == 0;
 
     private void GetBlockTaskResult(Task blockTask)
     {
@@ -627,6 +662,10 @@ public abstract class AsyncPSCmdlet : PSCmdlet, IDisposable
                 case PipelineType.Information:
                     base.WriteInformation((InformationRecord)item.Value!);
                     break;
+                case PipelineType.InformationWithTags:
+                    var information = ((object MessageData, string[] Tags))item.Value!;
+                    base.WriteInformation(information.MessageData, information.Tags);
+                    break;
                 case PipelineType.Progress:
                     base.WriteProgress((ProgressRecord)item.Value!);
                     break;
@@ -710,6 +749,7 @@ public abstract class AsyncPSCmdlet : PSCmdlet, IDisposable
                 PumpItem(item);
         }
 
+        Volatile.Write(ref _asyncLifecycleStarted, 1);
         _pipelineThreadId = Environment.CurrentManagedThreadId;
         _currentOutPipe = outPipe;
 
@@ -717,7 +757,14 @@ public abstract class AsyncPSCmdlet : PSCmdlet, IDisposable
         try
         {
             SynchronizationContext.SetSynchronizationContext(HookSynchronizationContext);
-            blockTask = task();
+            blockTask = TaskScheduler.Current == TaskScheduler.Default
+                ? task()
+                : Task.Factory.StartNew(
+                        task,
+                        CancellationToken.None,
+                        TaskCreationOptions.DenyChildAttach,
+                        TaskScheduler.Default)
+                    .Unwrap();
         }
         catch (Exception exception)
         {

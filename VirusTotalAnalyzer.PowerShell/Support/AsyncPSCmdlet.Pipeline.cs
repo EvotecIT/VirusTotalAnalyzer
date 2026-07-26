@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Management.Automation;
-using System.Threading;
-using System.Threading.Tasks;
-
 using System.IO;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using VirusTotalAnalyzer.Models;
+
 namespace VirusTotalAnalyzer.PowerShell;
 
 public abstract partial class AsyncPSCmdlet
@@ -14,9 +14,9 @@ public abstract partial class AsyncPSCmdlet
     /// <summary>Thread-safe progress bridge for asynchronous cmdlet code.</summary>
     public new void WriteProgress(ProgressRecord progressRecord)
     {
-        if (CanAccessPipelineDirectly && Volatile.Read(ref _currentOutPipe) is null)
+        if (CanAccessPipelineDirectly)
         {
-            ThrowIfStopped();
+            PrepareDirectPipelineAccess();
             base.WriteProgress(progressRecord);
             return;
         }
@@ -27,70 +27,66 @@ public abstract partial class AsyncPSCmdlet
         _ = TryQueue(new PipelineItem(progressRecord, PipelineType.Progress));
     }
 
-    /// <summary>
-    /// Returns the effective <see cref="ActionPreference"/> for the current cmdlet.
-    /// </summary>
-    /// <returns>The user-specified or session error action preference.</returns>
-    protected ActionPreference GetErrorActionPreference() {
+    /// <summary>Returns the effective error action preference for the current cmdlet.</summary>
+    protected ActionPreference GetErrorActionPreference()
+    {
         var preference = (ActionPreference)SessionState.PSVariable.GetValue("ErrorActionPreference");
-        if (MyInvocation.BoundParameters.ContainsKey("ErrorAction")) {
+        if (MyInvocation.BoundParameters.ContainsKey("ErrorAction"))
+        {
             string? errorActionString = MyInvocation.BoundParameters["ErrorAction"]?.ToString();
-            if (!string.IsNullOrWhiteSpace(errorActionString) && Enum.TryParse(errorActionString, true, out ActionPreference parsed)) {
+            if (!string.IsNullOrWhiteSpace(errorActionString) &&
+                Enum.TryParse(errorActionString, true, out ActionPreference parsed))
+            {
                 preference = parsed;
             }
         }
+
         return preference;
     }
 
-    /// <summary>
-    /// Verifies that the specified file exists and handles errors according to the
-    /// provided <paramref name="errorAction"/>.
-    /// </summary>
-    /// <param name="path">Path to the file.</param>
-    /// <param name="errorAction">Action preference to follow when the file does not exist.</param>
-    /// <returns>True when the file exists; otherwise, false.</returns>
-    protected bool EnsureFileExists(string path, ActionPreference errorAction) {
-        if (File.Exists(path)) {
+    /// <summary>Verifies that the specified file exists.</summary>
+    protected bool EnsureFileExists(string path, ActionPreference errorAction)
+    {
+        if (File.Exists(path))
             return true;
-        }
 
         string message = $"{MyInvocation.InvocationName} - The specified file does not exist: {path}";
-        if (errorAction == ActionPreference.Stop) {
-            var ex = new FileNotFoundException("The specified file does not exist.", path);
-            ThrowTerminatingError(new ErrorRecord(ex, "FileNotFound", ErrorCategory.ObjectNotFound, path));
-        } else {
+        if (errorAction == ActionPreference.Stop)
+        {
+            var exception = new FileNotFoundException("The specified file does not exist.", path);
+            ThrowTerminatingError(new ErrorRecord(
+                exception,
+                "FileNotFound",
+                ErrorCategory.ObjectNotFound,
+                path));
+        }
+        else
+        {
             WriteWarning(message);
         }
 
         return false;
     }
 
-    /// <summary>
-    /// Writes a standardized API error that includes request context when available.
-    /// </summary>
-    /// <param name="exception">The API exception to report.</param>
-    /// <param name="targetObject">Optional target associated with the failure.</param>
-    protected void WriteApiError(ApiException exception, object? targetObject = null) {
-        if (exception == null) {
+    /// <summary>Writes a standardized API error with request context when available.</summary>
+    protected void WriteApiError(ApiException exception, object? targetObject = null)
+    {
+        if (exception == null)
             throw new ArgumentNullException(nameof(exception));
-        }
 
         var errorId = exception.Error?.Code ?? "VirusTotalApiError";
         var record = new ErrorRecord(exception, errorId, ErrorCategory.InvalidOperation, targetObject);
-
         var details = new StringBuilder();
-        if (exception.StatusCode.HasValue) {
+        if (exception.StatusCode.HasValue)
             details.Append($"StatusCode: {(int)exception.StatusCode.Value} ({exception.StatusCode})");
-        }
-        if (!string.IsNullOrWhiteSpace(exception.RequestId)) {
-            if (details.Length > 0) {
+        if (!string.IsNullOrWhiteSpace(exception.RequestId))
+        {
+            if (details.Length > 0)
                 details.AppendLine();
-            }
             details.Append($"RequestId: {exception.RequestId}");
         }
-        if (details.Length > 0) {
+        if (details.Length > 0)
             record.ErrorDetails = new ErrorDetails(details.ToString());
-        }
 
         WriteError(record);
     }
@@ -129,6 +125,38 @@ public abstract partial class AsyncPSCmdlet
     private bool CanAccessPipelineDirectly
         => IsPipelineThread || Volatile.Read(ref _asyncLifecycleStarted) == 0;
 
+    private void PrepareDirectPipelineAccess()
+    {
+        ThrowIfStopped();
+        if (IsPipelineThread)
+            Volatile.Read(ref _pumpQueuedItems)?.Invoke();
+    }
+
+    private void PrepareDirectPipelineInteraction()
+    {
+        ThrowIfStopped();
+        ValidateInteractionGeneration();
+        if (IsPipelineThread)
+            Volatile.Read(ref _pumpQueuedItems)?.Invoke();
+    }
+
+    private void ValidateInteractionGeneration()
+    {
+        if (Volatile.Read(ref _asyncLifecycleStarted) == 0)
+            return;
+
+        var activeGeneration = Volatile.Read(ref _activeHookGeneration);
+        var originatingGeneration = _hookGeneration.Value;
+        if (activeGeneration == 0 && originatingGeneration == 0 && IsPipelineThread)
+            return;
+
+        if (originatingGeneration == 0 || originatingGeneration != activeGeneration)
+        {
+            throw new InvalidOperationException(
+                "The asynchronous PowerShell lifecycle that originated this request is no longer active.");
+        }
+    }
+
     private void GetBlockTaskResult(Task blockTask)
     {
         try
@@ -144,8 +172,10 @@ public abstract partial class AsyncPSCmdlet
     private object? RequestPipelineReply(object? value, PipelineType type)
     {
         ThrowIfStopped();
+        ValidateInteractionGeneration();
+        var hookGeneration = _hookGeneration.Value;
         var replyPipe = new PipelineReplyChannel();
-        if (!TryQueue(new PipelineItem(value, type, replyPipe)))
+        if (!TryQueue(new PipelineItem(value, type, replyPipe, hookGeneration)))
         {
             replyPipe.Abandon();
             ThrowIfStopped();
@@ -206,17 +236,24 @@ public abstract partial class AsyncPSCmdlet
         Task blockTask;
         var deferPipeDisposal = 0;
         var pipeDisposed = 0;
+        var hookGeneration = Interlocked.Increment(ref _nextHookGeneration);
 
         void ClearPipes()
         {
+            Volatile.Write(ref _pumpQueuedItems, null);
             _ = Interlocked.CompareExchange(ref _currentOutPipe, null, outPipe);
+            _ = Interlocked.CompareExchange(ref _activeHookGeneration, 0, hookGeneration);
             CompleteAddingIfNeeded(outPipe);
         }
 
         void DisposePipeOnce()
         {
             if (Interlocked.Exchange(ref pipeDisposed, 1) == 0)
+            {
+                while (outPipe.TryTake(out var abandonedItem))
+                    abandonedItem.ReplyPipe?.ReleasePipeline();
                 outPipe.Dispose();
+            }
         }
 
         static void CompleteAddingIfNeeded<T>(BlockingCollection<T> pipe)
@@ -234,6 +271,13 @@ public abstract partial class AsyncPSCmdlet
 
         void PumpItem(PipelineItem item)
         {
+            if (item.ReplyPipe is not null &&
+                item.HookGeneration != Volatile.Read(ref _activeHookGeneration))
+            {
+                item.ReplyPipe.ReleasePipeline();
+                return;
+            }
+
             switch (item.Type)
             {
                 case PipelineType.Output:
@@ -261,8 +305,8 @@ public abstract partial class AsyncPSCmdlet
                     base.WriteInformation((InformationRecord)item.Value!);
                     break;
                 case PipelineType.InformationWithTags:
-                    var information = ((object MessageData, string[] Tags))item.Value!;
-                    base.WriteInformation(information.MessageData, information.Tags);
+                    var information = ((object MessageData, string[]? Tags))item.Value!;
+                    base.WriteInformation(information.MessageData, information.Tags!);
                     break;
                 case PipelineType.Progress:
                     base.WriteProgress((ProgressRecord)item.Value!);
@@ -338,6 +382,23 @@ public abstract partial class AsyncPSCmdlet
                             prompt.UserName,
                             prompt.TargetName));
                     break;
+                case PipelineType.PromptForCredentialOptions:
+                    var promptOptions =
+                        ((string Caption,
+                            string Message,
+                            string UserName,
+                            string TargetName,
+                            PSCredentialTypes AllowedCredentialTypes,
+                            PSCredentialUIOptions Options))item.Value!;
+                    item.ReplyPipe!.Publish(
+                        () => Host.UI.PromptForCredential(
+                            promptOptions.Caption,
+                            promptOptions.Message,
+                            promptOptions.UserName,
+                            promptOptions.TargetName,
+                            promptOptions.AllowedCredentialTypes,
+                            promptOptions.Options));
+                    break;
             }
         }
 
@@ -349,19 +410,23 @@ public abstract partial class AsyncPSCmdlet
 
         Volatile.Write(ref _asyncLifecycleStarted, 1);
         _pipelineThreadId = Environment.CurrentManagedThreadId;
+        Volatile.Write(ref _activeHookGeneration, hookGeneration);
+        Volatile.Write(ref _pumpQueuedItems, PumpQueuedItems);
         Volatile.Write(ref _currentOutPipe, outPipe);
 
         var synchronizationContext = SynchronizationContext.Current;
+        var priorHookGeneration = _hookGeneration.Value;
         try
         {
             SynchronizationContext.SetSynchronizationContext(HookSynchronizationContext);
+            _hookGeneration.Value = hookGeneration;
             if (TaskScheduler.Current == TaskScheduler.Default)
             {
                 blockTask = task();
             }
             else
             {
-                var invocationTask = new Task<Task>(
+                using var invocationTask = new Task<Task>(
                     task,
                     CancellationToken.None,
                     TaskCreationOptions.DenyChildAttach);
@@ -371,8 +436,19 @@ public abstract partial class AsyncPSCmdlet
         }
         catch (Exception exception)
         {
-            ClearPipes();
-            DisposePipeOnce();
+            try
+            {
+                PumpQueuedItems();
+            }
+            catch
+            {
+                // Preserve the hook failure after best-effort delivery of records written before it.
+            }
+            finally
+            {
+                ClearPipes();
+                DisposePipeOnce();
+            }
 
             if (exception is OperationCanceledException && _cancelSource.IsCancellationRequested)
                 throw new PipelineStoppedException();
@@ -381,11 +457,15 @@ public abstract partial class AsyncPSCmdlet
         }
         finally
         {
+            _hookGeneration.Value = priorHookGeneration;
             SynchronizationContext.SetSynchronizationContext(synchronizationContext);
         }
 
         if (blockTask.IsCompleted)
         {
+            if (blockTask.IsFaulted)
+                _ = blockTask.Exception;
+
             CompleteAddingIfNeeded(outPipe);
             try
             {

@@ -123,7 +123,9 @@ public abstract partial class AsyncPSCmdlet
         => _pipelineThreadId != 0 && Environment.CurrentManagedThreadId == _pipelineThreadId;
 
     private bool CanAccessPipelineDirectly
-        => IsPipelineThread || Volatile.Read(ref _asyncLifecycleStarted) == 0;
+        => IsPipelineThread ||
+           (Volatile.Read(ref _asyncLifecycleStarted) == 0 &&
+            Environment.CurrentManagedThreadId == _constructionThreadId);
 
     private void PrepareDirectPipelineAccess()
     {
@@ -184,7 +186,16 @@ public abstract partial class AsyncPSCmdlet
 
         try
         {
-            var reply = replyPipe.Take(CancelToken);
+            PipelineReply reply;
+            try
+            {
+                reply = replyPipe.Take(CancelToken);
+            }
+            catch (OperationCanceledException) when (_cancelSource.IsCancellationRequested)
+            {
+                throw new PipelineStoppedException();
+            }
+
             if (reply.Rejection is not null)
                 throw reply.Rejection;
 
@@ -241,6 +252,7 @@ public abstract partial class AsyncPSCmdlet
         Task blockTask;
         var deferPipeDisposal = 0;
         var pipeDisposed = 0;
+        var pumpingQueuedItems = 0;
         var hookGeneration = Interlocked.Increment(ref _nextHookGeneration);
 
         void ClearPipes()
@@ -411,8 +423,18 @@ public abstract partial class AsyncPSCmdlet
 
         void PumpQueuedItems()
         {
-            while (outPipe.TryTake(out var item))
-                PumpItem(item);
+            if (Interlocked.Exchange(ref pumpingQueuedItems, 1) != 0)
+                return;
+
+            try
+            {
+                while (outPipe.TryTake(out var item))
+                    PumpItem(item);
+            }
+            finally
+            {
+                Volatile.Write(ref pumpingQueuedItems, 0);
+            }
         }
 
         Volatile.Write(ref _asyncLifecycleStarted, 1);

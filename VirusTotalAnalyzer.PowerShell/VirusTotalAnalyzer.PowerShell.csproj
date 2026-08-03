@@ -9,5 +9,9 @@
     <ProjectReference Include="../VirusTotalAnalyzer/VirusTotalAnalyzer.csproj" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
     <PackageReference Include="PowerShellStandard.Library" Version="5.1.0" />
+    <None Include="../Module/en-US/VirusTotalAnalyzer.PowerShell.dll-Help.xml"
+          Link="en-US/VirusTotalAnalyzer.PowerShell.dll-Help.xml"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

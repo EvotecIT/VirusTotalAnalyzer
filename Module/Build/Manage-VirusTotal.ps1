@@ -75,7 +75,7 @@ Build-Module -ModuleName 'VirusTotalAnalyzer' {
     New-ConfigurationFormat -ApplyTo 'DefaultPSD1', 'OnMergePSD1' -PSD1Style 'Minimal'
 
     # configuration for documentation, at the same time it enables documentation processing
-    New-ConfigurationDocumentation -Enable -PathReadme 'Docs\Readme.md' -Path 'Docs' -SyncExternalHelpToProjectRoot
+    New-ConfigurationDocumentation -Enable -PathReadme 'Docs\Readme.md' -Path 'Docs' -SyncExternalHelpToProjectRoot -ExternalHelpFileName 'VirusTotalAnalyzer.PowerShell.dll-Help.xml'
 
     New-ConfigurationImportModule -ImportSelf -ImportRequiredModules
 

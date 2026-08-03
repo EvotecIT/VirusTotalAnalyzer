@@ -41,7 +41,9 @@ jobs:
 
       - name: Install PSPublishModule
         shell: pwsh
-        run: Install-Module PSPublishModule -RequiredVersion 3.0.88 -Force -Scope CurrentUser -AllowClobber
+        run: |
+          Install-Module PSPublishModule -RequiredVersion 3.0.88 -Force -Scope CurrentUser -AllowClobber
+          Install-Module PSSharedGoods -MinimumVersion 0.0.312 -Force -Scope CurrentUser -AllowClobber
 
       - name: Verify generated module help
         shell: pwsh

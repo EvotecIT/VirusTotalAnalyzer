@@ -1,4 +1,4 @@
-@{
+﻿@{
     AliasesToExport      = @('Get-VirusScan')
     Author               = 'Przemyslaw Klys'
     CmdletsToExport      = @('Get-VirusComment', 'Get-VirusReport', 'Get-VirusUser', 'New-VirusScan', 'New-VirusVote')

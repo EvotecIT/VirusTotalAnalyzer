@@ -68,9 +68,9 @@
           <maml:description>
             <maml:para>Maximum number of comments to return.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">Nullable`1</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
           <dev:type>
-            <maml:name>Nullable`1</maml:name>
+            <maml:name>Int32</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -168,9 +168,9 @@
         <maml:description>
           <maml:para>Maximum number of comments to return.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">Nullable`1</command:parameterValue>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
         <dev:type>
-          <maml:name>Nullable`1</maml:name>
+          <maml:name>Int32</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>

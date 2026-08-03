@@ -11,7 +11,7 @@ Retrieves comments for a specified resource.
 ## SYNTAX
 ### __AllParameterSets
 ```powershell
-Get-VirusComment -ApiKey <string> -ResourceType <ResourceType> -Id <string> [-Limit <int>] [-Cursor <string>] [-Client <VirusTotalClient>] [<CommonParameters>]
+Get-VirusComment -ApiKey <string> -ResourceType <ResourceType> -Id <string> [-Limit <Int32>] [-Cursor <string>] [-Client <VirusTotalClient>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -96,7 +96,7 @@ Accept wildcard characters: False
 Maximum number of comments to return.
 
 ```yaml
-Type: Nullable`1
+Type: Int32
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:

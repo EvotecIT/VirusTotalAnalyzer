@@ -55,10 +55,15 @@ jobs:
           Import-Module PSPublishModule -RequiredVersion 3.0.88 -Force -ErrorAction Stop
           ./Module/Build/Manage-VirusTotal.ps1
 
-          $generatedChanges = git status --porcelain -- Module/Docs Module/en-US Module/VirusTotalAnalyzer.psd1 Module/VirusTotalAnalyzer.psm1
-          if ($generatedChanges) {
-            $generatedChanges | Write-Host
+          git diff --ignore-space-at-eol --exit-code -- Module/Docs Module/en-US
+          if ($LASTEXITCODE -ne 0) {
             throw 'PowerForge-generated module help is not current.'
+          }
+
+          $untrackedGenerated = git ls-files --others --exclude-standard -- Module/Docs Module/en-US
+          if ($untrackedGenerated) {
+            $untrackedGenerated | Write-Host
+            throw 'PowerForge generated untracked module help.'
           }
 
       - name: Run tests

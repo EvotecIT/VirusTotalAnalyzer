@@ -1,0 +1,1369 @@
+<?xml version="1.0" encoding="utf-8"?>
+<helpItems schema="maml" xmlns="http://msh">
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
+    <command:details>
+      <command:name>Get-VirusComment</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>VirusComment</command:noun>
+      <maml:description>
+        <maml:para>Retrieves comments for a specified resource.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Fetches community comments associated with files, URLs, IP addresses or domains.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem parameterSetName="__AllParameterSets">
+        <maml:name>Get-VirusComment</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing VirusTotal client to reuse.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">VirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>VirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Cursor</maml:name>
+          <maml:description>
+            <maml:para>Pagination cursor.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+          <maml:name>Id</maml:name>
+          <maml:description>
+            <maml:para>Identifier of the resource.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Limit</maml:name>
+          <maml:description>
+            <maml:para>Maximum number of comments to return.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ResourceType</maml:name>
+          <maml:description>
+            <maml:para>Resource type to retrieve comments for.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">ResourceType</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">File</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Url</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">IpAddress</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Domain</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Analysis</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">PrivateAnalysis</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Comment</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Vote</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Relationship</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Search</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Feed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Graph</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">SslCertificate</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">User</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Collection</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Bundle</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">LivehuntNotification</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">RetrohuntJob</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">RetrohuntNotification</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">MonitorItem</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">MonitorEvent</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">IntelligenceHuntingRuleset</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">FileBehaviour</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>ResourceType</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ApiKey</maml:name>
+        <maml:description>
+          <maml:para>VirusTotal API key.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Client</maml:name>
+        <maml:description>
+          <maml:para>Existing VirusTotal client to reuse.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">VirusTotalClient</command:parameterValue>
+        <dev:type>
+          <maml:name>VirusTotalClient</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Cursor</maml:name>
+        <maml:description>
+          <maml:para>Pagination cursor.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <maml:name>Id</maml:name>
+        <maml:description>
+          <maml:para>Identifier of the resource.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Limit</maml:name>
+        <maml:description>
+          <maml:para>Maximum number of comments to return.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ResourceType</maml:name>
+        <maml:description>
+          <maml:para>Resource type to retrieve comments for.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">ResourceType</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">File</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Url</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">IpAddress</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Domain</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Analysis</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">PrivateAnalysis</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Comment</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Vote</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Relationship</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Search</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Feed</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Graph</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">SslCertificate</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">User</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Collection</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Bundle</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">LivehuntNotification</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">RetrohuntJob</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">RetrohuntNotification</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">MonitorItem</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">MonitorEvent</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">IntelligenceHuntingRuleset</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">FileBehaviour</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>ResourceType</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+        </dev:type>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>EXAMPLE 1</maml:title>
+        <dev:code>PS&gt; Get-VirusComment -ApiKey $ApiKey -ResourceType File -Id 'abc'</dev:code>
+        <dev:remarks>
+          <maml:para>Displays community feedback for the file with the given hash.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks />
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
+    <command:details>
+      <command:name>Get-VirusReport</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>VirusReport</command:noun>
+      <maml:description>
+        <maml:para>Retrieves analysis reports from VirusTotal.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Queries the VirusTotal API for information about files, hashes, URLs, IP addresses, domains, or existing analyses.</maml:para>
+      <maml:para>Provide an API key or an existing IVirusTotalClient to authenticate requests.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem parameterSetName="FileInformation">
+        <maml:name>Get-VirusReport</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="FileHash">
+          <maml:name>File</maml:name>
+          <maml:description>
+            <maml:para>Path to a local file to compute its hash.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem parameterSetName="Analysis">
+        <maml:name>Get-VirusReport</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+          <maml:name>AnalysisId</maml:name>
+          <maml:description>
+            <maml:para>Analysis identifier returned from a previous scan.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem parameterSetName="Hash">
+        <maml:name>Get-VirusReport</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+          <maml:name>Hash</maml:name>
+          <maml:description>
+            <maml:para>SHA256 or other supported hash to look up.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem parameterSetName="Url">
+        <maml:name>Get-VirusReport</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="Uri">
+          <maml:name>Url</maml:name>
+          <maml:description>
+            <maml:para>URL to check against VirusTotal.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Uri</command:parameterValue>
+          <dev:type>
+            <maml:name>Uri</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem parameterSetName="IPAddress">
+        <maml:name>Get-VirusReport</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+          <maml:name>IPAddress</maml:name>
+          <maml:description>
+            <maml:para>IP address to inspect.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem parameterSetName="DomainName">
+        <maml:name>Get-VirusReport</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+          <maml:name>DomainName</maml:name>
+          <maml:description>
+            <maml:para>Domain name to inspect.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem parameterSetName="Search">
+        <maml:name>Get-VirusReport</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+          <maml:name>Search</maml:name>
+          <maml:description>
+            <maml:para>Free-form search expression.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <maml:name>AnalysisId</maml:name>
+        <maml:description>
+          <maml:para>Analysis identifier returned from a previous scan.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ApiKey</maml:name>
+        <maml:description>
+          <maml:para>VirusTotal API key.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Client</maml:name>
+        <maml:description>
+          <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+        <dev:type>
+          <maml:name>IVirusTotalClient</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <maml:name>DomainName</maml:name>
+        <maml:description>
+          <maml:para>Domain name to inspect.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="FileHash">
+        <maml:name>File</maml:name>
+        <maml:description>
+          <maml:para>Path to a local file to compute its hash.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <maml:name>Hash</maml:name>
+        <maml:description>
+          <maml:para>SHA256 or other supported hash to look up.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <maml:name>IPAddress</maml:name>
+        <maml:description>
+          <maml:para>IP address to inspect.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <maml:name>Search</maml:name>
+        <maml:description>
+          <maml:para>Free-form search expression.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="Uri">
+        <maml:name>Url</maml:name>
+        <maml:description>
+          <maml:para>URL to check against VirusTotal.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Uri</command:parameterValue>
+        <dev:type>
+          <maml:name>Uri</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+        </dev:type>
+      </command:inputType>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.Uri</maml:name>
+        </dev:type>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Each request consumes your VirusTotal API quota.</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>Get a report for a local file.</maml:title>
+        <dev:code>PS&gt; Get-VirusReport -ApiKey $ApiKey -File 'C:\\samples\\app.exe'</dev:code>
+        <dev:remarks>
+          <maml:para>Calculates the file hash and returns the latest analysis.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>Check a URL against VirusTotal.</maml:title>
+        <dev:code>PS&gt; Get-VirusReport -ApiKey $ApiKey -Url 'https://example.com'</dev:code>
+        <dev:remarks>
+          <maml:para>Displays detection results for the provided URL.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText />
+        <maml:uri>https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/invoke-restmethod</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText />
+        <maml:uri>https://github.com/EvotecIT/VirusTotalAnalyzer</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
+    <command:details>
+      <command:name>Get-VirusUser</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>VirusUser</command:noun>
+      <maml:description>
+        <maml:para>Retrieves information about a VirusTotal user.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Fetches public profile data for the specified username.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem parameterSetName="__AllParameterSets">
+        <maml:name>Get-VirusUser</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing VirusTotal client to reuse.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">VirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>VirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+          <maml:name>Id</maml:name>
+          <maml:description>
+            <maml:para>Identifier of the user to retrieve.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ApiKey</maml:name>
+        <maml:description>
+          <maml:para>VirusTotal API key.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Client</maml:name>
+        <maml:description>
+          <maml:para>Existing VirusTotal client to reuse.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">VirusTotalClient</command:parameterValue>
+        <dev:type>
+          <maml:name>VirusTotalClient</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <maml:name>Id</maml:name>
+        <maml:description>
+          <maml:para>Identifier of the user to retrieve.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+        </dev:type>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>EXAMPLE 1</maml:title>
+        <dev:code>PS&gt; Get-VirusUser -ApiKey $ApiKey -Id 'user1'</dev:code>
+        <dev:remarks>
+          <maml:para>Returns details for the given user identifier.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks />
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
+    <command:details>
+      <command:name>New-VirusScan</command:name>
+      <command:verb>New</command:verb>
+      <command:noun>VirusScan</command:noun>
+      <maml:description>
+        <maml:para>Submits resources to VirusTotal for scanning.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Uploads files, hashes, or URLs to the VirusTotal API and returns the resulting analysis object.</maml:para>
+      <maml:para>You can rescan existing files by providing a known hash.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem parameterSetName="Hash">
+        <maml:name>New-VirusScan</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+          <maml:name>Hash</maml:name>
+          <maml:description>
+            <maml:para>Hash of an already submitted file to reanalyse.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Password</maml:name>
+          <maml:description>
+            <maml:para>Password to use when submitting a protected archive.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem parameterSetName="FileHash">
+        <maml:name>New-VirusScan</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+          <maml:name>FileHash</maml:name>
+          <maml:description>
+            <maml:para>Path to a file whose hash should be recalculated and reanalysed.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Password</maml:name>
+          <maml:description>
+            <maml:para>Password to use when submitting a protected archive.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem parameterSetName="FileInformation">
+        <maml:name>New-VirusScan</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+          <maml:name>File</maml:name>
+          <maml:description>
+            <maml:para>Path to a local file to upload for scanning.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Password</maml:name>
+          <maml:description>
+            <maml:para>Password to use when submitting a protected archive.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem parameterSetName="Url">
+        <maml:name>New-VirusScan</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Password</maml:name>
+          <maml:description>
+            <maml:para>Password to use when submitting a protected archive.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="Uri">
+          <maml:name>Url</maml:name>
+          <maml:description>
+            <maml:para>URL to submit for scanning.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Uri</command:parameterValue>
+          <dev:type>
+            <maml:name>Uri</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ApiKey</maml:name>
+        <maml:description>
+          <maml:para>VirusTotal API key.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Client</maml:name>
+        <maml:description>
+          <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+        <dev:type>
+          <maml:name>IVirusTotalClient</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <maml:name>File</maml:name>
+        <maml:description>
+          <maml:para>Path to a local file to upload for scanning.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <maml:name>FileHash</maml:name>
+        <maml:description>
+          <maml:para>Path to a file whose hash should be recalculated and reanalysed.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <maml:name>Hash</maml:name>
+        <maml:description>
+          <maml:para>Hash of an already submitted file to reanalyse.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Password</maml:name>
+        <maml:description>
+          <maml:para>Password to use when submitting a protected archive.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="Uri">
+        <maml:name>Url</maml:name>
+        <maml:description>
+          <maml:para>URL to submit for scanning.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Uri</command:parameterValue>
+        <dev:type>
+          <maml:name>Uri</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+        </dev:type>
+      </command:inputType>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.Uri</maml:name>
+        </dev:type>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>Submitted data is shared with the VirusTotal community.</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>Upload a file to VirusTotal.</maml:title>
+        <dev:code>PS&gt; New-VirusScan -ApiKey $ApiKey -File 'C:\\samples\\app.exe'</dev:code>
+        <dev:remarks>
+          <maml:para>Starts a new analysis for the specified file.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>Submit a URL for scanning.</maml:title>
+        <dev:code>PS&gt; New-VirusScan -ApiKey $ApiKey -Url 'https://example.com'</dev:code>
+        <dev:remarks>
+          <maml:para>Queues the URL for analysis and returns its identifier.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText />
+        <maml:uri>https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/invoke-webrequest</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText />
+        <maml:uri>https://github.com/EvotecIT/VirusTotalAnalyzer</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
+    <command:details>
+      <command:name>New-VirusVote</command:name>
+      <command:verb>New</command:verb>
+      <command:noun>VirusVote</command:noun>
+      <maml:description>
+        <maml:para>Casts a vote for a resource.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Submits a harmless or malicious verdict for the specified resource.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem parameterSetName="__AllParameterSets">
+        <maml:name>New-VirusVote</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing VirusTotal client to reuse.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">VirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>VirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+          <maml:name>Id</maml:name>
+          <maml:description>
+            <maml:para>Identifier of the resource.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ResourceType</maml:name>
+          <maml:description>
+            <maml:para>Resource type to vote on.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">ResourceType</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">File</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Url</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">IpAddress</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Domain</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Analysis</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">PrivateAnalysis</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Comment</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Vote</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Relationship</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Search</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Feed</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Graph</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">SslCertificate</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">User</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Collection</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Bundle</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">LivehuntNotification</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">RetrohuntJob</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">RetrohuntNotification</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">MonitorItem</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">MonitorEvent</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">IntelligenceHuntingRuleset</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">FileBehaviour</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>ResourceType</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Verdict</maml:name>
+          <maml:description>
+            <maml:para>Verdict to cast.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">VoteVerdict</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Harmless</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Malicious</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>VoteVerdict</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ApiKey</maml:name>
+        <maml:description>
+          <maml:para>VirusTotal API key.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Client</maml:name>
+        <maml:description>
+          <maml:para>Existing VirusTotal client to reuse.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">VirusTotalClient</command:parameterValue>
+        <dev:type>
+          <maml:name>VirusTotalClient</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <maml:name>Id</maml:name>
+        <maml:description>
+          <maml:para>Identifier of the resource.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ResourceType</maml:name>
+        <maml:description>
+          <maml:para>Resource type to vote on.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">ResourceType</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">File</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Url</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">IpAddress</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Domain</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Analysis</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">PrivateAnalysis</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Comment</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Vote</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Relationship</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Search</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Feed</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Graph</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">SslCertificate</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">User</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Collection</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Bundle</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">LivehuntNotification</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">RetrohuntJob</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">RetrohuntNotification</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">MonitorItem</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">MonitorEvent</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">IntelligenceHuntingRuleset</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">FileBehaviour</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>ResourceType</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Verdict</maml:name>
+        <maml:description>
+          <maml:para>Verdict to cast.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">VoteVerdict</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">Harmless</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Malicious</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>VoteVerdict</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+        </dev:type>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>EXAMPLE 1</maml:title>
+        <dev:code>PS&gt; New-VirusVote -ApiKey $ApiKey -ResourceType File -Id 'abc' -Verdict Malicious</dev:code>
+        <dev:remarks>
+          <maml:para>Marks the file identified by the given hash as malicious.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks />
+  </command:command>
+</helpItems>

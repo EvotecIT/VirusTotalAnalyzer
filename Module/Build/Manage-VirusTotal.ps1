@@ -1,5 +1,3 @@
-﻿Clear-Host
-
 Build-Module -ModuleName 'VirusTotalAnalyzer' {
     # Usual defaults as per standard module
     $Manifest = [ordered] @{
@@ -77,18 +75,28 @@ Build-Module -ModuleName 'VirusTotalAnalyzer' {
     New-ConfigurationFormat -ApplyTo 'DefaultPSD1', 'OnMergePSD1' -PSD1Style 'Minimal'
 
     # configuration for documentation, at the same time it enables documentation processing
-    New-ConfigurationDocumentation -Enable:$false -StartClean -UpdateWhenNew -PathReadme 'Docs\Readme.md' -Path 'Docs'
+    New-ConfigurationDocumentation -Enable -PathReadme 'Docs\Readme.md' -Path 'Docs' -SyncExternalHelpToProjectRoot -ExternalHelpFileName 'VirusTotalAnalyzer.PowerShell.dll-Help.xml'
 
     New-ConfigurationImportModule -ImportSelf -ImportRequiredModules
 
     $newConfigurationBuildSplat = @{
         Enable                            = $true
-        SignModule                        = $true
+        SignModule                        = if ([string]::IsNullOrWhiteSpace($Env:SignModule)) { $true } else { [bool]::Parse($Env:SignModule) }
         CertificateThumbprint             = '483292C9E317AA13B07BB7A96AE9D1A5ED9E7703'
         DeleteTargetModuleBeforeBuild     = $true
         MergeModuleOnBuild                = $true
         MergeFunctionsFromApprovedModules = $true
         DoNotAttemptToFixRelativePaths    = $true
+        NETProjectPath                    = "$PSScriptRoot\..\..\VirusTotalAnalyzer.PowerShell"
+        ResolveBinaryConflicts            = $true
+        ResolveBinaryConflictsName        = 'VirusTotalAnalyzer.PowerShell'
+        NETProjectName                    = 'VirusTotalAnalyzer.PowerShell'
+        NETBinaryModule                   = 'VirusTotalAnalyzer.PowerShell.dll'
+        NETConfiguration                  = 'Release'
+        NETFramework                      = 'net472', 'net8.0'
+        NETSearchClass                    = 'VirusTotalAnalyzer.PowerShell.CmdletGetVirusReport'
+        NETBinaryModuleDocumentation      = $true
+        RefreshPSD1Only                   = if ([string]::IsNullOrWhiteSpace($Env:RefreshPSD1Only)) { $false } else { [bool]::Parse($Env:RefreshPSD1Only) }
     }
 
     New-ConfigurationBuild @newConfigurationBuildSplat
@@ -104,13 +112,4 @@ Build-Module -ModuleName 'VirusTotalAnalyzer' {
     # global options for publishing to github/psgallery
     #New-ConfigurationPublish -Type PowerShellGallery -FilePath 'C:\Support\Important\PowerShellGalleryAPI.txt' -Enabled:$true
     #New-ConfigurationPublish -Type GitHub -FilePath 'C:\Support\Important\GitHubAPI.txt' -UserName 'EvotecIT' -Enabled:$true
-} 
-
-# Ensure help files are copied alongside the module assembly
-$binRoot = Join-Path $PSScriptRoot '..' '..' 'VirusTotalAnalyzer.PowerShell' 'bin'
-$helpFiles = Get-ChildItem -Path $binRoot -Recurse -Filter '*.psm1-Help.xml' -ErrorAction SilentlyContinue
-if ($helpFiles) {
-    $dest = Join-Path $PSScriptRoot '..' 'en-US'
-    New-Item -ItemType Directory -Path $dest -Force | Out-Null
-    Copy-Item -Path $helpFiles.FullName -Destination $dest -Force
 }

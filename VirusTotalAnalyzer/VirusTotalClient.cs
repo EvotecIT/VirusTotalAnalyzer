@@ -396,73 +396,28 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
         }
     }
 
-    public async Task<Stream> DownloadLivehuntNotificationFileAsync(string id, CancellationToken cancellationToken = default)
+    public Task<Stream> DownloadLivehuntNotificationFileAsync(string id, CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        var response = await _httpClient
-            .GetAsync($"intelligence/hunting_notification_files/{Uri.EscapeDataString(id)}", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
-        var disposeResponse = true;
-        try
-        {
-            await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-            var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-            disposeResponse = false;
-            return new StreamWithResponse(response, stream);
-        }
-        finally
-        {
-            if (disposeResponse)
-            {
-                response.Dispose();
-            }
-        }
+        return DownloadFromAuthenticatedEndpointAsync(
+            $"intelligence/hunting_notification_files/{Uri.EscapeDataString(id)}",
+            cancellationToken);
     }
 
-    public async Task<Stream> DownloadRetrohuntNotificationFileAsync(string id, CancellationToken cancellationToken = default)
+    public Task<Stream> DownloadRetrohuntNotificationFileAsync(string id, CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        var response = await _httpClient
-            .GetAsync($"intelligence/retrohunt_notification_files/{Uri.EscapeDataString(id)}", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
-        var disposeResponse = true;
-        try
-        {
-            await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-            var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-            disposeResponse = false;
-            return new StreamWithResponse(response, stream);
-        }
-        finally
-        {
-            if (disposeResponse)
-            {
-                response.Dispose();
-            }
-        }
+        return DownloadFromAuthenticatedEndpointAsync(
+            $"intelligence/retrohunt_notification_files/{Uri.EscapeDataString(id)}",
+            cancellationToken);
     }
 
-    public async Task<Stream> DownloadPcapAsync(string analysisId, CancellationToken cancellationToken = default)
+    public Task<Stream> DownloadPcapAsync(string analysisId, CancellationToken cancellationToken = default)
     {
         ValidateId(analysisId, nameof(analysisId));
-        var response = await _httpClient
-            .GetAsync($"analyses/{Uri.EscapeDataString(analysisId)}/pcap", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
-        var disposeResponse = true;
-        try
-        {
-            await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-            var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-            disposeResponse = false;
-            return new StreamWithResponse(response, stream);
-        }
-        finally
-        {
-            if (disposeResponse)
-            {
-                response.Dispose();
-            }
-        }
+        return DownloadFromAuthenticatedEndpointAsync(
+            $"analyses/{Uri.EscapeDataString(analysisId)}/pcap",
+            cancellationToken);
     }
 
     /// <summary>

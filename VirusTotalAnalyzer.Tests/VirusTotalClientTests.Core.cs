@@ -188,6 +188,73 @@ public partial class VirusTotalClientTests
         Assert.Null(request.Headers.Authorization);
     }
 
+    [Theory]
+    [InlineData("pcap", "/api/v3/analyses/abc/pcap")]
+    [InlineData("livehunt", "/api/v3/intelligence/hunting_notification_files/abc")]
+    [InlineData("retrohunt", "/api/v3/intelligence/retrohunt_notification_files/abc")]
+    [InlineData("yara", "/api/v3/intelligence/hunting_rulesets/abc/download")]
+    public async Task RedirectingAuthenticatedDownloads_FollowSignedUrlWithoutApiKey(
+        string downloadKind,
+        string expectedApiPath)
+    {
+        var apiRedirect = new HttpResponseMessage(HttpStatusCode.Redirect);
+        apiRedirect.Headers.Location = new Uri("https://storage.example/downloads/abc");
+        var apiHandler = new QueueHandler(apiRedirect);
+        var apiClient = new HttpClient(apiHandler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        apiClient.DefaultRequestHeaders.Add("x-apikey", "secret");
+
+        var downloadHandler = new QueueHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new ByteArrayContent(new byte[] { 1, 2, 3 })
+        });
+        var downloadClient = new HttpClient(downloadHandler);
+        using var client = new VirusTotalClient(apiClient, downloadClient);
+
+        var downloadTask = downloadKind switch
+        {
+            "pcap" => client.DownloadPcapAsync("abc"),
+            "livehunt" => client.DownloadLivehuntNotificationFileAsync("abc"),
+            "retrohunt" => client.DownloadRetrohuntNotificationFileAsync("abc"),
+            "yara" => client.DownloadYaraRulesetAsync("abc"),
+            _ => throw new InvalidOperationException($"Unknown download kind: {downloadKind}")
+        };
+
+        using var stream = await downloadTask;
+        Assert.Equal(1, stream.ReadByte());
+
+        var apiRequest = Assert.Single(apiHandler.Requests);
+        Assert.Equal(expectedApiPath, apiRequest.RequestUri!.AbsolutePath);
+        Assert.True(apiRequest.Headers.Contains("x-apikey"));
+
+        var downloadRequest = Assert.Single(downloadHandler.Requests);
+        Assert.Equal("storage.example", downloadRequest.RequestUri!.Host);
+        Assert.False(downloadRequest.Headers.Contains("x-apikey"));
+        Assert.Null(downloadRequest.Headers.Authorization);
+    }
+
+    [Fact]
+    public async Task DownloadPcapAsync_RejectsInsecureRedirectBeforeUnauthenticatedRequest()
+    {
+        var apiRedirect = new HttpResponseMessage(HttpStatusCode.Redirect);
+        apiRedirect.Headers.Location = new Uri("http://storage.example/downloads/abc");
+        var apiHandler = new QueueHandler(apiRedirect);
+        var apiClient = new HttpClient(apiHandler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        apiClient.DefaultRequestHeaders.Add("x-apikey", "secret");
+        var downloadHandler = new QueueHandler();
+        using var client = new VirusTotalClient(apiClient, new HttpClient(downloadHandler));
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => client.DownloadPcapAsync("abc"));
+
+        Assert.Single(apiHandler.Requests);
+        Assert.Empty(downloadHandler.Requests);
+    }
+
     [Fact]
     public async Task DownloadPcapAsync_UsesCorrectPathAndReturnsStream()
     {

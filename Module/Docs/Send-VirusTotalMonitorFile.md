@@ -11,12 +11,12 @@ Uploads a publisher file to VirusTotal Monitor.
 ## SYNTAX
 ### Path (Default)
 ```powershell
-Send-VirusTotalMonitorFile [-File] <string> -Path <string> [-Details <string>] [-SkipHashVerification] [-VerificationTimeoutSeconds <int>] [-PollingIntervalSeconds <int>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Send-VirusTotalMonitorFile [-File] <string> -Path <string> [-Details <string>] [-SkipHashVerification] [-VerificationTimeoutSeconds <int>] [-PollingIntervalSeconds <int>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### ExistingItem
 ```powershell
-Send-VirusTotalMonitorFile [-File] <string> -ExistingItemId <string> [-Details <string>] [-SkipHashVerification] [-VerificationTimeoutSeconds <int>] [-PollingIntervalSeconds <int>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Send-VirusTotalMonitorFile [-File] <string> -ExistingItemId <string> [-Details <string>] [-SkipHashVerification] [-VerificationTimeoutSeconds <int>] [-PollingIntervalSeconds <int>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

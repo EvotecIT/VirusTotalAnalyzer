@@ -211,6 +211,27 @@ Describe 'Get-VirusUser cmdlet' {
     }
 }
 
+Describe 'Send-VirusTotalMonitorFile cmdlet' {
+    It 'honors WhatIf when replacing an existing Monitor item' {
+        $handler = [FakeHandler]::new('{"data":{"id":"m1","type":"monitor_item"}}')
+        $httpClient = [System.Net.Http.HttpClient]::new($handler)
+        $httpClient.BaseAddress = [Uri]::new('https://www.virustotal.com/api/v3/')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new($httpClient)
+        $file = New-TemporaryFile
+
+        try {
+            $result = Send-VirusTotalMonitorFile -File $file -ExistingItemId 'm1' -Client $client -WhatIf
+
+            $result | Should -BeNullOrEmpty
+            $handler.LastRequest | Should -BeNullOrEmpty
+            (Get-Command Send-VirusTotalMonitorFile).Parameters.ContainsKey('WhatIf') | Should -BeTrue
+        }
+        finally {
+            Remove-Item -LiteralPath $file -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+
 Describe 'Cmdlet help content' {
     It 'includes examples for Get-VirusReport' {
         (Get-Help Get-VirusReport -Examples).Examples | Should -Not -BeNullOrEmpty

@@ -301,27 +301,12 @@ public sealed partial class VirusTotalClient
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<Stream> DownloadYaraRulesetAsync(string id, CancellationToken ct = default)
+    public Task<Stream> DownloadYaraRulesetAsync(string id, CancellationToken ct = default)
     {
         ValidateId(id, nameof(id));
-        var response = await _httpClient
-            .GetAsync($"intelligence/hunting_rulesets/{Uri.EscapeDataString(id)}/download", HttpCompletionOption.ResponseHeadersRead, ct)
-            .ConfigureAwait(false);
-        var disposeResponse = true;
-        try
-        {
-            await EnsureSuccessAsync(response, ct).ConfigureAwait(false);
-            var stream = await response.Content.ReadContentStreamAsync(ct).ConfigureAwait(false);
-            disposeResponse = false;
-            return new StreamWithResponse(response, stream);
-        }
-        finally
-        {
-            if (disposeResponse)
-            {
-                response.Dispose();
-            }
-        }
+        return DownloadFromAuthenticatedEndpointAsync(
+            $"intelligence/hunting_rulesets/{Uri.EscapeDataString(id)}/download",
+            ct);
     }
 
     public async Task<Relationship?> GetYaraRulesetOwnerAsync(string id, CancellationToken cancellationToken = default)

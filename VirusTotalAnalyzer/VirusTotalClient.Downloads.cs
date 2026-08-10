@@ -67,6 +67,51 @@ public sealed partial class VirusTotalClient
         throw new HttpRequestException("The signed VirusTotal download exceeded the redirect limit.");
     }
 
+    private async Task<Stream> DownloadFromAuthenticatedEndpointAsync(
+        string requestPath,
+        CancellationToken cancellationToken)
+    {
+        var response = await _httpClient
+            .GetAsync(requestPath, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+            .ConfigureAwait(false);
+        var disposeResponse = true;
+        try
+        {
+            if (IsRedirect(response.StatusCode))
+            {
+                if (response.Headers.Location is null)
+                {
+                    throw new HttpRequestException("The VirusTotal download endpoint returned a redirect without a location.");
+                }
+
+                var requestUri = response.RequestMessage?.RequestUri ??
+                    new Uri(_httpClient.BaseAddress ?? throw new InvalidOperationException("The VirusTotal API base address is not configured."), requestPath);
+                var redirectUri = response.Headers.Location.IsAbsoluteUri
+                    ? response.Headers.Location
+                    : new Uri(requestUri, response.Headers.Location);
+
+                response.Dispose();
+                disposeResponse = false;
+                return await DownloadFromSignedUrlAsync(
+                        ValidateSignedDownloadUri(redirectUri),
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+            disposeResponse = false;
+            return new StreamWithResponse(response, stream);
+        }
+        finally
+        {
+            if (disposeResponse)
+            {
+                response.Dispose();
+            }
+        }
+    }
+
     private static bool IsRedirect(HttpStatusCode statusCode)
         => statusCode == HttpStatusCode.MovedPermanently ||
            statusCode == HttpStatusCode.Redirect ||

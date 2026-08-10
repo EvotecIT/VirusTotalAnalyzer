@@ -18,7 +18,12 @@ namespace VirusTotalAnalyzer.PowerShell;
 ///     <para><prefix>PS&gt; </prefix>Send-VirusTotalMonitorFile -ApiKey $ApiKey -File 'C:\releases\app.exe' -ExistingItemId 'monitor-item-id'</para>
 ///   </code>
 /// </example>
-[Cmdlet(VerbsCommunications.Send, "VirusTotalMonitorFile", DefaultParameterSetName = "Path")]
+[Cmdlet(
+    VerbsCommunications.Send,
+    "VirusTotalMonitorFile",
+    DefaultParameterSetName = "Path",
+    SupportsShouldProcess = true,
+    ConfirmImpact = ConfirmImpact.Medium)]
 [OutputType(typeof(MonitorUploadResult))]
 public sealed class CmdletSendVirusTotalMonitorFile : VirusTotalCmdlet
 {
@@ -59,6 +64,15 @@ public sealed class CmdletSendVirusTotalMonitorFile : VirusTotalCmdlet
     protected override async Task ProcessRecordAsync()
     {
         if (!EnsureFileExists(File, GetErrorActionPreference()))
+        {
+            return;
+        }
+
+        var target = ExistingItemId ?? Path ?? File;
+        var action = ExistingItemId is null
+            ? "Upload file to VirusTotal Monitor"
+            : "Replace VirusTotal Monitor item contents";
+        if (!ShouldProcess(target, action))
         {
             return;
         }

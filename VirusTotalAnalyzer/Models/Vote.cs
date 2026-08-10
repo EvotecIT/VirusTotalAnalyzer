@@ -9,11 +9,6 @@ public sealed class Vote
     public ResourceType Type { get; set; }
 
     public Links Links { get; set; } = new();
-    public VoteData Data { get; set; } = new();
-}
-
-public sealed class VoteData
-{
     public VoteAttributes Attributes { get; set; } = new();
 }
 

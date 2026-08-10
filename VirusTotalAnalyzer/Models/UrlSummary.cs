@@ -8,11 +8,6 @@ public sealed class UrlSummary
     public ResourceType Type { get; set; }
 
     public Links Links { get; set; } = new();
-    public UrlSummaryData Data { get; set; } = new();
-}
-
-public sealed class UrlSummaryData
-{
     public UrlSummaryAttributes Attributes { get; set; } = new();
 }
 
@@ -31,4 +26,3 @@ public sealed class UrlSummariesResponse
 
     public PaginationMetadata? Meta { get; set; }
 }
-

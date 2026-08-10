@@ -15,7 +15,7 @@ public static class GetFileContactedUrlsExample
             var page = await client.GetFileContactedUrlsAsync("44d88612fea8a8f36de82e1278abb02f", fetchAll: true);
             foreach (var url in page?.Data ?? new List<UrlSummary>())
             {
-                var resolvedUrl = url.Data?.Attributes?.Url;
+                var resolvedUrl = url.Attributes.Url;
                 if (!string.IsNullOrEmpty(resolvedUrl))
                 {
                     Console.WriteLine(resolvedUrl);

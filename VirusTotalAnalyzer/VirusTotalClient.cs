@@ -18,7 +18,7 @@ namespace VirusTotalAnalyzer;
 /// Client for the VirusTotal v3 API.
 /// </summary>
 /// <remarks>
-/// <para>Use <see cref="Create(string)"/> for a self-contained client:</para>
+/// <para>Use <see cref="Create(string, string, TimeSpan?)"/> for a self-contained client:</para>
 /// <code>using var client = VirusTotalClient.Create("YOUR_API_KEY");</code>
 /// <para>
 /// When providing an existing <see cref="HttpClient"/>, specify whether the client should
@@ -28,8 +28,10 @@ namespace VirusTotalAnalyzer;
 public sealed partial class VirusTotalClient : IVirusTotalClient
 {
     private readonly HttpClient _httpClient;
+    private readonly HttpClient _downloadClient;
     private readonly JsonSerializerOptions _jsonOptions;
     private readonly bool _disposeClient;
+    private readonly bool _disposeDownloadClient;
     private bool _disposed;
 
     /// <summary>
@@ -45,10 +47,37 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
     /// Pass <paramref name="disposeClient"/> as <see langword="false"/> when the lifetime of the
     /// provided <paramref name="httpClient"/> is managed externally.
     /// </remarks>
+    /// <param name="userAgent">Optional user-agent value. A library default is used when omitted.</param>
     public VirusTotalClient(HttpClient httpClient, bool disposeClient = false, string? userAgent = null)
+        : this(
+            httpClient,
+            CreateDownloadClient(httpClient?.Timeout ?? throw new ArgumentNullException(nameof(httpClient))),
+            disposeClient,
+            disposeDownloadClient: true,
+            userAgent)
+    {
+    }
+
+    internal VirusTotalClient(
+        HttpClient httpClient,
+        HttpClient downloadClient,
+        bool disposeClient = false,
+        bool disposeDownloadClient = false,
+        string? userAgent = null)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _downloadClient = downloadClient ?? throw new ArgumentNullException(nameof(downloadClient));
+        if (ReferenceEquals(_httpClient, _downloadClient))
+        {
+            throw new ArgumentException("The authenticated API client and unauthenticated download client must be different instances.", nameof(downloadClient));
+        }
+        if (_downloadClient.DefaultRequestHeaders.Contains("x-apikey") ||
+            _downloadClient.DefaultRequestHeaders.Authorization is not null)
+        {
+            throw new ArgumentException("The download client must not contain authentication headers.", nameof(downloadClient));
+        }
         _disposeClient = disposeClient;
+        _disposeDownloadClient = disposeDownloadClient;
         _jsonOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = SnakeCaseNamingPolicy.Instance
@@ -62,13 +91,19 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
     /// Creates a new <see cref="VirusTotalClient"/> configured with the specified API key.
     /// </summary>
     /// <param name="apiKey">The API key used for authenticated requests.</param>
+    /// <param name="userAgent">Optional user-agent value. A library default is used when omitted.</param>
+    /// <param name="timeout">Optional request timeout. The default is ten minutes to accommodate streamed uploads.</param>
     /// <returns>A <see cref="VirusTotalClient"/> that owns its underlying <see cref="HttpClient"/>.</returns>
-    public static VirusTotalClient Create(string apiKey, string? userAgent = null)
+    public static VirusTotalClient Create(string apiKey, string? userAgent = null, TimeSpan? timeout = null)
     {
         if (string.IsNullOrWhiteSpace(apiKey)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(apiKey));
-        var httpClient = new HttpClient
+        var httpClient = new HttpClient(new HttpClientHandler
         {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+            AllowAutoRedirect = false
+        })
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/"),
+            Timeout = timeout ?? TimeSpan.FromMinutes(10)
         };
         httpClient.DefaultRequestHeaders.Add("x-apikey", apiKey);
         return new VirusTotalClient(httpClient, disposeClient: true, userAgent: userAgent);
@@ -85,6 +120,8 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
             var agent = string.IsNullOrWhiteSpace(value) ? GetDefaultUserAgent() : value;
             _httpClient.DefaultRequestHeaders.UserAgent.Clear();
             _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(agent);
+            _downloadClient.DefaultRequestHeaders.UserAgent.Clear();
+            _downloadClient.DefaultRequestHeaders.UserAgent.ParseAdd(agent);
         }
     }
 
@@ -126,8 +163,6 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
             ResourceType.LivehuntNotification => "livehunt_notifications",
             ResourceType.RetrohuntJob => "retrohunt_jobs",
             ResourceType.RetrohuntNotification => "retrohunt_notifications",
-            ResourceType.MonitorItem => "monitor/items",
-            ResourceType.MonitorEvent => "monitor/events",
             ResourceType.IntelligenceHuntingRuleset => "intelligence/hunting_rulesets",
             ResourceType.FileBehaviour => "file-behaviour",
             _ => throw new ArgumentOutOfRangeException(nameof(type))
@@ -443,6 +478,10 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
         if (_disposeClient)
         {
             _httpClient.Dispose();
+        }
+        if (_disposeDownloadClient)
+        {
+            _downloadClient.Dispose();
         }
 
         _disposed = true;

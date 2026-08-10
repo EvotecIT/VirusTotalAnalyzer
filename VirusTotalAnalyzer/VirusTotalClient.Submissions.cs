@@ -27,7 +27,7 @@ public sealed partial class VirusTotalClient
             return null;
         }
 
-        return Uri.TryCreate(result.Data, UriKind.Absolute, out var uri) ? uri : null;
+        return TryNormalizeVirusTotalUploadUri(result.Data, out var uri) ? uri : null;
     }
 
     /// <summary>
@@ -56,60 +56,47 @@ public sealed partial class VirusTotalClient
         Stream uploadStream = stream;
         bool disposeUploadStream = false;
         string? tempFilePath = null;
-        if (!stream.CanSeek)
-        {
-            tempFilePath = Path.GetTempFileName();
-            using (var file = File.Create(tempFilePath))
-            {
-                await stream.CopyToAsync(file, 81920, cancellationToken).ConfigureAwait(false);
-            }
-            uploadStream = File.OpenRead(tempFilePath);
-            disposeUploadStream = true;
-        }
-
-        string requestUrl = "files";
-        if (uploadStream.CanSeek && uploadStream.Length > 33554432)
-        {
-            var uploadUrl = await GetUploadUrlAsync(cancellationToken).ConfigureAwait(false);
-            if (uploadUrl is null)
-            {
-                if (disposeUploadStream)
-                {
-                    uploadStream.Dispose();
-                    if (tempFilePath is not null)
-                    {
-                        try
-                        {
-                            File.Delete(tempFilePath);
-                        }
-                        catch
-                        {
-                            // ignore
-                        }
-                    }
-                }
-                throw new InvalidOperationException("Upload URL was not provided by the API.");
-            }
-            requestUrl = uploadUrl.ToString();
-        }
-
-        var builder = new MultipartFormDataBuilder(uploadStream, fileName);
-        using var content = builder.Build();
-        using var request = new HttpRequestMessage(HttpMethod.Post, requestUrl)
-        {
-            Content = content
-        };
-        if (!string.IsNullOrEmpty(password))
-        {
-            request.Headers.Add("x-virustotal-password", password);
-        }
-        using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-        using var respStream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            return await JsonSerializer.DeserializeAsync<AnalysisReport>(respStream, _jsonOptions, cancellationToken)
-                .ConfigureAwait(false);
+            if (!stream.CanSeek)
+            {
+                tempFilePath = Path.GetTempFileName();
+                using (var file = File.Create(tempFilePath))
+                {
+                    await stream.CopyToAsync(file, 81920, cancellationToken).ConfigureAwait(false);
+                }
+                uploadStream = File.OpenRead(tempFilePath);
+                disposeUploadStream = true;
+            }
+
+            string requestUrl = "files";
+            if (uploadStream.CanSeek && uploadStream.Length - uploadStream.Position > 33554432)
+            {
+                var uploadUrl = await GetUploadUrlAsync(cancellationToken).ConfigureAwait(false);
+                if (uploadUrl is null)
+                {
+                    throw new InvalidOperationException("Upload URL was not provided by the API.");
+                }
+                requestUrl = uploadUrl.ToString();
+            }
+
+            var builder = new MultipartFormDataBuilder(uploadStream, fileName);
+            using var content = builder.Build();
+            using var request = new HttpRequestMessage(HttpMethod.Post, requestUrl)
+            {
+                Content = content
+            };
+            if (!string.IsNullOrEmpty(password))
+            {
+                request.Headers.Add("x-virustotal-password", password);
+            }
+            using var response = await _httpClient.SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken).ConfigureAwait(false);
+            await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            using var respStream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+            return await DeserializeDataAsync<AnalysisReport>(respStream, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -187,8 +174,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var respStream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<PrivateAnalysis>(respStream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
+        return await DeserializeDataAsync<PrivateAnalysis>(respStream, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -206,8 +192,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.PostAsync(path, content: null, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<AnalysisReport>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
+        return await DeserializeDataAsync<AnalysisReport>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public Task<AnalysisReport?> ReanalyzeFileAsync(string hash, CancellationToken cancellationToken = default)
@@ -296,7 +281,6 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.PostAsync(path.ToString(), content, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<AnalysisReport>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
+        return await DeserializeDataAsync<AnalysisReport>(stream, cancellationToken).ConfigureAwait(false);
     }
 }

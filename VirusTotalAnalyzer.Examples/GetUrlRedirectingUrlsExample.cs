@@ -14,7 +14,7 @@ public static class GetUrlRedirectingUrlsExample
             var urls = await client.GetUrlRedirectingUrlsAsync("url-id");
             foreach (var url in urls ?? Array.Empty<UrlSummary>())
             {
-                Console.WriteLine(url.Data.Attributes.Url);
+                Console.WriteLine(url.Attributes.Url);
             }
         }
         catch (ApiException ex)

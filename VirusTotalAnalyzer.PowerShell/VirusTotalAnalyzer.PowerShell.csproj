@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>net472;net8.0;net10.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -10,6 +10,7 @@
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
     <PackageReference Include="PowerShellStandard.Library" Version="5.1.0" />
     <None Include="../Module/en-US/VirusTotalAnalyzer.PowerShell.dll-Help.xml"
+          Condition="Exists('../Module/en-US/VirusTotalAnalyzer.PowerShell.dll-Help.xml')"
           Link="en-US/VirusTotalAnalyzer.PowerShell.dll-Help.xml"
           CopyToOutputDirectory="PreserveNewest"
           CopyToPublishDirectory="PreserveNewest" />

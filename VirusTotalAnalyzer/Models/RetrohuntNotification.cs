@@ -8,11 +8,6 @@ public sealed class RetrohuntNotification
     public ResourceType Type { get; set; }
 
     public Links Links { get; set; } = new();
-    public RetrohuntNotificationData Data { get; set; } = new();
-}
-
-public sealed class RetrohuntNotificationData
-{
     public RetrohuntNotificationAttributes Attributes { get; set; } = new();
 }
 

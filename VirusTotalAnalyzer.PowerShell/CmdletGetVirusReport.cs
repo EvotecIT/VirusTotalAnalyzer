@@ -34,12 +34,8 @@ namespace VirusTotalAnalyzer.PowerShell;
 /// <seealso href="https://github.com/EvotecIT/VirusTotalAnalyzer" />
 [Cmdlet(VerbsCommon.Get, "VirusReport", DefaultParameterSetName = "FileInformation")]
 [Alias("Get-VirusScan")]
-public sealed class CmdletGetVirusReport : AsyncPSCmdlet
+public sealed class CmdletGetVirusReport : VirusTotalCmdlet
 {
-    /// <summary>VirusTotal API key.</summary>
-    [Parameter(Mandatory = true)]
-    public string ApiKey { get; set; } = string.Empty;
-
     /// <summary>Analysis identifier returned from a previous scan.</summary>
     [Parameter(ParameterSetName = "Analysis", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
     public string? AnalysisId { get; set; }
@@ -70,14 +66,9 @@ public sealed class CmdletGetVirusReport : AsyncPSCmdlet
     [Parameter(ParameterSetName = "Search", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
     public string? Search { get; set; }
 
-    /// <summary>Existing <see cref="IVirusTotalClient"/> instance to reuse.</summary>
-    [Parameter]
-    public IVirusTotalClient? Client { get; set; }
-
     /// <inheritdoc/>
     protected override async Task ProcessRecordAsync()
     {
-        var client = Client ?? VirusTotalClient.Create(ApiKey);
         try
         {
             switch (ParameterSetName)
@@ -116,37 +107,37 @@ public sealed class CmdletGetVirusReport : AsyncPSCmdlet
                         progress.RecordType = ProgressRecordType.Completed;
                         WriteProgress(progress);
                     }
-                    var fileReport = await client.GetFileReportAsync(hash, cancellationToken: CancelToken).ConfigureAwait(false);
+                    var fileReport = await ActiveClient.GetFileReportAsync(hash, cancellationToken: CancelToken).ConfigureAwait(false);
                     WriteObject(fileReport);
                     break;
 
                 case "Hash":
-                    var hashReport = await client.GetFileReportAsync(Hash!, cancellationToken: CancelToken).ConfigureAwait(false);
+                    var hashReport = await ActiveClient.GetFileReportAsync(Hash!, cancellationToken: CancelToken).ConfigureAwait(false);
                     WriteObject(hashReport);
                     break;
 
                 case "Url":
-                    var urlReport = await client.GetUrlReportAsync(Url!, cancellationToken: CancelToken).ConfigureAwait(false);
+                    var urlReport = await ActiveClient.GetUrlReportAsync(Url!, cancellationToken: CancelToken).ConfigureAwait(false);
                     WriteObject(urlReport);
                     break;
 
                 case "IPAddress":
-                    var ipReport = await client.GetIpAddressReportAsync(IPAddress!, cancellationToken: CancelToken).ConfigureAwait(false);
+                    var ipReport = await ActiveClient.GetIpAddressReportAsync(IPAddress!, cancellationToken: CancelToken).ConfigureAwait(false);
                     WriteObject(ipReport);
                     break;
 
                 case "DomainName":
-                    var domainReport = await client.GetDomainReportAsync(DomainName!, cancellationToken: CancelToken).ConfigureAwait(false);
+                    var domainReport = await ActiveClient.GetDomainReportAsync(DomainName!, cancellationToken: CancelToken).ConfigureAwait(false);
                     WriteObject(domainReport);
                     break;
 
                 case "Analysis":
-                    var analysis = await client.GetAnalysisAsync(AnalysisId!, CancelToken).ConfigureAwait(false);
+                    var analysis = await ActiveClient.GetAnalysisAsync(AnalysisId!, CancelToken).ConfigureAwait(false);
                     WriteObject(analysis);
                     break;
 
                 case "Search":
-                    var search = await client.SearchAsync(Search!, cancellationToken: CancelToken).ConfigureAwait(false);
+                    var search = await ActiveClient.SearchAsync(Search!, cancellationToken: CancelToken).ConfigureAwait(false);
                     WriteObject(search);
                     break;
             }
@@ -165,13 +156,6 @@ public sealed class CmdletGetVirusReport : AsyncPSCmdlet
                 _ => null
             };
             WriteApiError(ex, target);
-        }
-        finally
-        {
-            if (Client is null)
-            {
-                client.Dispose();
-            }
         }
     }
 }

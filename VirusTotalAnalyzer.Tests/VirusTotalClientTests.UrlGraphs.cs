@@ -13,8 +13,8 @@ public partial class VirusTotalClientTests
     public async Task GetUrlGraphsAsync_GetsGraphs()
     {
         var relationshipsJson = "{\"data\":[{\"id\":\"g1\",\"type\":\"graph\"},{\"id\":\"g2\",\"type\":\"graph\"}]}";
-        var graph1Json = "{\"id\":\"g1\",\"type\":\"graph\",\"data\":{\"attributes\":{\"name\":\"one\"}}}";
-        var graph2Json = "{\"id\":\"g2\",\"type\":\"graph\",\"data\":{\"attributes\":{\"name\":\"two\"}}}";
+        var graph1Json = "{\"data\":{\"id\":\"g1\",\"type\":\"graph\",\"attributes\":{\"name\":\"one\"}}}";
+        var graph2Json = "{\"data\":{\"id\":\"g2\",\"type\":\"graph\",\"attributes\":{\"name\":\"two\"}}}";
 
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)

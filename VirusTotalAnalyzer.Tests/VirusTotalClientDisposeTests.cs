@@ -59,6 +59,7 @@ public class VirusTotalClientDisposeTests
             { client => client.DownloadYaraRulesetAsync("id") },
             { client => client.DownloadLivehuntNotificationFileAsync("id") },
             { client => client.DownloadRetrohuntNotificationFileAsync("id") },
-            { client => client.DownloadPcapAsync("id") }
+            { client => client.DownloadPcapAsync("id") },
+            { client => client.DownloadMonitorItemAsync("id") }
         };
 }

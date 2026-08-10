@@ -9,11 +9,6 @@ public sealed class PrivateAnalysis
     public ResourceType Type { get; set; }
 
     public Links Links { get; set; } = new();
-    public PrivateAnalysisData Data { get; set; } = new();
-}
-
-public sealed class PrivateAnalysisData
-{
     public PrivateAnalysisAttributes Attributes { get; set; } = new();
 }
 

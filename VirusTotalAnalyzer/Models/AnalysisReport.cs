@@ -9,11 +9,6 @@ public sealed class AnalysisReport
     public ResourceType Type { get; set; }
 
     public Links Links { get; set; } = new();
-    public AnalysisData Data { get; set; } = new();
-}
-
-public sealed class AnalysisData
-{
     public AnalysisAttributes Attributes { get; set; } = new();
 }
 

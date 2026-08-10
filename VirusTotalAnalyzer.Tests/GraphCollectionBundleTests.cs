@@ -13,7 +13,7 @@ public class GraphCollectionBundleTests
     [Fact]
     public async Task ListGraphsAsync_GetsGraphs()
     {
-        var json = "{\"data\":[{\"id\":\"g1\",\"type\":\"graph\",\"data\":{\"attributes\":{\"name\":\"demo\"}}}]}";
+        var json = "{\"data\":[{\"id\":\"g1\",\"type\":\"graph\",\"attributes\":{\"name\":\"demo\"}}]}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -82,7 +82,7 @@ public class GraphCollectionBundleTests
     [Fact]
     public async Task CreateGraphAsync_PostsGraph()
     {
-        var json = "{\"id\":\"g1\",\"type\":\"graph\",\"data\":{\"attributes\":{\"name\":\"demo\"}}}";
+        var json = "{\"data\":{\"id\":\"g1\",\"type\":\"graph\",\"attributes\":{\"name\":\"demo\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -117,7 +117,7 @@ public class GraphCollectionBundleTests
     [Fact]
     public async Task UpdateGraphAsync_PatchesGraph()
     {
-        var json = "{\"id\":\"g1\",\"type\":\"graph\",\"data\":{\"attributes\":{\"name\":\"updated\"}}}";
+        var json = "{\"data\":{\"id\":\"g1\",\"type\":\"graph\",\"attributes\":{\"name\":\"updated\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -168,7 +168,7 @@ public class GraphCollectionBundleTests
     [Fact]
     public async Task GetGraphCommentsAsync_GetsComments()
     {
-        var json = @"{""data"":[{""id"":""c1"",""type"":""comment"",""data"":{""attributes"":{""text"":""hi""}}}]}";
+        var json = @"{""data"":[{""id"":""c1"",""type"":""comment"",""attributes"":{""text"":""hi""}}]}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -190,7 +190,7 @@ public class GraphCollectionBundleTests
     [Fact]
     public async Task AddGraphCommentAsync_PostsComment()
     {
-        var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""data"":{""attributes"":{""text"":""hi""}}}}";
+        var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""attributes"":{""text"":""hi""}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -334,7 +334,7 @@ public class GraphCollectionBundleTests
     [Fact]
     public async Task ListCollectionsAsync_GetsCollections()
     {
-        var json = "{\"data\":[{\"id\":\"c1\",\"type\":\"collection\",\"data\":{\"attributes\":{\"name\":\"demo\"}}}]}";
+        var json = "{\"data\":[{\"id\":\"c1\",\"type\":\"collection\",\"attributes\":{\"name\":\"demo\"}}]}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -403,7 +403,7 @@ public class GraphCollectionBundleTests
     [Fact]
     public async Task CreateCollectionAsync_PostsCollection()
     {
-        var json = "{\"id\":\"c1\",\"type\":\"collection\",\"data\":{\"attributes\":{\"name\":\"demo\"}}}";
+        var json = "{\"data\":{\"id\":\"c1\",\"type\":\"collection\",\"attributes\":{\"name\":\"demo\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -438,7 +438,7 @@ public class GraphCollectionBundleTests
     [Fact]
     public async Task UpdateCollectionAsync_PatchesCollection()
     {
-        var json = "{\"id\":\"c1\",\"type\":\"collection\",\"data\":{\"attributes\":{\"name\":\"updated\"}}}";
+        var json = "{\"data\":{\"id\":\"c1\",\"type\":\"collection\",\"attributes\":{\"name\":\"updated\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -589,7 +589,7 @@ public class GraphCollectionBundleTests
     [Fact]
     public async Task ListBundlesAsync_GetsBundles()
     {
-        var json = "{\"data\":[{\"id\":\"b1\",\"type\":\"bundle\",\"data\":{\"attributes\":{\"name\":\"demo\"}}}]}";
+        var json = "{\"data\":[{\"id\":\"b1\",\"type\":\"bundle\",\"attributes\":{\"name\":\"demo\"}}]}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -658,7 +658,7 @@ public class GraphCollectionBundleTests
     [Fact]
     public async Task CreateBundleAsync_PostsBundle()
     {
-        var json = "{\"id\":\"b1\",\"type\":\"bundle\",\"data\":{\"attributes\":{\"name\":\"demo\"}}}";
+        var json = "{\"data\":{\"id\":\"b1\",\"type\":\"bundle\",\"attributes\":{\"name\":\"demo\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -696,7 +696,7 @@ public class GraphCollectionBundleTests
     [Fact]
     public async Task UpdateBundleAsync_PatchesBundle()
     {
-        var json = "{\"id\":\"b1\",\"type\":\"bundle\",\"data\":{\"attributes\":{\"name\":\"updated\"}}}";
+        var json = "{\"data\":{\"id\":\"b1\",\"type\":\"bundle\",\"attributes\":{\"name\":\"updated\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")

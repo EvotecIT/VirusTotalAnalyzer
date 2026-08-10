@@ -100,24 +100,21 @@ public class AttributeSerializationTests
             Id = "an1",
             Type = ResourceType.Analysis,
             Links = new Links { Self = "https://www.virustotal.com/api/v3/analyses/an1" },
-            Data = new AnalysisData
+            Attributes = new AnalysisAttributes
             {
-                Attributes = new AnalysisAttributes
+                Status = AnalysisStatus.Completed,
+                Date = DateTimeOffset.FromUnixTimeSeconds(5),
+                Results = new Dictionary<string, AnalysisResult>
                 {
-                    Status = AnalysisStatus.Completed,
-                    Date = DateTimeOffset.FromUnixTimeSeconds(5),
-                    Results = new Dictionary<string, AnalysisResult>
-                    {
-                        ["engine"] = new AnalysisResult { Category = "harmless", EngineName = "engine" }
-                    }
+                    ["engine"] = new AnalysisResult { Category = "harmless", EngineName = "engine" }
                 }
             }
         };
 
         var json = JsonSerializer.Serialize(report, options);
         var roundtrip = JsonSerializer.Deserialize<AnalysisReport>(json, options);
-        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(5), roundtrip!.Data.Attributes.Date);
-        Assert.Equal("harmless", roundtrip.Data.Attributes.Results["engine"].Category);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(5), roundtrip!.Attributes.Date);
+        Assert.Equal("harmless", roundtrip.Attributes.Results["engine"].Category);
         Assert.Equal("https://www.virustotal.com/api/v3/analyses/an1", roundtrip.Links.Self);
     }
 

@@ -117,7 +117,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetAnalysesAsync_ReturnsCombinedResults()
     {
-        var json = "{\"data\":[{\"id\":\"a1\",\"type\":\"analysis\",\"data\":{\"attributes\":{}}},{\"id\":\"a2\",\"type\":\"analysis\",\"data\":{\"attributes\":{}}}]}";
+        var json = "{\"data\":[{\"id\":\"a1\",\"type\":\"analysis\",\"attributes\":{}},{\"id\":\"a2\",\"type\":\"analysis\",\"attributes\":{}}]}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")

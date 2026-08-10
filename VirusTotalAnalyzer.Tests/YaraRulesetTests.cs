@@ -10,12 +10,12 @@ namespace VirusTotalAnalyzer.Tests;
 
 public class YaraRulesetTests
 {
-    private const string SingleRulesetJson = "{\"id\":\"rs1\",\"type\":\"intelligence_hunting_ruleset\",\"data\":{\"attributes\":{\"name\":\"demo\",\"rules\":\"rule\",\"watchers\":[{\"id\":\"user1\",\"type\":\"user\"}]}}}";
+    private const string SingleRulesetResourceJson = "{\"id\":\"rs1\",\"type\":\"intelligence_hunting_ruleset\",\"attributes\":{\"name\":\"demo\",\"rules\":\"rule\",\"watchers\":[{\"id\":\"user1\",\"type\":\"user\"}]}}";
 
     [Fact]
     public async Task ListYaraRulesetsAsync_DeserializesResponse()
     {
-        var json = $"{{\"data\":[{SingleRulesetJson}]}}";
+        var json = $"{{\"data\":[{SingleRulesetResourceJson}]}}";
         var handler = new StubHandler(json);
         var httpClient = new HttpClient(handler)
         {
@@ -27,14 +27,14 @@ public class YaraRulesetTests
 
         var rs = Assert.Single(page.Data);
         Assert.Equal("rs1", rs.Id);
-        Assert.Equal("demo", rs.Data.Attributes.Name);
+        Assert.Equal("demo", rs.Attributes.Name);
     }
 
     [Fact]
     public async Task ListYaraRulesetsAsync_PagesThroughResults()
     {
-        var first = $"{{\"data\":[{SingleRulesetJson}],\"meta\":{{\"cursor\":\"abc\"}}}}";
-        var second = "{\"data\":[{\"id\":\"rs2\",\"type\":\"intelligence_hunting_ruleset\",\"data\":{\"attributes\":{\"name\":\"demo2\",\"rules\":\"rule2\"}}}]}";
+        var first = $"{{\"data\":[{SingleRulesetResourceJson}],\"meta\":{{\"cursor\":\"abc\"}}}}";
+        var second = "{\"data\":[{\"id\":\"rs2\",\"type\":\"intelligence_hunting_ruleset\",\"attributes\":{\"name\":\"demo2\",\"rules\":\"rule2\"}}]}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -64,7 +64,7 @@ public class YaraRulesetTests
     [Fact]
     public async Task ListYaraRulesetsAsync_SinglePage()
     {
-        var first = $"{{\"data\":[{SingleRulesetJson}],\"meta\":{{\"cursor\":\"abc\"}}}}";
+        var first = $"{{\"data\":[{SingleRulesetResourceJson}],\"meta\":{{\"cursor\":\"abc\"}}}}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -90,7 +90,7 @@ public class YaraRulesetTests
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent(SingleRulesetJson, Encoding.UTF8, "application/json")
+            Content = new StringContent($"{{\"data\":{SingleRulesetResourceJson}}}", Encoding.UTF8, "application/json")
         };
         var handler = new SingleResponseHandler(response);
         var httpClient = new HttpClient(handler)
@@ -103,7 +103,7 @@ public class YaraRulesetTests
 
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/intelligence/hunting_rulesets/rs1", handler.Request!.RequestUri!.AbsolutePath);
-        Assert.Equal("demo", ruleset!.Data.Attributes.Name);
+        Assert.Equal("demo", ruleset!.Attributes.Name);
     }
 
     [Fact]
@@ -111,7 +111,7 @@ public class YaraRulesetTests
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent($"{{\"data\":{SingleRulesetJson}}}", Encoding.UTF8, "application/json")
+            Content = new StringContent($"{{\"data\":{SingleRulesetResourceJson}}}", Encoding.UTF8, "application/json")
         };
         var handler = new SingleResponseHandler(response);
         var httpClient = new HttpClient(handler)
@@ -130,7 +130,7 @@ public class YaraRulesetTests
         Assert.Equal(HttpMethod.Post, handler.Request!.Method);
         Assert.Equal("/api/v3/intelligence/hunting_rulesets", handler.Request.RequestUri!.AbsolutePath);
         Assert.Contains("\"name\":\"demo\"", handler.Content);
-        Assert.Equal("demo", ruleset!.Data.Attributes.Name);
+        Assert.Equal("demo", ruleset!.Attributes.Name);
     }
 
     [Fact]
@@ -150,7 +150,7 @@ public class YaraRulesetTests
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent($"{{\"data\":{SingleRulesetJson}}}", Encoding.UTF8, "application/json")
+            Content = new StringContent($"{{\"data\":{SingleRulesetResourceJson}}}", Encoding.UTF8, "application/json")
         };
         var handler = new SingleResponseHandler(response);
         var httpClient = new HttpClient(handler)
@@ -306,4 +306,3 @@ public class YaraRulesetTests
         Assert.Equal("not found", ex.Message);
     }
 }
-

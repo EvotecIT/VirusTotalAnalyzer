@@ -400,30 +400,17 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
             return null;
         }
 
-        return Uri.TryCreate(result.Data, UriKind.Absolute, out var uri) ? uri : null;
+        return Uri.TryCreate(result.Data, UriKind.Absolute, out var uri)
+            ? ValidateSignedDownloadUri(uri)
+            : null;
     }
 
     public async Task<Stream> DownloadFileAsync(string id, CancellationToken cancellationToken = default)
     {
-        ValidateId(id, nameof(id));
-        var response = await _httpClient
-            .GetAsync($"files/{Uri.EscapeDataString(id)}/download", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
-        var disposeResponse = true;
-        try
-        {
-            await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-            var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-            disposeResponse = false;
-            return new StreamWithResponse(response, stream);
-        }
-        finally
-        {
-            if (disposeResponse)
-            {
-                response.Dispose();
-            }
-        }
+        var downloadUri = await GetFileDownloadUrlAsync(id, cancellationToken).ConfigureAwait(false);
+        return await DownloadFromSignedUrlAsync(
+            downloadUri ?? throw new InvalidDataException("VirusTotal returned no signed download URL."),
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -744,9 +731,8 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"ip_addresses/{Uri.EscapeDataString(id)}/whois", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<IpWhois>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<IpWhois>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -821,9 +807,8 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"domains/{Uri.EscapeDataString(id)}/whois", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<DomainWhois>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<DomainWhois>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -868,8 +853,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         using var response = await _httpClient.GetAsync($"analyses/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<AnalysisReport>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
+        return await DeserializeDataAsync<AnalysisReport>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<PrivateAnalysis?> GetPrivateAnalysisAsync(string id, CancellationToken cancellationToken = default)
@@ -878,8 +862,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         using var response = await _httpClient.GetAsync($"private/analyses/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
 using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<PrivateAnalysis>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
+        return await DeserializeDataAsync<PrivateAnalysis>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<AnalysisReport?> WaitForAnalysisCompletionAsync(
@@ -897,13 +880,13 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
             cancellationToken.ThrowIfCancellationRequested();
 
             var report = await GetAnalysisAsync(id, cancellationToken).ConfigureAwait(false);
-            var status = report?.Data?.Attributes?.Status;
+            var status = report?.Attributes.Status;
             if (status == AnalysisStatus.Completed)
             {
                 return report;
             }
 
-            var error = report?.Data?.Attributes?.Error;
+            var error = report?.Attributes.Error;
             if (status == AnalysisStatus.Error || status == AnalysisStatus.Cancelled)
             {
                 var apiError = string.IsNullOrEmpty(error) ? null : new ApiError { Message = error };

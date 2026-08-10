@@ -14,25 +14,19 @@ Build-Module -ModuleName 'VirusTotalAnalyzer' {
         # Copyright statement for this module
         Copyright            = "(c) 2011 - $((Get-Date).Year) Przemyslaw Klys @ Evotec. All rights reserved."
         # Description of the functionality provided by this module
-        Description          = 'PowerShell module that intearacts with the VirusTotal service using a VirusTotal API (free)'
+        Description          = 'VirusTotal API v3 module for reports, submissions, community data, and publisher Monitor workflows.'
         # Minimum version of the Windows PowerShell engine required by this module
         PowerShellVersion    = '5.1'
         # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
         # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
-        Tags                 = @('Windows', 'Linux', 'macOs', 'VirusTotal', 'virus', 'threat', 'analyzer')
+        Tags                 = @('Windows', 'Linux', 'macOS', 'VirusTotal', 'Monitor', 'publisher', 'malware', 'security')
 
         ProjectUri           = 'https://github.com/EvotecIT/VirusTotalAnalyzer'
     }
     New-ConfigurationManifest @Manifest
 
-    # Add standard module dependencies (directly, but can be used with loop as well)
-    New-ConfigurationModule -Type RequiredModule -Name 'PSSharedGoods' -Guid 'Auto' -Version 'Latest'
+    # Only built-in PowerShell modules are used by the generated bootstrapper.
     New-ConfigurationModule -Type ExternalModule -Name 'Microsoft.PowerShell.Management', 'Microsoft.PowerShell.Utility'
-
-    # Add approved modules, that can be used as a dependency, but only when specific function from those modules is used
-    # And on that time only that function and dependant functions will be copied over
-    # Keep in mind it has it's limits when "copying" functions such as it should not depend on DLLs or other external files
-    New-ConfigurationModule -Type ApprovedModule -Name 'PSSharedGoods', 'PSWriteColor', 'Connectimo', 'PSUnifi', 'PSWebToolbox', 'PSMyPassword'
 
     $ConfigurationFormat = [ordered] @{
         RemoveComments                              = $false
@@ -85,11 +79,9 @@ Build-Module -ModuleName 'VirusTotalAnalyzer' {
         CertificateThumbprint             = '483292C9E317AA13B07BB7A96AE9D1A5ED9E7703'
         DeleteTargetModuleBeforeBuild     = $true
         MergeModuleOnBuild                = $true
-        MergeFunctionsFromApprovedModules = $true
+        MergeFunctionsFromApprovedModules = $false
         DoNotAttemptToFixRelativePaths    = $true
         NETProjectPath                    = "$PSScriptRoot\..\..\VirusTotalAnalyzer.PowerShell"
-        ResolveBinaryConflicts            = $true
-        ResolveBinaryConflictsName        = 'VirusTotalAnalyzer.PowerShell'
         NETProjectName                    = 'VirusTotalAnalyzer.PowerShell'
         NETBinaryModule                   = 'VirusTotalAnalyzer.PowerShell.dll'
         NETConfiguration                  = 'Release'

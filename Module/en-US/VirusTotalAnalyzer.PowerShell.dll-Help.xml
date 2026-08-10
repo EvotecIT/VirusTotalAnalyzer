@@ -15,12 +15,12 @@
     <command:syntax>
       <command:syntaxItem parameterSetName="__AllParameterSets">
         <maml:name>Get-VirusComment</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ApiKey</maml:name>
           <maml:description>
-            <maml:para>VirusTotal API key.</maml:para>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -30,11 +30,11 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Client</maml:name>
           <maml:description>
-            <maml:para>Existing VirusTotal client to reuse.</maml:para>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">VirusTotalClient</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
           <dev:type>
-            <maml:name>VirusTotalClient</maml:name>
+            <maml:name>IVirusTotalClient</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -82,6 +82,7 @@
           </maml:description>
           <command:parameterValue required="true" variableLength="false">ResourceType</command:parameterValue>
           <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Unknown</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">File</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">Url</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">IpAddress</command:parameterValue>
@@ -101,8 +102,6 @@
             <command:parameterValue required="false" variableLength="false">LivehuntNotification</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">RetrohuntJob</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">RetrohuntNotification</command:parameterValue>
-            <command:parameterValue required="false" variableLength="false">MonitorItem</command:parameterValue>
-            <command:parameterValue required="false" variableLength="false">MonitorEvent</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">IntelligenceHuntingRuleset</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">FileBehaviour</command:parameterValue>
           </command:parameterValueGroup>
@@ -115,12 +114,12 @@
       </command:syntaxItem>
     </command:syntax>
     <command:parameters>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ApiKey</maml:name>
         <maml:description>
-          <maml:para>VirusTotal API key.</maml:para>
+          <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
         </maml:description>
-        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
@@ -130,11 +129,11 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Client</maml:name>
         <maml:description>
-          <maml:para>Existing VirusTotal client to reuse.</maml:para>
+          <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">VirusTotalClient</command:parameterValue>
+        <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
         <dev:type>
-          <maml:name>VirusTotalClient</maml:name>
+          <maml:name>IVirusTotalClient</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -182,6 +181,7 @@
         </maml:description>
         <command:parameterValue required="true" variableLength="false">ResourceType</command:parameterValue>
         <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">Unknown</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">File</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">Url</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">IpAddress</command:parameterValue>
@@ -201,8 +201,6 @@
           <command:parameterValue required="false" variableLength="false">LivehuntNotification</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">RetrohuntJob</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">RetrohuntNotification</command:parameterValue>
-          <command:parameterValue required="false" variableLength="false">MonitorItem</command:parameterValue>
-          <command:parameterValue required="false" variableLength="false">MonitorEvent</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">IntelligenceHuntingRuleset</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">FileBehaviour</command:parameterValue>
         </command:parameterValueGroup>
@@ -253,12 +251,12 @@
     <command:syntax>
       <command:syntaxItem parameterSetName="FileInformation">
         <maml:name>Get-VirusReport</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ApiKey</maml:name>
           <maml:description>
-            <maml:para>VirusTotal API key.</maml:para>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -268,7 +266,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Client</maml:name>
           <maml:description>
-            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
           <dev:type>
@@ -304,12 +302,12 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ApiKey</maml:name>
           <maml:description>
-            <maml:para>VirusTotal API key.</maml:para>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -319,7 +317,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Client</maml:name>
           <maml:description>
-            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
           <dev:type>
@@ -331,12 +329,12 @@
       </command:syntaxItem>
       <command:syntaxItem parameterSetName="Hash">
         <maml:name>Get-VirusReport</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ApiKey</maml:name>
           <maml:description>
-            <maml:para>VirusTotal API key.</maml:para>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -346,7 +344,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Client</maml:name>
           <maml:description>
-            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
           <dev:type>
@@ -370,12 +368,12 @@
       </command:syntaxItem>
       <command:syntaxItem parameterSetName="Url">
         <maml:name>Get-VirusReport</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ApiKey</maml:name>
           <maml:description>
-            <maml:para>VirusTotal API key.</maml:para>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -385,7 +383,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Client</maml:name>
           <maml:description>
-            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
           <dev:type>
@@ -409,12 +407,12 @@
       </command:syntaxItem>
       <command:syntaxItem parameterSetName="IPAddress">
         <maml:name>Get-VirusReport</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ApiKey</maml:name>
           <maml:description>
-            <maml:para>VirusTotal API key.</maml:para>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -424,7 +422,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Client</maml:name>
           <maml:description>
-            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
           <dev:type>
@@ -448,12 +446,12 @@
       </command:syntaxItem>
       <command:syntaxItem parameterSetName="DomainName">
         <maml:name>Get-VirusReport</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ApiKey</maml:name>
           <maml:description>
-            <maml:para>VirusTotal API key.</maml:para>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -463,7 +461,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Client</maml:name>
           <maml:description>
-            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
           <dev:type>
@@ -487,12 +485,12 @@
       </command:syntaxItem>
       <command:syntaxItem parameterSetName="Search">
         <maml:name>Get-VirusReport</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ApiKey</maml:name>
           <maml:description>
-            <maml:para>VirusTotal API key.</maml:para>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -502,7 +500,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Client</maml:name>
           <maml:description>
-            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
           <dev:type>
@@ -538,12 +536,12 @@
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ApiKey</maml:name>
         <maml:description>
-          <maml:para>VirusTotal API key.</maml:para>
+          <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
         </maml:description>
-        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
@@ -553,7 +551,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Client</maml:name>
         <maml:description>
-          <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+          <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
         <dev:type>
@@ -682,6 +680,708 @@
   </command:command>
   <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
     <command:details>
+      <command:name>Get-VirusTotalMonitorEvent</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>VirusTotalMonitorEvent</command:noun>
+      <maml:description>
+        <maml:para>Gets historical VirusTotal Monitor events.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Gets historical VirusTotal Monitor events.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem parameterSetName="__AllParameterSets">
+        <maml:name>Get-VirusTotalMonitorEvent</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>All</maml:name>
+          <maml:description>
+            <maml:para>Reads every page until VirusTotal returns no cursor.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Cursor</maml:name>
+          <maml:description>
+            <maml:para>Cursor at which to begin reading events.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Filter</maml:name>
+          <maml:description>
+            <maml:para>Optional VirusTotal Monitor filter expression.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>JobId</maml:name>
+          <maml:description>
+            <maml:para>Event job identifier returned by a previous page.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>All</maml:name>
+        <maml:description>
+          <maml:para>Reads every page until VirusTotal returns no cursor.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ApiKey</maml:name>
+        <maml:description>
+          <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Client</maml:name>
+        <maml:description>
+          <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+        <dev:type>
+          <maml:name>IVirusTotalClient</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Cursor</maml:name>
+        <maml:description>
+          <maml:para>Cursor at which to begin reading events.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Filter</maml:name>
+        <maml:description>
+          <maml:para>Optional VirusTotal Monitor filter expression.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>JobId</maml:name>
+        <maml:description>
+          <maml:para>Event job identifier returned by a previous page.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+        </dev:type>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.MonitorEvent</maml:name>
+        </dev:type>
+      </command:returnValue>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.PagedResponse[VirusTotalAnalyzer.Models.MonitorEvent]</maml:name>
+        </dev:type>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>Read one event page and retain its continuation metadata.</maml:title>
+        <dev:code>PS&gt; $page = Get-VirusTotalMonitorEvent -ApiKey $ApiKey; $next = Get-VirusTotalMonitorEvent -ApiKey $ApiKey -Cursor $page.Meta.Cursor -JobId $page.Meta.JobId</dev:code>
+        <dev:remarks>
+          <maml:para>The default mode returns the full page so both cursor and job identifier remain available.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>Stream every available Monitor event.</maml:title>
+        <dev:code>PS&gt; Get-VirusTotalMonitorEvent -ApiKey $ApiKey -All</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks />
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
+    <command:details>
+      <command:name>Get-VirusTotalMonitorItem</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>VirusTotalMonitorItem</command:noun>
+      <maml:description>
+        <maml:para>Gets one Monitor item or lists publisher Monitor items.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Gets one Monitor item or lists publisher Monitor items.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem parameterSetName="ById">
+        <maml:name>Get-VirusTotalMonitorItem</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="0" aliases="None">
+          <maml:name>Id</maml:name>
+          <maml:description>
+            <maml:para>Monitor item identifier.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem parameterSetName="List">
+        <maml:name>Get-VirusTotalMonitorItem</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>All</maml:name>
+          <maml:description>
+            <maml:para>Reads every page until VirusTotal returns no cursor.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Cursor</maml:name>
+          <maml:description>
+            <maml:para>Cursor at which to begin listing.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Filter</maml:name>
+          <maml:description>
+            <maml:para>Optional VirusTotal Monitor item filter expression.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Limit</maml:name>
+          <maml:description>
+            <maml:para>Maximum number of items requested per page.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>List</maml:name>
+          <maml:description>
+            <maml:para>Selects list mode instead of retrieving one item.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ParentItemId</maml:name>
+          <maml:description>
+            <maml:para>Lists children of this Monitor folder item.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>Lists items below this absolute Monitor path.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Tag</maml:name>
+          <maml:description>
+            <maml:para>Lists items matching one or more Monitor tags.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String[]</command:parameterValue>
+          <dev:type>
+            <maml:name>String[]</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>All</maml:name>
+        <maml:description>
+          <maml:para>Reads every page until VirusTotal returns no cursor.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ApiKey</maml:name>
+        <maml:description>
+          <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Client</maml:name>
+        <maml:description>
+          <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+        <dev:type>
+          <maml:name>IVirusTotalClient</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Cursor</maml:name>
+        <maml:description>
+          <maml:para>Cursor at which to begin listing.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Filter</maml:name>
+        <maml:description>
+          <maml:para>Optional VirusTotal Monitor item filter expression.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="0" aliases="None">
+        <maml:name>Id</maml:name>
+        <maml:description>
+          <maml:para>Monitor item identifier.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Limit</maml:name>
+        <maml:description>
+          <maml:para>Maximum number of items requested per page.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>List</maml:name>
+        <maml:description>
+          <maml:para>Selects list mode instead of retrieving one item.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ParentItemId</maml:name>
+        <maml:description>
+          <maml:para>Lists children of this Monitor folder item.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>Lists items below this absolute Monitor path.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Tag</maml:name>
+        <maml:description>
+          <maml:para>Lists items matching one or more Monitor tags.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+        </dev:type>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.MonitorItem</maml:name>
+        </dev:type>
+      </command:returnValue>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.PagedResponse[VirusTotalAnalyzer.Models.MonitorItem]</maml:name>
+        </dev:type>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>Get one Monitor item by identifier.</maml:title>
+        <dev:code>PS&gt; Get-VirusTotalMonitorItem -ApiKey $ApiKey -Id 'monitor-item-id'</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>List items below an absolute Monitor path.</maml:title>
+        <dev:code>PS&gt; $page = Get-VirusTotalMonitorItem -ApiKey $ApiKey -List -Path '/releases/'</dev:code>
+        <dev:remarks>
+          <maml:para>List mode returns the full page unless All is specified, preserving its continuation cursor.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks />
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
+    <command:details>
+      <command:name>Get-VirusTotalMonitorStatistics</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>VirusTotalMonitorStatistics</command:noun>
+      <maml:description>
+        <maml:para>Gets VirusTotal Monitor publisher statistics.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Gets VirusTotal Monitor publisher statistics.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem parameterSetName="__AllParameterSets">
+        <maml:name>Get-VirusTotalMonitorStatistics</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Cursor</maml:name>
+          <maml:description>
+            <maml:para>Pagination cursor.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Limit</maml:name>
+          <maml:description>
+            <maml:para>Maximum number of ranked entries requested.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ApiKey</maml:name>
+        <maml:description>
+          <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Client</maml:name>
+        <maml:description>
+          <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+        <dev:type>
+          <maml:name>IVirusTotalClient</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Cursor</maml:name>
+        <maml:description>
+          <maml:para>Pagination cursor.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Limit</maml:name>
+        <maml:description>
+          <maml:para>Maximum number of ranked entries requested.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+        </dev:type>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.MonitorStatisticsResponse</maml:name>
+        </dev:type>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>Get current and historical publisher statistics.</maml:title>
+        <dev:code>PS&gt; Get-VirusTotalMonitorStatistics -ApiKey $ApiKey</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks />
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
+    <command:details>
       <command:name>Get-VirusUser</command:name>
       <command:verb>Get</command:verb>
       <command:noun>VirusUser</command:noun>
@@ -695,12 +1395,12 @@
     <command:syntax>
       <command:syntaxItem parameterSetName="__AllParameterSets">
         <maml:name>Get-VirusUser</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ApiKey</maml:name>
           <maml:description>
-            <maml:para>VirusTotal API key.</maml:para>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -710,11 +1410,11 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Client</maml:name>
           <maml:description>
-            <maml:para>Existing VirusTotal client to reuse.</maml:para>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">VirusTotalClient</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
           <dev:type>
-            <maml:name>VirusTotalClient</maml:name>
+            <maml:name>IVirusTotalClient</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -734,12 +1434,12 @@
       </command:syntaxItem>
     </command:syntax>
     <command:parameters>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ApiKey</maml:name>
         <maml:description>
-          <maml:para>VirusTotal API key.</maml:para>
+          <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
         </maml:description>
-        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
@@ -749,11 +1449,11 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Client</maml:name>
         <maml:description>
-          <maml:para>Existing VirusTotal client to reuse.</maml:para>
+          <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">VirusTotalClient</command:parameterValue>
+        <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
         <dev:type>
-          <maml:name>VirusTotalClient</maml:name>
+          <maml:name>IVirusTotalClient</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -811,12 +1511,12 @@
     <command:syntax>
       <command:syntaxItem parameterSetName="Hash">
         <maml:name>New-VirusScan</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ApiKey</maml:name>
           <maml:description>
-            <maml:para>VirusTotal API key.</maml:para>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -826,7 +1526,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Client</maml:name>
           <maml:description>
-            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
           <dev:type>
@@ -862,12 +1562,12 @@
       </command:syntaxItem>
       <command:syntaxItem parameterSetName="FileHash">
         <maml:name>New-VirusScan</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ApiKey</maml:name>
           <maml:description>
-            <maml:para>VirusTotal API key.</maml:para>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -877,7 +1577,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Client</maml:name>
           <maml:description>
-            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
           <dev:type>
@@ -913,12 +1613,12 @@
       </command:syntaxItem>
       <command:syntaxItem parameterSetName="FileInformation">
         <maml:name>New-VirusScan</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ApiKey</maml:name>
           <maml:description>
-            <maml:para>VirusTotal API key.</maml:para>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -928,7 +1628,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Client</maml:name>
           <maml:description>
-            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
           <dev:type>
@@ -964,12 +1664,12 @@
       </command:syntaxItem>
       <command:syntaxItem parameterSetName="Url">
         <maml:name>New-VirusScan</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ApiKey</maml:name>
           <maml:description>
-            <maml:para>VirusTotal API key.</maml:para>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -979,7 +1679,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Client</maml:name>
           <maml:description>
-            <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
           </maml:description>
           <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
           <dev:type>
@@ -1015,12 +1715,12 @@
       </command:syntaxItem>
     </command:syntax>
     <command:parameters>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ApiKey</maml:name>
         <maml:description>
-          <maml:para>VirusTotal API key.</maml:para>
+          <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
         </maml:description>
-        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
@@ -1030,7 +1730,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Client</maml:name>
         <maml:description>
-          <maml:para>Existing IVirusTotalClient instance to reuse.</maml:para>
+          <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
         <dev:type>
@@ -1147,6 +1847,127 @@
   </command:command>
   <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
     <command:details>
+      <command:name>New-VirusTotalMonitorFolder</command:name>
+      <command:verb>New</command:verb>
+      <command:noun>VirusTotalMonitorFolder</command:noun>
+      <maml:description>
+        <maml:para>Creates a folder in VirusTotal Monitor.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Creates a folder in VirusTotal Monitor.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem parameterSetName="__AllParameterSets">
+        <maml:name>New-VirusTotalMonitorFolder</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="0" aliases="None">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>Absolute Monitor folder path, including the trailing slash.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ApiKey</maml:name>
+        <maml:description>
+          <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Client</maml:name>
+        <maml:description>
+          <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+        <dev:type>
+          <maml:name>IVirusTotalClient</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="0" aliases="None">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>Absolute Monitor folder path, including the trailing slash.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+        </dev:type>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.MonitorItem</maml:name>
+        </dev:type>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>Create an absolute Monitor folder.</maml:title>
+        <dev:code>PS&gt; New-VirusTotalMonitorFolder -ApiKey $ApiKey -Path '/Product/1.0/'</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks />
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
+    <command:details>
       <command:name>New-VirusVote</command:name>
       <command:verb>New</command:verb>
       <command:noun>VirusVote</command:noun>
@@ -1160,12 +1981,12 @@
     <command:syntax>
       <command:syntaxItem parameterSetName="__AllParameterSets">
         <maml:name>New-VirusVote</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>ApiKey</maml:name>
           <maml:description>
-            <maml:para>VirusTotal API key.</maml:para>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -1175,11 +1996,11 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Client</maml:name>
           <maml:description>
-            <maml:para>Existing VirusTotal client to reuse.</maml:para>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">VirusTotalClient</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
           <dev:type>
-            <maml:name>VirusTotalClient</maml:name>
+            <maml:name>IVirusTotalClient</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -1203,6 +2024,7 @@
           </maml:description>
           <command:parameterValue required="true" variableLength="false">ResourceType</command:parameterValue>
           <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">Unknown</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">File</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">Url</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">IpAddress</command:parameterValue>
@@ -1222,8 +2044,6 @@
             <command:parameterValue required="false" variableLength="false">LivehuntNotification</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">RetrohuntJob</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">RetrohuntNotification</command:parameterValue>
-            <command:parameterValue required="false" variableLength="false">MonitorItem</command:parameterValue>
-            <command:parameterValue required="false" variableLength="false">MonitorEvent</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">IntelligenceHuntingRuleset</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">FileBehaviour</command:parameterValue>
           </command:parameterValueGroup>
@@ -1252,12 +2072,12 @@
       </command:syntaxItem>
     </command:syntax>
     <command:parameters>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>ApiKey</maml:name>
         <maml:description>
-          <maml:para>VirusTotal API key.</maml:para>
+          <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
         </maml:description>
-        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
@@ -1267,11 +2087,11 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Client</maml:name>
         <maml:description>
-          <maml:para>Existing VirusTotal client to reuse.</maml:para>
+          <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">VirusTotalClient</command:parameterValue>
+        <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
         <dev:type>
-          <maml:name>VirusTotalClient</maml:name>
+          <maml:name>IVirusTotalClient</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -1295,6 +2115,7 @@
         </maml:description>
         <command:parameterValue required="true" variableLength="false">ResourceType</command:parameterValue>
         <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">Unknown</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">File</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">Url</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">IpAddress</command:parameterValue>
@@ -1314,8 +2135,6 @@
           <command:parameterValue required="false" variableLength="false">LivehuntNotification</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">RetrohuntJob</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">RetrohuntNotification</command:parameterValue>
-          <command:parameterValue required="false" variableLength="false">MonitorItem</command:parameterValue>
-          <command:parameterValue required="false" variableLength="false">MonitorEvent</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">IntelligenceHuntingRuleset</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">FileBehaviour</command:parameterValue>
         </command:parameterValueGroup>
@@ -1361,6 +2180,625 @@
         <dev:code>PS&gt; New-VirusVote -ApiKey $ApiKey -ResourceType File -Id 'abc' -Verdict Malicious</dev:code>
         <dev:remarks>
           <maml:para>Marks the file identified by the given hash as malicious.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks />
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
+    <command:details>
+      <command:name>Remove-VirusTotalMonitorItem</command:name>
+      <command:verb>Remove</command:verb>
+      <command:noun>VirusTotalMonitorItem</command:noun>
+      <maml:description>
+        <maml:para>Removes a VirusTotal Monitor item.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Removes a VirusTotal Monitor item.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem parameterSetName="__AllParameterSets">
+        <maml:name>Remove-VirusTotalMonitorItem</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="0" aliases="None">
+          <maml:name>Id</maml:name>
+          <maml:description>
+            <maml:para>Identifier of the Monitor item to delete.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ApiKey</maml:name>
+        <maml:description>
+          <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Client</maml:name>
+        <maml:description>
+          <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+        <dev:type>
+          <maml:name>IVirusTotalClient</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="0" aliases="None">
+        <maml:name>Id</maml:name>
+        <maml:description>
+          <maml:para>Identifier of the Monitor item to delete.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+        </dev:type>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues />
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>Remove one Monitor item after confirmation.</maml:title>
+        <dev:code>PS&gt; Remove-VirusTotalMonitorItem -ApiKey $ApiKey -Id 'monitor-item-id'</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks />
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
+    <command:details>
+      <command:name>Send-VirusTotalMonitorFile</command:name>
+      <command:verb>Send</command:verb>
+      <command:noun>VirusTotalMonitorFile</command:noun>
+      <maml:description>
+        <maml:para>Uploads a publisher file to VirusTotal Monitor.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Uploads a publisher file to VirusTotal Monitor.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem parameterSetName="Path">
+        <maml:name>Send-VirusTotalMonitorFile</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Details</maml:name>
+          <maml:description>
+            <maml:para>Optional publisher details assigned after upload.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="0" aliases="None">
+          <maml:name>File</maml:name>
+          <maml:description>
+            <maml:para>Local file to upload.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>Absolute destination path in Monitor.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>PollingIntervalSeconds</maml:name>
+          <maml:description>
+            <maml:para>Seconds between Monitor item verification requests.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>SkipHashVerification</maml:name>
+          <maml:description>
+            <maml:para>Returns after upload without polling for the remote SHA-256.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>VerificationTimeoutSeconds</maml:name>
+          <maml:description>
+            <maml:para>Maximum seconds to wait for a remote SHA-256.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem parameterSetName="ExistingItem">
+        <maml:name>Send-VirusTotalMonitorFile</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Details</maml:name>
+          <maml:description>
+            <maml:para>Optional publisher details assigned after upload.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ExistingItemId</maml:name>
+          <maml:description>
+            <maml:para>Existing Monitor item identifier whose contents will be replaced.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="0" aliases="None">
+          <maml:name>File</maml:name>
+          <maml:description>
+            <maml:para>Local file to upload.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>PollingIntervalSeconds</maml:name>
+          <maml:description>
+            <maml:para>Seconds between Monitor item verification requests.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>SkipHashVerification</maml:name>
+          <maml:description>
+            <maml:para>Returns after upload without polling for the remote SHA-256.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>VerificationTimeoutSeconds</maml:name>
+          <maml:description>
+            <maml:para>Maximum seconds to wait for a remote SHA-256.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ApiKey</maml:name>
+        <maml:description>
+          <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Client</maml:name>
+        <maml:description>
+          <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+        <dev:type>
+          <maml:name>IVirusTotalClient</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Details</maml:name>
+        <maml:description>
+          <maml:para>Optional publisher details assigned after upload.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ExistingItemId</maml:name>
+        <maml:description>
+          <maml:para>Existing Monitor item identifier whose contents will be replaced.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="0" aliases="None">
+        <maml:name>File</maml:name>
+        <maml:description>
+          <maml:para>Local file to upload.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>Absolute destination path in Monitor.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>PollingIntervalSeconds</maml:name>
+        <maml:description>
+          <maml:para>Seconds between Monitor item verification requests.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>SkipHashVerification</maml:name>
+        <maml:description>
+          <maml:para>Returns after upload without polling for the remote SHA-256.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>VerificationTimeoutSeconds</maml:name>
+        <maml:description>
+          <maml:para>Maximum seconds to wait for a remote SHA-256.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+        </dev:type>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.MonitorUploadResult</maml:name>
+        </dev:type>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>Upload a new publisher file and verify its SHA-256.</maml:title>
+        <dev:code>PS&gt; Send-VirusTotalMonitorFile -ApiKey $ApiKey -File 'C:\releases\app.exe' -Path '/Product/1.0/app.exe'</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>Replace the contents of an existing Monitor item.</maml:title>
+        <dev:code>PS&gt; Send-VirusTotalMonitorFile -ApiKey $ApiKey -File 'C:\releases\app.exe' -ExistingItemId 'monitor-item-id'</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks />
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
+    <command:details>
+      <command:name>Set-VirusTotalMonitorItem</command:name>
+      <command:verb>Set</command:verb>
+      <command:noun>VirusTotalMonitorItem</command:noun>
+      <maml:description>
+        <maml:para>Sets publisher details on a VirusTotal Monitor item.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Sets publisher details on a VirusTotal Monitor item.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem parameterSetName="__AllParameterSets">
+        <maml:name>Set-VirusTotalMonitorItem</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Details</maml:name>
+          <maml:description>
+            <maml:para>Publisher details stored with the item.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByPropertyName)" position="0" aliases="None">
+          <maml:name>Id</maml:name>
+          <maml:description>
+            <maml:para>Identifier of the Monitor item to configure.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ApiKey</maml:name>
+        <maml:description>
+          <maml:para>VirusTotal API key used when Client is not supplied.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Client</maml:name>
+        <maml:description>
+          <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+        <dev:type>
+          <maml:name>IVirusTotalClient</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Details</maml:name>
+        <maml:description>
+          <maml:para>Publisher details stored with the item.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByPropertyName)" position="0" aliases="None">
+        <maml:name>Id</maml:name>
+        <maml:description>
+          <maml:para>Identifier of the Monitor item to configure.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+        </dev:type>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.MonitorItem</maml:name>
+        </dev:type>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>Update publisher details for an uploaded item.</maml:title>
+        <dev:code>PS&gt; Set-VirusTotalMonitorItem -ApiKey $ApiKey -Id 'monitor-item-id' -Details 'Signed release build'</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>

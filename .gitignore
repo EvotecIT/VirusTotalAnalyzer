@@ -25,5 +25,6 @@ probes-stats/all-result.json
 Ignore/
 .vs/
 Artefacts/
+Module/Lib/
 **/bin/
 **/obj/

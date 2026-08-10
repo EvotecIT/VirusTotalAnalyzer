@@ -30,7 +30,6 @@ public partial interface IVirusTotalClient : IDisposable
     Task DeleteGraphCommentAsync(string graphId, string commentId, CancellationToken cancellationToken = default);
     Task DeleteItemAsync(ResourceType resourceType, string id, CancellationToken cancellationToken = default);
     Task DeleteLivehuntNotificationAsync(string id, CancellationToken cancellationToken = default);
-    Task DeleteMonitorItemAsync(string id, CancellationToken cancellationToken = default);
     Task DeleteRetrohuntJobAsync(string id, CancellationToken cancellationToken = default);
     Task DeleteRetrohuntNotificationAsync(string id, CancellationToken cancellationToken = default);
     Task DeleteYaraRulesetAsync(string id, CancellationToken cancellationToken = default);
@@ -123,11 +122,6 @@ public partial interface IVirusTotalClient : IDisposable
     Task<IReadOnlyList<YaraWatcher>?> AddYaraRulesetWatchersAsync(string id, YaraWatcherRequest request, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<YaraWatcher>?> GetYaraRulesetWatchersAsync(string id, CancellationToken cancellationToken = default);
     Task<LivehuntNotification?> GetLivehuntNotificationAsync(string id, CancellationToken cancellationToken = default);
-    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
-    Task<MonitorItem?> CreateMonitorItemAsync(CreateMonitorItemRequest request, CancellationToken cancellationToken = default);
-    Task<MonitorItem?> GetMonitorItemAsync(string id, CancellationToken cancellationToken = default);
-    /// <exception cref="ArgumentNullException"><paramref name="request"/> is null.</exception>
-    Task<MonitorItem?> UpdateMonitorItemAsync(string id, UpdateMonitorItemRequest request, CancellationToken cancellationToken = default);
     Task<Page<LivehuntNotification>> ListLivehuntNotificationsAsync(int limit = 10, string? cursor = null, bool fetchAll = true, CancellationToken cancellationToken = default);
     Task<Page<RetrohuntJob>> ListRetrohuntJobsAsync(int limit = 10, string? cursor = null, bool fetchAll = true, CancellationToken cancellationToken = default);
     Task<Page<RetrohuntNotification>> ListRetrohuntNotificationsAsync(int limit = 10, string? cursor = null, bool fetchAll = true, CancellationToken cancellationToken = default);
@@ -143,8 +137,6 @@ public partial interface IVirusTotalClient : IDisposable
     Task<PagedResponse<FileReport>?> GetFileSimilarFilesAsync(string id, int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken cancellationToken = default);
     Task<PagedResponse<Graph>?> ListGraphsAsync(int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken cancellationToken = default);
     Task<PagedResponse<IpAddressSummary>?> GetFileContactedIpsAsync(string id, int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken cancellationToken = default);
-    Task<PagedResponse<MonitorEvent>?> ListMonitorEventsAsync(string? filter = null, int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken ct = default);
-    Task<PagedResponse<MonitorItem>?> ListMonitorItemsAsync(int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken cancellationToken = default);
     Task<PagedResponse<Relationship>?> ListBundleItemsAsync(string id, int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken cancellationToken = default);
     Task<PagedResponse<Relationship>?> ListCollectionItemsAsync(string id, int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken cancellationToken = default);
     Task<PagedResponse<UrlSummary>?> GetFileContactedUrlsAsync(string id, int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken cancellationToken = default);

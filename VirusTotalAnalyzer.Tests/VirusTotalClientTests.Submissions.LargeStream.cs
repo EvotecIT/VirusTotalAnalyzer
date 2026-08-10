@@ -15,9 +15,9 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task SubmitFileAsync_NonSeekableLargeStream_UsesUploadUrl()
     {
-        var uploadUrl = "https://upload.example.com/";
+        var uploadUrl = "https://uploads.virustotal.com/";
         var uploadUrlJson = $"{{\"data\":\"{uploadUrl}\"}}";
-        var analysisJson = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var analysisJson = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"queued\"}}}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {

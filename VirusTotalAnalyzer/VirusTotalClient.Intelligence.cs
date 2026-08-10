@@ -77,7 +77,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.GetAsync($"{GetPath(ResourceType.RetrohuntJob)}/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<RetrohuntJob>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<RetrohuntJob>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Page<RetrohuntJob>> ListRetrohuntJobsAsync(int limit = 10, string? cursor = null, bool fetchAll = true, CancellationToken cancellationToken = default)
@@ -139,7 +139,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.GetAsync($"{GetPath(ResourceType.RetrohuntNotification)}/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<RetrohuntNotification>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<RetrohuntNotification>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Page<RetrohuntNotification>> ListRetrohuntNotificationsAsync(int limit = 10, string? cursor = null, bool fetchAll = true, CancellationToken cancellationToken = default)
@@ -178,15 +178,6 @@ public sealed partial class VirusTotalClient
         ValidateId(id, nameof(id));
         using var response = await _httpClient.DeleteAsync($"intelligence/retrohunt_notifications/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-    }
-
-    public async Task<MonitorItem?> GetMonitorItemAsync(string id, CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        using var response = await _httpClient.GetAsync($"{GetPath(ResourceType.MonitorItem)}/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<MonitorItem>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Page<YaraRuleset>> ListYaraRulesetsAsync(int? limit = null, string? cursor = null, bool fetchAll = true, CancellationToken cancellationToken = default)
@@ -232,7 +223,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.GetAsync($"intelligence/hunting_rulesets/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<YaraRuleset>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<YaraRuleset>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<YaraRuleset?> CreateYaraRulesetAsync(YaraRulesetRequest request, CancellationToken cancellationToken = default)

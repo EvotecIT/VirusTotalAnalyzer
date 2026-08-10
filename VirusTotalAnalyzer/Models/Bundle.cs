@@ -8,11 +8,6 @@ public sealed class Bundle
     public ResourceType Type { get; set; }
 
     public Links Links { get; set; } = new();
-    public BundleData Data { get; set; } = new();
-}
-
-public sealed class BundleData
-{
     public BundleAttributes Attributes { get; set; } = new();
 }
 

@@ -12,7 +12,7 @@ public static class GetDomainWhoisExample
         try
         {
             var whois = await client.GetDomainWhoisAsync("example.com");
-            Console.WriteLine(whois?.Data.Attributes.Whois);
+            Console.WriteLine(whois?.Attributes.Whois);
         }
         catch (RateLimitExceededException ex)
         {

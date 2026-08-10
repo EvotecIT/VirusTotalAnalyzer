@@ -12,7 +12,7 @@ public static class GetIpAddressWhoisExample
         try
         {
             var whois = await client.GetIpAddressWhoisAsync("1.1.1.1");
-            Console.WriteLine(whois?.Data.Attributes.Whois);
+            Console.WriteLine(whois?.Attributes.Whois);
         }
         catch (RateLimitExceededException ex)
         {

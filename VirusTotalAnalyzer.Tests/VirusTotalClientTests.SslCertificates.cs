@@ -14,7 +14,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetSslCertificateAsync_DeserializesResponseAndUsesCorrectPath()
     {
-        var json = "{\"data\":{\"id\":\"c1\",\"type\":\"ssl_certificate\",\"links\":{\"self\":\"https://www.virustotal.com/api/v3/ssl_certificates/c1\"},\"data\":{\"attributes\":{\"sha256\":\"hash\",\"subject\":\"CN=example\",\"issuer\":\"CN=ca\"}}}}";
+        var json = "{\"data\":{\"id\":\"c1\",\"type\":\"ssl_certificate\",\"links\":{\"self\":\"https://www.virustotal.com/api/v3/ssl_certificates/c1\"},\"attributes\":{\"sha256\":\"hash\",\"subject\":\"CN=example\",\"issuer\":\"CN=ca\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -30,7 +30,7 @@ public partial class VirusTotalClientTests
         Assert.NotNull(cert);
         Assert.Equal("c1", cert!.Id);
         Assert.Equal(ResourceType.SslCertificate, cert.Type);
-        Assert.Equal("hash", cert.Data.Attributes.Sha256);
+        Assert.Equal("hash", cert.Attributes.Sha256);
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/ssl_certificates/c1", handler.Request!.RequestUri!.AbsolutePath);
     }
@@ -38,7 +38,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetDomainSslCertificatesAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"c1\",\"type\":\"ssl_certificate\",\"data\":{\"attributes\":{\"sha256\":\"hash\"}}}]}";
+        var json = "{\"data\":[{\"id\":\"c1\",\"type\":\"ssl_certificate\",\"attributes\":{\"sha256\":\"hash\"}}]}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -55,7 +55,7 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/domains/example.com/ssl_certificates", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(certs);
         Assert.Single(certs!);
-        Assert.Equal("hash", certs[0].Data.Attributes.Sha256);
+        Assert.Equal("hash", certs[0].Attributes.Sha256);
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetIpAddressSslCertificatesAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"c1\",\"type\":\"ssl_certificate\",\"data\":{\"attributes\":{\"sha256\":\"hash\"}}}]}";
+        var json = "{\"data\":[{\"id\":\"c1\",\"type\":\"ssl_certificate\",\"attributes\":{\"sha256\":\"hash\"}}]}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -98,7 +98,7 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/ip_addresses/1.2.3.4/ssl_certificates", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(certs);
         Assert.Single(certs!);
-        Assert.Equal("hash", certs[0].Data.Attributes.Sha256);
+        Assert.Equal("hash", certs[0].Attributes.Sha256);
     }
 
     [Fact]
@@ -121,4 +121,3 @@ public partial class VirusTotalClientTests
         Assert.Equal("?limit=10&cursor=abc", handler.Request!.RequestUri!.Query);
     }
 }
-

@@ -1,10 +1,10 @@
+using System.Runtime.Serialization;
+
 namespace VirusTotalAnalyzer;
 
 /// <summary>
 /// Status values returned by the VirusTotal analysis endpoints.
 /// </summary>
-using System.Runtime.Serialization;
-
 public enum AnalysisStatus
 {
     [EnumMember(Value = "queued")]

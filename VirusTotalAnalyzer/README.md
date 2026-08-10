@@ -20,7 +20,28 @@ using var client = VirusTotalClient.Create(
 var report = await client.GetFileReportAsync(sha256, cancellationToken: cancellationToken);
 ```
 
-`VirusTotalClient.Create` applies a bounded HTTP timeout. Applications that already manage `HttpClient` lifetime can pass their own client to the `VirusTotalClient` constructor.
+`VirusTotalClient.Create` applies a bounded HTTP timeout. For custom proxies, client certificates,
+DNS behavior, or deterministic test transports, pass separate API and unauthenticated-download
+`HttpMessageHandler` instances. Automatic redirects must be disabled on both handler chains so the
+client can intercept signed download redirects and follow them without forwarding the API key.
+
+```csharp
+using System.Net.Http;
+
+using var apiHandler = new HttpClientHandler { AllowAutoRedirect = false };
+using var downloadHandler = new HttpClientHandler { AllowAutoRedirect = false };
+using var client = new VirusTotalClient(
+    apiKey,
+    apiHandler,
+    downloadHandler,
+    disposeHandlers: false);
+```
+
+The former single-`HttpClient` constructor is intentionally not public: an injected `HttpClient`
+does not expose whether its inner handler automatically follows redirects, so the library cannot
+guarantee that `x-apikey` stays on the authenticated VirusTotal API hop. Factory-created
+`HttpClient` instances are therefore not accepted; configure equivalent handlers directly for
+this client.
 
 ## Register a publisher artifact with VirusTotal Monitor
 
@@ -85,4 +106,5 @@ Get-VirusTotalMonitorEvent -ApiKey $env:VIRUSTOTAL_MONITOR_API_KEY -Filter 'acti
 Get-VirusTotalMonitorStatistics -ApiKey $env:VIRUSTOTAL_MONITOR_API_KEY
 ```
 
-API keys are used only to create the client and are not included in upload results or request diagnostics.
+API keys are confined to authenticated VirusTotal API and upload requests. They are not sent to
+signed download URLs, included in upload results, or written to request diagnostics.

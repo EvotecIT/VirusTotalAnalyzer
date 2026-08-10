@@ -76,6 +76,37 @@ public class MonitorUploadTests
     }
 
     [Fact]
+    public async Task UploadMonitorFileAsync_PreservesUploadReceiptWhenConfigResponseIsSparse()
+    {
+        const string sha256 = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
+        var handler = new QueueHandler(
+            JsonResponse($"{{\"data\":{{\"id\":\"m1\",\"type\":\"monitor_item\",\"attributes\":{{\"path\":\"/app.exe\",\"sha256\":\"{sha256}\",\"last_detections_count\":2}}}}}}"),
+            JsonResponse("{\"data\":{\"id\":\"m1\",\"type\":\"monitor_item\",\"attributes\":{\"details\":\"release 1\"}}}"));
+        using var httpClient = CreateHttpClient(handler);
+        using var client = new VirusTotalClient(httpClient);
+        using var source = new MemoryStream(Encoding.UTF8.GetBytes("abc"));
+
+        var result = await client.UploadMonitorFileAsync(
+            source,
+            "app.exe",
+            new MonitorUploadOptions
+            {
+                Path = "/app.exe",
+                Details = "release 1",
+                VerificationTimeout = TimeSpan.Zero,
+                PollingInterval = TimeSpan.FromMilliseconds(1)
+            });
+
+        Assert.Equal(MonitorUploadVerificationStatus.Verified, result.VerificationStatus);
+        Assert.Equal("/app.exe", result.RemotePath);
+        Assert.Equal(sha256, result.RemoteSha256);
+        Assert.Equal(2, result.CurrentDetectionCount);
+        Assert.Equal("release 1", result.Item.Attributes.Details);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Equal("/api/v3/monitor/items/m1/config", handler.Requests[1].RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
     public async Task UploadMonitorFileAsync_ReplacementWaitsPastPreviousRemoteSha256()
     {
         const string sha256 = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";

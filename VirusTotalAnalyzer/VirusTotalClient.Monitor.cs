@@ -96,8 +96,16 @@ public sealed partial class VirusTotalClient
                 throw new InvalidDataException("VirusTotal Monitor returned an upload response without an item id.");
             }
 
-            item = await ConfigureMonitorItemAsync(item.Id, options.Details, cancellationToken).ConfigureAwait(false)
-                ?? item;
+            var configuredItem = await ConfigureMonitorItemAsync(
+                item.Id,
+                options.Details,
+                cancellationToken).ConfigureAwait(false);
+
+            // The Monitor configuration endpoint can return a sparse resource containing only
+            // the configured attributes. Keep the authoritative upload receipt and apply the one
+            // field this operation changes so path/hash metadata remains available for the
+            // receipt and immediate verification.
+            item.Attributes.Details = configuredItem?.Attributes?.Details ?? options.Details;
         }
 
         var result = new MonitorUploadResult

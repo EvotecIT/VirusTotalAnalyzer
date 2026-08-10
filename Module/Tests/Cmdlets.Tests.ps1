@@ -60,15 +60,20 @@ public class FakeHandler : HttpMessageHandler
     }
 }
 "@ | Out-Null
+
+    function New-TestVirusTotalClient {
+        param([FakeHandler] $ApiHandler)
+
+        $downloadHandler = [FakeHandler]::new('{}')
+        [VirusTotalAnalyzer.VirusTotalClient]::new('test-api-key', $ApiHandler, $downloadHandler)
+    }
 }
 
 Describe 'Get-VirusReport cmdlet' {
     It 'retrieves a file report by hash' {
         $json = '{"data":{"id":"abc","type":"file"}}'
         $handler = [FakeHandler]::new($json)
-        $httpClient = [System.Net.Http.HttpClient]::new($handler)
-        $httpClient.BaseAddress = [Uri]::new('https://www.virustotal.com/api/v3/')
-        $client = [VirusTotalAnalyzer.VirusTotalClient]::new($httpClient)
+        $client = New-TestVirusTotalClient -ApiHandler $handler
 
         $result = Get-VirusReport -Hash 'abc' -Client $client
         $result.Id | Should -Be 'abc'
@@ -78,9 +83,7 @@ Describe 'Get-VirusReport cmdlet' {
     It 'uses lowercase hash when hashing file content' {
         $json = '{"data":{"id":"def","type":"file"}}'
         $handler = [FakeHandler]::new($json)
-        $httpClient = [System.Net.Http.HttpClient]::new($handler)
-        $httpClient.BaseAddress = [Uri]::new('https://www.virustotal.com/api/v3/')
-        $client = [VirusTotalAnalyzer.VirusTotalClient]::new($httpClient)
+        $client = New-TestVirusTotalClient -ApiHandler $handler
 
         $file = New-TemporaryFile
         Set-Content -Path $file -Value 'test'
@@ -93,9 +96,7 @@ Describe 'Get-VirusReport cmdlet' {
     It 'reports progress when hashing a file' {
         $json = '{"data":{"id":"ghi","type":"file"}}'
         $handler = [FakeHandler]::new($json)
-        $httpClient = [System.Net.Http.HttpClient]::new($handler)
-        $httpClient.BaseAddress = [Uri]::new('https://www.virustotal.com/api/v3/')
-        $client = [VirusTotalAnalyzer.VirusTotalClient]::new($httpClient)
+        $client = New-TestVirusTotalClient -ApiHandler $handler
 
         $file = New-TemporaryFile
         Set-Content -Path $file -Value 'test'
@@ -118,9 +119,7 @@ Describe 'New-VirusScan cmdlet' {
     It 'submits a file for analysis' {
         $json = '{"data":{"id":"analysis1","type":"analysis"}}'
         $handler = [FakeHandler]::new($json)
-        $httpClient = [System.Net.Http.HttpClient]::new($handler)
-        $httpClient.BaseAddress = [Uri]::new('https://www.virustotal.com/api/v3/')
-        $client = [VirusTotalAnalyzer.VirusTotalClient]::new($httpClient)
+        $client = New-TestVirusTotalClient -ApiHandler $handler
 
         $file = New-TemporaryFile
         Set-Content -Path $file -Value 'test'
@@ -133,9 +132,7 @@ Describe 'New-VirusScan cmdlet' {
     It 'reanalyzes a file using a lowercase hash' {
         $json = '{"data":{"id":"analysis2","type":"analysis"}}'
         $handler = [FakeHandler]::new($json)
-        $httpClient = [System.Net.Http.HttpClient]::new($handler)
-        $httpClient.BaseAddress = [Uri]::new('https://www.virustotal.com/api/v3/')
-        $client = [VirusTotalAnalyzer.VirusTotalClient]::new($httpClient)
+        $client = New-TestVirusTotalClient -ApiHandler $handler
 
         $file = New-TemporaryFile
         Set-Content -Path $file -Value 'test'
@@ -148,9 +145,7 @@ Describe 'New-VirusScan cmdlet' {
     It 'reports progress when hashing a file for reanalysis' {
         $json = '{"data":{"id":"analysis3","type":"analysis"}}'
         $handler = [FakeHandler]::new($json)
-        $httpClient = [System.Net.Http.HttpClient]::new($handler)
-        $httpClient.BaseAddress = [Uri]::new('https://www.virustotal.com/api/v3/')
-        $client = [VirusTotalAnalyzer.VirusTotalClient]::new($httpClient)
+        $client = New-TestVirusTotalClient -ApiHandler $handler
 
         $file = New-TemporaryFile
         Set-Content -Path $file -Value 'test'
@@ -173,9 +168,7 @@ Describe 'Get-VirusComment cmdlet' {
     It 'retrieves comments for a resource' {
         $json = '{"data":[{"id":"c1","type":"comment"}]}'
         $handler = [FakeHandler]::new($json)
-        $httpClient = [System.Net.Http.HttpClient]::new($handler)
-        $httpClient.BaseAddress = [Uri]::new('https://www.virustotal.com/api/v3/')
-        $client = [VirusTotalAnalyzer.VirusTotalClient]::new($httpClient)
+        $client = New-TestVirusTotalClient -ApiHandler $handler
 
         $result = @(Get-VirusComment -ResourceType File -Id 'abc' -Client $client)[0]
         $result.Id | Should -Be 'c1'
@@ -187,9 +180,7 @@ Describe 'New-VirusVote cmdlet' {
     It 'casts a vote for a resource' {
         $json = '{"data":{"id":"v1","type":"vote"}}'
         $handler = [FakeHandler]::new($json)
-        $httpClient = [System.Net.Http.HttpClient]::new($handler)
-        $httpClient.BaseAddress = [Uri]::new('https://www.virustotal.com/api/v3/')
-        $client = [VirusTotalAnalyzer.VirusTotalClient]::new($httpClient)
+        $client = New-TestVirusTotalClient -ApiHandler $handler
 
         $result = New-VirusVote -ResourceType File -Id 'abc' -Verdict Malicious -Client $client
         $result.Id | Should -Be 'v1'
@@ -201,9 +192,7 @@ Describe 'Get-VirusUser cmdlet' {
     It 'retrieves user information' {
         $json = '{"data":{"id":"user1","type":"user"}}'
         $handler = [FakeHandler]::new($json)
-        $httpClient = [System.Net.Http.HttpClient]::new($handler)
-        $httpClient.BaseAddress = [Uri]::new('https://www.virustotal.com/api/v3/')
-        $client = [VirusTotalAnalyzer.VirusTotalClient]::new($httpClient)
+        $client = New-TestVirusTotalClient -ApiHandler $handler
 
         $result = Get-VirusUser -Id 'user1' -Client $client
         $result.Id | Should -Be 'user1'
@@ -214,9 +203,7 @@ Describe 'Get-VirusUser cmdlet' {
 Describe 'Send-VirusTotalMonitorFile cmdlet' {
     It 'honors WhatIf when replacing an existing Monitor item' {
         $handler = [FakeHandler]::new('{"data":{"id":"m1","type":"monitor_item"}}')
-        $httpClient = [System.Net.Http.HttpClient]::new($handler)
-        $httpClient.BaseAddress = [Uri]::new('https://www.virustotal.com/api/v3/')
-        $client = [VirusTotalAnalyzer.VirusTotalClient]::new($httpClient)
+        $client = New-TestVirusTotalClient -ApiHandler $handler
         $file = New-TemporaryFile
 
         try {

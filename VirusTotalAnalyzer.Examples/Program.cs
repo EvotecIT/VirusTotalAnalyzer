@@ -52,7 +52,7 @@ using VirusTotalAnalyzer.Examples;
 // await VoteExample.RunAsync();
 // await DeleteExample.RunAsync();
 // await CustomUserAgentExample.RunAsync();
-// await UsingExistingHttpClientExample.RunAsync();
+// await UsingCustomTransportExample.RunAsync();
 // await ListLivehuntNotificationsExample.RunAsync();
 // await GetLivehuntNotificationExample.RunAsync();
 // await DeleteLivehuntNotificationExample.RunAsync();

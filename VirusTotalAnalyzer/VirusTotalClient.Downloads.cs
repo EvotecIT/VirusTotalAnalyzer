@@ -14,6 +14,72 @@ public sealed partial class VirusTotalClient
     private static HttpClient CreateDownloadClient(TimeSpan timeout)
         => new(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = timeout };
 
+    private static (HttpClient ApiClient, HttpClient DownloadClient) CreateConfiguredClients(
+        string apiKey,
+        HttpMessageHandler apiHandler,
+        HttpMessageHandler downloadHandler,
+        bool disposeHandlers,
+        TimeSpan? timeout)
+    {
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            throw new ArgumentException("Value cannot be null or whitespace.", nameof(apiKey));
+        }
+
+        ValidateRedirectHandler(apiHandler, nameof(apiHandler));
+        ValidateRedirectHandler(downloadHandler, nameof(downloadHandler));
+        if (ReferenceEquals(apiHandler, downloadHandler))
+        {
+            throw new ArgumentException(
+                "The authenticated API and unauthenticated download handlers must be different instances.",
+                nameof(downloadHandler));
+        }
+
+        var requestTimeout = timeout ?? TimeSpan.FromMinutes(10);
+        var apiClient = new HttpClient(apiHandler, disposeHandlers)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/"),
+            Timeout = requestTimeout
+        };
+        apiClient.DefaultRequestHeaders.Add("x-apikey", apiKey);
+        var downloadClient = new HttpClient(downloadHandler, disposeHandlers)
+        {
+            Timeout = requestTimeout
+        };
+        return (apiClient, downloadClient);
+    }
+
+    private static void ValidateRedirectHandler(HttpMessageHandler? handler, string parameterName)
+    {
+        if (handler is null)
+        {
+            throw new ArgumentNullException(parameterName);
+        }
+
+        for (var current = handler; current is not null; current = (current as DelegatingHandler)?.InnerHandler)
+        {
+            if (current is HttpClientHandler httpClientHandler && httpClientHandler.AllowAutoRedirect)
+            {
+                throw new ArgumentException(
+                    "Automatic redirects must be disabled so VirusTotal credentials are never forwarded to signed download hosts.",
+                    parameterName);
+            }
+#if !NETFRAMEWORK
+            if (current is SocketsHttpHandler socketsHttpHandler && socketsHttpHandler.AllowAutoRedirect)
+            {
+                throw new ArgumentException(
+                    "Automatic redirects must be disabled so VirusTotal credentials are never forwarded to signed download hosts.",
+                    parameterName);
+            }
+#endif
+
+            if (current is not DelegatingHandler)
+            {
+                break;
+            }
+        }
+    }
+
     private static Uri ValidateSignedDownloadUri(Uri? uri)
     {
         if (uri is null || !uri.IsAbsoluteUri ||

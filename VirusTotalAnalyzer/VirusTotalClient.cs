@@ -21,8 +21,8 @@ namespace VirusTotalAnalyzer;
 /// <para>Use <see cref="Create(string, string, TimeSpan?)"/> for a self-contained client:</para>
 /// <code>using var client = VirusTotalClient.Create("YOUR_API_KEY");</code>
 /// <para>
-/// When providing an existing <see cref="HttpClient"/>, specify whether the client should
-/// dispose it by setting the <c>disposeClient</c> parameter in the constructor.
+/// For custom proxy, certificate, DNS, or test transports, use the constructor that accepts
+/// separate authenticated API and unauthenticated download <see cref="HttpMessageHandler"/> instances.
 /// </para>
 /// </remarks>
 public sealed partial class VirusTotalClient : IVirusTotalClient
@@ -43,12 +43,8 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
     /// Set to <see langword="true"/> to dispose <paramref name="httpClient"/> when this instance
     /// is disposed.
     /// </param>
-    /// <remarks>
-    /// Pass <paramref name="disposeClient"/> as <see langword="false"/> when the lifetime of the
-    /// provided <paramref name="httpClient"/> is managed externally.
-    /// </remarks>
     /// <param name="userAgent">Optional user-agent value. A library default is used when omitted.</param>
-    public VirusTotalClient(HttpClient httpClient, bool disposeClient = false, string? userAgent = null)
+    internal VirusTotalClient(HttpClient httpClient, bool disposeClient = false, string? userAgent = null)
         : this(
             httpClient,
             CreateDownloadClient(httpClient?.Timeout ?? throw new ArgumentNullException(nameof(httpClient))),
@@ -88,6 +84,52 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
     }
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="VirusTotalClient"/> class using separate
+    /// authenticated API and unauthenticated download transports.
+    /// </summary>
+    /// <param name="apiKey">The API key used for authenticated requests.</param>
+    /// <param name="apiHandler">The handler used for authenticated VirusTotal API requests.</param>
+    /// <param name="downloadHandler">
+    /// The handler used for unauthenticated signed downloads. Configure it with the same proxy,
+    /// client certificate, DNS, and test transport requirements as <paramref name="apiHandler"/>.
+    /// </param>
+    /// <param name="disposeHandlers">
+    /// Set to <see langword="true"/> to dispose both handlers with this instance; otherwise their
+    /// lifetime remains managed by the caller.
+    /// </param>
+    /// <param name="userAgent">Optional user-agent value. A library default is used when omitted.</param>
+    /// <param name="timeout">Optional request timeout. The default is ten minutes.</param>
+    /// <remarks>
+    /// Known handler chains are rejected when automatic redirects are enabled so that the library
+    /// can switch to the unauthenticated transport before following a signed URL and can enforce
+    /// HTTPS plus its redirect limit. Custom handlers must likewise return redirect responses.
+    /// </remarks>
+    public VirusTotalClient(
+        string apiKey,
+        HttpMessageHandler apiHandler,
+        HttpMessageHandler downloadHandler,
+        bool disposeHandlers = false,
+        string? userAgent = null,
+        TimeSpan? timeout = null)
+        : this(
+            CreateConfiguredClients(apiKey, apiHandler, downloadHandler, disposeHandlers, timeout),
+            userAgent)
+    {
+    }
+
+    private VirusTotalClient(
+        (HttpClient ApiClient, HttpClient DownloadClient) clients,
+        string? userAgent)
+        : this(
+            clients.ApiClient,
+            clients.DownloadClient,
+            disposeClient: true,
+            disposeDownloadClient: true,
+            userAgent)
+    {
+    }
+
+    /// <summary>
     /// Creates a new <see cref="VirusTotalClient"/> configured with the specified API key.
     /// </summary>
     /// <param name="apiKey">The API key used for authenticated requests.</param>
@@ -95,19 +137,13 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
     /// <param name="timeout">Optional request timeout. The default is ten minutes to accommodate streamed uploads.</param>
     /// <returns>A <see cref="VirusTotalClient"/> that owns its underlying <see cref="HttpClient"/>.</returns>
     public static VirusTotalClient Create(string apiKey, string? userAgent = null, TimeSpan? timeout = null)
-    {
-        if (string.IsNullOrWhiteSpace(apiKey)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(apiKey));
-        var httpClient = new HttpClient(new HttpClientHandler
-        {
-            AllowAutoRedirect = false
-        })
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/"),
-            Timeout = timeout ?? TimeSpan.FromMinutes(10)
-        };
-        httpClient.DefaultRequestHeaders.Add("x-apikey", apiKey);
-        return new VirusTotalClient(httpClient, disposeClient: true, userAgent: userAgent);
-    }
+        => new(
+            apiKey,
+            new HttpClientHandler { AllowAutoRedirect = false },
+            new HttpClientHandler { AllowAutoRedirect = false },
+            disposeHandlers: true,
+            userAgent,
+            timeout);
 
     /// <summary>
     /// Gets or sets the user agent used for outgoing requests.

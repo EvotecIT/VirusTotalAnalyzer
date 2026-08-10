@@ -35,6 +35,30 @@ public class VirusTotalClientDisposeTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Dispose_HandlerConstructorRespectsOwnership(bool disposeHandlers)
+    {
+        var apiHandler = new TrackingHandler();
+        var downloadHandler = new TrackingHandler();
+        IVirusTotalClient client = new VirusTotalClient(
+            "secret",
+            apiHandler,
+            downloadHandler,
+            disposeHandlers);
+
+        client.Dispose();
+
+        Assert.Equal(disposeHandlers, apiHandler.Disposed);
+        Assert.Equal(disposeHandlers, downloadHandler.Disposed);
+        if (!disposeHandlers)
+        {
+            apiHandler.Dispose();
+            downloadHandler.Dispose();
+        }
+    }
+
+    [Theory]
     [MemberData(nameof(DownloadFailureScenarios))]
     public async Task DownloadMethods_DisposeResponseOnFailure(Func<VirusTotalClient, Task> action)
     {

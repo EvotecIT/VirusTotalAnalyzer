@@ -8,11 +8,6 @@ public sealed class DomainWhois
     public ResourceType Type { get; set; }
 
     public Links Links { get; set; } = new();
-    public DomainWhoisData Data { get; set; } = new();
-}
-
-public sealed class DomainWhoisData
-{
     public DomainWhoisAttributes Attributes { get; set; } = new();
 }
 

@@ -21,7 +21,7 @@ public class VirusTotalClientRetryTests
         };
         rateLimitResponse.Headers.Add("Retry-After", "0");
 
-        var successJson = "{\"id\":\"user-id\",\"type\":\"user\",\"data\":{\"attributes\":{\"username\":\"name\",\"role\":\"user\"}}}";
+        var successJson = "{\"data\":{\"id\":\"user-id\",\"type\":\"user\",\"attributes\":{\"username\":\"name\",\"role\":\"user\"}}}";
         var successResponse = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(successJson, Encoding.UTF8, "application/json")
@@ -50,7 +50,7 @@ public class VirusTotalClientRetryTests
         };
         rateLimitResponse.Headers.Add("Retry-After", "0");
 
-        var successJson = "{\"id\":\"user-id\",\"type\":\"user\",\"data\":{\"attributes\":{\"username\":\"name\",\"role\":\"user\"}}}";
+        var successJson = "{\"data\":{\"id\":\"user-id\",\"type\":\"user\",\"attributes\":{\"username\":\"name\",\"role\":\"user\"}}}";
         var successResponse = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(successJson, Encoding.UTF8, "application/json")

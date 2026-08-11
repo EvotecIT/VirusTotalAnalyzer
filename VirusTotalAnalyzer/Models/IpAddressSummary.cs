@@ -8,17 +8,12 @@ public sealed class IpAddressSummary
     public ResourceType Type { get; set; }
 
     public Links Links { get; set; } = new();
-    public IpAddressSummaryData Data { get; set; } = new();
+    public IpAddressSummaryAttributes Attributes { get; set; } = new();
 }
 
 public sealed class IpAddressSummaryResponse
 {
     public IpAddressSummary Data { get; set; } = new();
-}
-
-public sealed class IpAddressSummaryData
-{
-    public IpAddressSummaryAttributes Attributes { get; set; } = new();
 }
 
 public sealed class IpAddressSummaryAttributes
@@ -36,4 +31,3 @@ public sealed class IpAddressSummariesResponse
 
     public PaginationMetadata? Meta { get; set; }
 }
-

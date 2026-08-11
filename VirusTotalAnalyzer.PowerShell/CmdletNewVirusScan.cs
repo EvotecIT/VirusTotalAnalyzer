@@ -33,12 +33,8 @@ namespace VirusTotalAnalyzer.PowerShell;
 /// <seealso href="https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/invoke-webrequest" />
 /// <seealso href="https://github.com/EvotecIT/VirusTotalAnalyzer" />
 [Cmdlet(VerbsCommon.New, "VirusScan")]
-public sealed class CmdletNewVirusScan : AsyncPSCmdlet
+public sealed class CmdletNewVirusScan : VirusTotalCmdlet
 {
-    /// <summary>VirusTotal API key.</summary>
-    [Parameter(Mandatory = true)]
-    public string ApiKey { get; set; } = string.Empty;
-
     /// <summary>Hash of an already submitted file to reanalyse.</summary>
     [Parameter(ParameterSetName = "Hash", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
     public string? Hash { get; set; }
@@ -60,14 +56,9 @@ public sealed class CmdletNewVirusScan : AsyncPSCmdlet
     [Parameter]
     public string? Password { get; set; }
 
-    /// <summary>Existing <see cref="IVirusTotalClient"/> instance to reuse.</summary>
-    [Parameter]
-    public IVirusTotalClient? Client { get; set; }
-
     /// <inheritdoc/>
     protected override async Task ProcessRecordAsync()
     {
-        var client = Client ?? VirusTotalClient.Create(ApiKey);
         try
         {
             switch (ParameterSetName)
@@ -75,12 +66,12 @@ public sealed class CmdletNewVirusScan : AsyncPSCmdlet
                 case "FileInformation":
                     if (!EnsureFileExists(File!, GetErrorActionPreference()))
                         return;
-                    var fileAnalysis = await client.ScanFileAsync(File!, Password, CancelToken).ConfigureAwait(false);
+                    var fileAnalysis = await ActiveClient.ScanFileAsync(File!, Password, CancelToken).ConfigureAwait(false);
                     WriteObject(fileAnalysis);
                     break;
 
                 case "Hash":
-                    var hashAnalysis = await client.ReanalyzeFileAsync(Hash!, CancelToken).ConfigureAwait(false);
+                    var hashAnalysis = await ActiveClient.ReanalyzeFileAsync(Hash!, CancelToken).ConfigureAwait(false);
                     WriteObject(hashAnalysis);
                     break;
 
@@ -118,12 +109,12 @@ public sealed class CmdletNewVirusScan : AsyncPSCmdlet
                         progress.RecordType = ProgressRecordType.Completed;
                         WriteProgress(progress);
                     }
-                    var fhAnalysis = await client.ReanalyzeFileAsync(hash, CancelToken).ConfigureAwait(false);
+                    var fhAnalysis = await ActiveClient.ReanalyzeFileAsync(hash, CancelToken).ConfigureAwait(false);
                     WriteObject(fhAnalysis);
                     break;
 
                 case "Url":
-                    var urlAnalysis = await client.ScanUrlAsync(Url!.ToString(), CancelToken).ConfigureAwait(false);
+                    var urlAnalysis = await ActiveClient.ScanUrlAsync(Url!.ToString(), CancelToken).ConfigureAwait(false);
                     WriteObject(urlAnalysis);
                     break;
             }
@@ -139,13 +130,6 @@ public sealed class CmdletNewVirusScan : AsyncPSCmdlet
                 _ => null
             };
             WriteApiError(ex, target);
-        }
-        finally
-        {
-            if (Client is null)
-            {
-                client.Dispose();
-            }
         }
     }
 }

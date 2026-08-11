@@ -13,7 +13,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetDomainSubdomainsAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"d1\",\"type\":\"domain\",\"data\":{\"attributes\":{\"domain\":\"sub.example.com\"}}}]}";
+        var json = "{\"data\":[{\"id\":\"d1\",\"type\":\"domain\",\"attributes\":{\"domain\":\"sub.example.com\"}}]}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -31,7 +31,7 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/domains/example.com/subdomains", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(subdomains);
         Assert.Single(subdomains!);
-        Assert.Equal("sub.example.com", subdomains[0].Data.Attributes.Domain);
+        Assert.Equal("sub.example.com", subdomains[0].Attributes.Domain);
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetDomainSiblingsAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"d1\",\"type\":\"domain\",\"data\":{\"attributes\":{\"domain\":\"sibling.com\"}}}]}";
+        var json = "{\"data\":[{\"id\":\"d1\",\"type\":\"domain\",\"attributes\":{\"domain\":\"sibling.com\"}}]}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -75,7 +75,7 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/domains/example.com/siblings", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(siblings);
         Assert.Single(siblings!);
-        Assert.Equal("sibling.com", siblings[0].Data.Attributes.Domain);
+        Assert.Equal("sibling.com", siblings[0].Attributes.Domain);
     }
 
     [Fact]
@@ -101,7 +101,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetDomainUrlsAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"u1\",\"type\":\"url\",\"data\":{\"attributes\":{\"url\":\"http://example.com/\"}}}]}";
+        var json = "{\"data\":[{\"id\":\"u1\",\"type\":\"url\",\"attributes\":{\"url\":\"http://example.com/\"}}]}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -119,7 +119,7 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/domains/example.com/urls", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(urls);
         Assert.Single(urls!);
-        Assert.Equal("http://example.com/", urls[0].Data.Attributes.Url);
+        Assert.Equal("http://example.com/", urls[0].Attributes.Url);
     }
 
     [Fact]
@@ -145,7 +145,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetDomainDnsRecordsAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"d1\",\"type\":\"dns_record\",\"data\":{\"attributes\":{\"type\":\"A\",\"value\":\"1.2.3.4\",\"ttl\":300}}}]}";
+        var json = "{\"data\":[{\"id\":\"d1\",\"type\":\"dns_record\",\"attributes\":{\"type\":\"A\",\"value\":\"1.2.3.4\",\"ttl\":300}}]}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -163,9 +163,9 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/domains/example.com/dns_records", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(records);
         Assert.Single(records!);
-        Assert.Equal("A", records[0].Data.Attributes.RecordType);
-        Assert.Equal("1.2.3.4", records[0].Data.Attributes.Value);
-        Assert.Equal(300, records[0].Data.Attributes.Ttl);
+        Assert.Equal("A", records[0].Attributes.RecordType);
+        Assert.Equal("1.2.3.4", records[0].Attributes.Value);
+        Assert.Equal(300, records[0].Attributes.Ttl);
     }
 
     [Fact]

@@ -138,7 +138,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.GetAsync($"users/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<User>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<User>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<UserPrivileges?> GetUserPrivilegesAsync(string id, CancellationToken cancellationToken = default)

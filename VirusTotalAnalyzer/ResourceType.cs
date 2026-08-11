@@ -1,12 +1,15 @@
+using System.Runtime.Serialization;
+
 namespace VirusTotalAnalyzer;
 
 /// <summary>
 /// Represents resource types supported by the VirusTotal v3 API.
 /// </summary>
-using System.Runtime.Serialization;
-
 public enum ResourceType
 {
+    /// <summary>An unrecognized or missing API resource type.</summary>
+    Unknown,
+
     [EnumMember(Value = "file")]
     File,
 
@@ -63,12 +66,6 @@ public enum ResourceType
 
     [EnumMember(Value = "retrohunt_notification")]
     RetrohuntNotification,
-
-    [EnumMember(Value = "monitor_item")]
-    MonitorItem,
-
-    [EnumMember(Value = "monitor_event")]
-    MonitorEvent,
 
     [EnumMember(Value = "intelligence_hunting_ruleset")]
     IntelligenceHuntingRuleset,

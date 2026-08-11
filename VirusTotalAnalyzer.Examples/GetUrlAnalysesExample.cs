@@ -14,7 +14,7 @@ public static class GetUrlAnalysesExample
             var (analyses, cursor) = await client.GetUrlAnalysesAsync("44d88612fea8a8f36de82e1278abb02f");
             foreach (var analysis in analyses)
             {
-                Console.WriteLine($"{analysis.Id} - {analysis.Data.Attributes.Status}");
+                Console.WriteLine($"{analysis.Id} - {analysis.Attributes.Status}");
             }
             if (cursor != null)
             {

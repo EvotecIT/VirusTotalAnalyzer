@@ -18,18 +18,20 @@ namespace VirusTotalAnalyzer;
 /// Client for the VirusTotal v3 API.
 /// </summary>
 /// <remarks>
-/// <para>Use <see cref="Create(string)"/> for a self-contained client:</para>
+/// <para>Use <see cref="Create(string, string, TimeSpan?)"/> for a self-contained client:</para>
 /// <code>using var client = VirusTotalClient.Create("YOUR_API_KEY");</code>
 /// <para>
-/// When providing an existing <see cref="HttpClient"/>, specify whether the client should
-/// dispose it by setting the <c>disposeClient</c> parameter in the constructor.
+/// For custom proxy, certificate, DNS, or test transports, use the constructor that accepts
+/// separate authenticated API and unauthenticated download <see cref="HttpMessageHandler"/> instances.
 /// </para>
 /// </remarks>
 public sealed partial class VirusTotalClient : IVirusTotalClient
 {
     private readonly HttpClient _httpClient;
+    private readonly HttpClient _downloadClient;
     private readonly JsonSerializerOptions _jsonOptions;
     private readonly bool _disposeClient;
+    private readonly bool _disposeDownloadClient;
     private bool _disposed;
 
     /// <summary>
@@ -41,14 +43,37 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
     /// Set to <see langword="true"/> to dispose <paramref name="httpClient"/> when this instance
     /// is disposed.
     /// </param>
-    /// <remarks>
-    /// Pass <paramref name="disposeClient"/> as <see langword="false"/> when the lifetime of the
-    /// provided <paramref name="httpClient"/> is managed externally.
-    /// </remarks>
-    public VirusTotalClient(HttpClient httpClient, bool disposeClient = false, string? userAgent = null)
+    /// <param name="userAgent">Optional user-agent value. A library default is used when omitted.</param>
+    internal VirusTotalClient(HttpClient httpClient, bool disposeClient = false, string? userAgent = null)
+        : this(
+            httpClient,
+            CreateDownloadClient(httpClient?.Timeout ?? throw new ArgumentNullException(nameof(httpClient))),
+            disposeClient,
+            disposeDownloadClient: true,
+            userAgent)
+    {
+    }
+
+    internal VirusTotalClient(
+        HttpClient httpClient,
+        HttpClient downloadClient,
+        bool disposeClient = false,
+        bool disposeDownloadClient = false,
+        string? userAgent = null)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _downloadClient = downloadClient ?? throw new ArgumentNullException(nameof(downloadClient));
+        if (ReferenceEquals(_httpClient, _downloadClient))
+        {
+            throw new ArgumentException("The authenticated API client and unauthenticated download client must be different instances.", nameof(downloadClient));
+        }
+        if (_downloadClient.DefaultRequestHeaders.Contains("x-apikey") ||
+            _downloadClient.DefaultRequestHeaders.Authorization is not null)
+        {
+            throw new ArgumentException("The download client must not contain authentication headers.", nameof(downloadClient));
+        }
         _disposeClient = disposeClient;
+        _disposeDownloadClient = disposeDownloadClient;
         _jsonOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = SnakeCaseNamingPolicy.Instance
@@ -59,20 +84,66 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
     }
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="VirusTotalClient"/> class using separate
+    /// authenticated API and unauthenticated download transports.
+    /// </summary>
+    /// <param name="apiKey">The API key used for authenticated requests.</param>
+    /// <param name="apiHandler">The handler used for authenticated VirusTotal API requests.</param>
+    /// <param name="downloadHandler">
+    /// The handler used for unauthenticated signed downloads. Configure it with the same proxy,
+    /// client certificate, DNS, and test transport requirements as <paramref name="apiHandler"/>.
+    /// </param>
+    /// <param name="disposeHandlers">
+    /// Set to <see langword="true"/> to dispose both handlers with this instance; otherwise their
+    /// lifetime remains managed by the caller.
+    /// </param>
+    /// <param name="userAgent">Optional user-agent value. A library default is used when omitted.</param>
+    /// <param name="timeout">Optional request timeout. The default is ten minutes.</param>
+    /// <remarks>
+    /// Known handler chains are rejected when automatic redirects are enabled so that the library
+    /// can switch to the unauthenticated transport before following a signed URL and can enforce
+    /// HTTPS plus its redirect limit. Custom handlers must likewise return redirect responses.
+    /// </remarks>
+    public VirusTotalClient(
+        string apiKey,
+        HttpMessageHandler apiHandler,
+        HttpMessageHandler downloadHandler,
+        bool disposeHandlers = false,
+        string? userAgent = null,
+        TimeSpan? timeout = null)
+        : this(
+            CreateConfiguredClients(apiKey, apiHandler, downloadHandler, disposeHandlers, timeout),
+            userAgent)
+    {
+    }
+
+    private VirusTotalClient(
+        (HttpClient ApiClient, HttpClient DownloadClient) clients,
+        string? userAgent)
+        : this(
+            clients.ApiClient,
+            clients.DownloadClient,
+            disposeClient: true,
+            disposeDownloadClient: true,
+            userAgent)
+    {
+    }
+
+    /// <summary>
     /// Creates a new <see cref="VirusTotalClient"/> configured with the specified API key.
     /// </summary>
     /// <param name="apiKey">The API key used for authenticated requests.</param>
+    /// <param name="userAgent">Optional user-agent value. A library default is used when omitted.</param>
+    /// <param name="timeout">Optional request timeout. The default is ten minutes to accommodate streamed uploads.</param>
     /// <returns>A <see cref="VirusTotalClient"/> that owns its underlying <see cref="HttpClient"/>.</returns>
-    public static VirusTotalClient Create(string apiKey, string? userAgent = null)
-    {
-        if (string.IsNullOrWhiteSpace(apiKey)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(apiKey));
-        var httpClient = new HttpClient
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        httpClient.DefaultRequestHeaders.Add("x-apikey", apiKey);
-        return new VirusTotalClient(httpClient, disposeClient: true, userAgent: userAgent);
-    }
+    public static VirusTotalClient Create(string apiKey, string? userAgent = null, TimeSpan? timeout = null)
+        => new(
+            apiKey,
+            new HttpClientHandler { AllowAutoRedirect = false },
+            new HttpClientHandler { AllowAutoRedirect = false },
+            disposeHandlers: true,
+            userAgent,
+            timeout);
 
     /// <summary>
     /// Gets or sets the user agent used for outgoing requests.
@@ -85,6 +156,8 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
             var agent = string.IsNullOrWhiteSpace(value) ? GetDefaultUserAgent() : value;
             _httpClient.DefaultRequestHeaders.UserAgent.Clear();
             _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(agent);
+            _downloadClient.DefaultRequestHeaders.UserAgent.Clear();
+            _downloadClient.DefaultRequestHeaders.UserAgent.ParseAdd(agent);
         }
     }
 
@@ -126,8 +199,6 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
             ResourceType.LivehuntNotification => "livehunt_notifications",
             ResourceType.RetrohuntJob => "retrohunt_jobs",
             ResourceType.RetrohuntNotification => "retrohunt_notifications",
-            ResourceType.MonitorItem => "monitor/items",
-            ResourceType.MonitorEvent => "monitor/events",
             ResourceType.IntelligenceHuntingRuleset => "intelligence/hunting_rulesets",
             ResourceType.FileBehaviour => "file-behaviour",
             _ => throw new ArgumentOutOfRangeException(nameof(type))
@@ -361,73 +432,28 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
         }
     }
 
-    public async Task<Stream> DownloadLivehuntNotificationFileAsync(string id, CancellationToken cancellationToken = default)
+    public Task<Stream> DownloadLivehuntNotificationFileAsync(string id, CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        var response = await _httpClient
-            .GetAsync($"intelligence/hunting_notification_files/{Uri.EscapeDataString(id)}", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
-        var disposeResponse = true;
-        try
-        {
-            await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-            var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-            disposeResponse = false;
-            return new StreamWithResponse(response, stream);
-        }
-        finally
-        {
-            if (disposeResponse)
-            {
-                response.Dispose();
-            }
-        }
+        return DownloadFromAuthenticatedEndpointAsync(
+            $"intelligence/hunting_notification_files/{Uri.EscapeDataString(id)}",
+            cancellationToken);
     }
 
-    public async Task<Stream> DownloadRetrohuntNotificationFileAsync(string id, CancellationToken cancellationToken = default)
+    public Task<Stream> DownloadRetrohuntNotificationFileAsync(string id, CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        var response = await _httpClient
-            .GetAsync($"intelligence/retrohunt_notification_files/{Uri.EscapeDataString(id)}", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
-        var disposeResponse = true;
-        try
-        {
-            await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-            var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-            disposeResponse = false;
-            return new StreamWithResponse(response, stream);
-        }
-        finally
-        {
-            if (disposeResponse)
-            {
-                response.Dispose();
-            }
-        }
+        return DownloadFromAuthenticatedEndpointAsync(
+            $"intelligence/retrohunt_notification_files/{Uri.EscapeDataString(id)}",
+            cancellationToken);
     }
 
-    public async Task<Stream> DownloadPcapAsync(string analysisId, CancellationToken cancellationToken = default)
+    public Task<Stream> DownloadPcapAsync(string analysisId, CancellationToken cancellationToken = default)
     {
         ValidateId(analysisId, nameof(analysisId));
-        var response = await _httpClient
-            .GetAsync($"analyses/{Uri.EscapeDataString(analysisId)}/pcap", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
-        var disposeResponse = true;
-        try
-        {
-            await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-            var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-            disposeResponse = false;
-            return new StreamWithResponse(response, stream);
-        }
-        finally
-        {
-            if (disposeResponse)
-            {
-                response.Dispose();
-            }
-        }
+        return DownloadFromAuthenticatedEndpointAsync(
+            $"analyses/{Uri.EscapeDataString(analysisId)}/pcap",
+            cancellationToken);
     }
 
     /// <summary>
@@ -443,6 +469,10 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
         if (_disposeClient)
         {
             _httpClient.Dispose();
+        }
+        if (_disposeDownloadClient)
+        {
+            _downloadClient.Dispose();
         }
 
         _disposed = true;

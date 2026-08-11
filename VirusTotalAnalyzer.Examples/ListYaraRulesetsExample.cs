@@ -14,7 +14,7 @@ public static class ListYaraRulesetsExample
             var page = await client.ListYaraRulesetsAsync(fetchAll: false);
             foreach (var rs in page.Data)
             {
-                Console.WriteLine($"{rs.Id}: {rs.Data.Attributes.Name}");
+                Console.WriteLine($"{rs.Id}: {rs.Attributes.Name}");
             }
             Console.WriteLine($"Next cursor: {page.NextCursor}");
         }
@@ -28,4 +28,3 @@ public static class ListYaraRulesetsExample
         }
     }
 }
-

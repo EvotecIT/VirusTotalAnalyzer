@@ -8,11 +8,6 @@ public sealed class User
     public ResourceType Type { get; set; }
 
     public Links Links { get; set; } = new();
-    public UserData Data { get; set; } = new();
-}
-
-public sealed class UserData
-{
     public UserAttributes Attributes { get; set; } = new();
 }
 

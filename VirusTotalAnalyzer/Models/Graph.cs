@@ -8,11 +8,6 @@ public sealed class Graph
     public ResourceType Type { get; set; }
 
     public Links Links { get; set; } = new();
-    public GraphData Data { get; set; } = new();
-}
-
-public sealed class GraphData
-{
     public GraphAttributes Attributes { get; set; } = new();
 }
 

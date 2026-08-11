@@ -8,11 +8,6 @@ public sealed class Collection
     public ResourceType Type { get; set; }
 
     public Links Links { get; set; } = new();
-    public CollectionData Data { get; set; } = new();
-}
-
-public sealed class CollectionData
-{
     public CollectionAttributes Attributes { get; set; } = new();
 }
 

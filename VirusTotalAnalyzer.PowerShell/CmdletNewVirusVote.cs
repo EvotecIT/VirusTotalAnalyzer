@@ -14,12 +14,8 @@ namespace VirusTotalAnalyzer.PowerShell;
 ///   <para>Marks the file identified by the given hash as malicious.</para>
 /// </example>
 [Cmdlet(VerbsCommon.New, "VirusVote")]
-public sealed class CmdletNewVirusVote : AsyncPSCmdlet
+public sealed class CmdletNewVirusVote : VirusTotalCmdlet
 {
-    /// <summary>VirusTotal API key.</summary>
-    [Parameter(Mandatory = true)]
-    public string ApiKey { get; set; } = string.Empty;
-
     /// <summary>Resource type to vote on.</summary>
     [Parameter(Mandatory = true)]
     public ResourceType ResourceType { get; set; }
@@ -32,29 +28,17 @@ public sealed class CmdletNewVirusVote : AsyncPSCmdlet
     [Parameter(Mandatory = true)]
     public VoteVerdict Verdict { get; set; }
 
-    /// <summary>Existing VirusTotal client to reuse.</summary>
-    [Parameter]
-    public VirusTotalClient? Client { get; set; }
-
     /// <inheritdoc/>
     protected override async Task ProcessRecordAsync()
     {
-        var client = Client ?? VirusTotalClient.Create(ApiKey);
         try
         {
-            var vote = await client.CreateVoteAsync(ResourceType, Id, Verdict, CancelToken).ConfigureAwait(false);
+            var vote = await ActiveClient.CreateVoteAsync(ResourceType, Id, Verdict, CancelToken).ConfigureAwait(false);
             WriteObject(vote);
         }
         catch (ApiException ex)
         {
             WriteApiError(ex, Id);
-        }
-        finally
-        {
-            if (Client is null)
-            {
-                client.Dispose();
-            }
         }
     }
 }

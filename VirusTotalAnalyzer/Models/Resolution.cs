@@ -7,11 +7,6 @@ public sealed class Resolution
 {
     public string Id { get; set; } = string.Empty;
     public string Type { get; set; } = string.Empty;
-    public ResolutionData Data { get; set; } = new();
-}
-
-public sealed class ResolutionData
-{
     public ResolutionAttributes Attributes { get; set; } = new();
 }
 

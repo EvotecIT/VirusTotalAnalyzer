@@ -41,7 +41,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.GetAsync($"graphs/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<Graph>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<Graph>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Graph?> CreateGraphAsync(CreateGraphRequest request, CancellationToken cancellationToken = default)
@@ -55,7 +55,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.PostAsync("graphs", content, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<Graph>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<Graph>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Graph?> UpdateGraphAsync(string id, UpdateGraphRequest request, CancellationToken cancellationToken = default)
@@ -71,7 +71,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.SendAsync(message, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<Graph>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<Graph>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task DeleteGraphAsync(string id, CancellationToken cancellationToken = default)
@@ -128,7 +128,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.GetAsync($"collections/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<Collection>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<Collection>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Collection?> CreateCollectionAsync(CreateCollectionRequest request, CancellationToken cancellationToken = default)
@@ -142,7 +142,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.PostAsync("collections", content, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<Collection>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<Collection>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Collection?> UpdateCollectionAsync(string id, UpdateCollectionRequest request, CancellationToken cancellationToken = default)
@@ -158,7 +158,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.SendAsync(message, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<Collection>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<Collection>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task DeleteCollectionAsync(string id, CancellationToken cancellationToken = default)
@@ -239,7 +239,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.GetAsync($"bundles/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<Bundle>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<Bundle>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Bundle?> CreateBundleAsync(CreateBundleRequest request, CancellationToken cancellationToken = default)
@@ -253,7 +253,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.PostAsync("bundles", content, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<Bundle>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<Bundle>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Bundle?> UpdateBundleAsync(string id, UpdateBundleRequest request, CancellationToken cancellationToken = default)
@@ -269,7 +269,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.SendAsync(message, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<Bundle>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<Bundle>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task DeleteBundleAsync(string id, CancellationToken cancellationToken = default)

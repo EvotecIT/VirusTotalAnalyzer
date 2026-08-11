@@ -16,7 +16,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetUserAsync_DeserializesResponse()
     {
-        var json = @"{""id"":""user1"",""type"":""user"",""links"":{""self"":""https://www.virustotal.com/api/v3/users/user1""},""data"":{""attributes"":{""username"":""demo"",""role"":""admin""}}}";
+        var json = @"{""data"":{""id"":""user1"",""type"":""user"",""links"":{""self"":""https://www.virustotal.com/api/v3/users/user1""},""attributes"":{""username"":""demo"",""role"":""admin""}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -30,8 +30,8 @@ public partial class VirusTotalClientTests
         var user = await client.GetUserAsync("user1");
 
         Assert.NotNull(user);
-        Assert.Equal("demo", user!.Data.Attributes.Username);
-        Assert.Equal(UserRole.Admin, user.Data.Attributes.Role);
+        Assert.Equal("demo", user!.Attributes.Username);
+        Assert.Equal(UserRole.Admin, user.Attributes.Role);
         Assert.Equal("https://www.virustotal.com/api/v3/users/user1", user.Links.Self);
         Assert.Equal("/api/v3/users/user1", handler.Request!.RequestUri!.AbsolutePath);
     }
@@ -83,7 +83,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetUploadUrlAsync_ReturnsUri()
     {
-        var json = "{\"data\":\"https://upload.example/upload\"}";
+        var json = "{\"data\":\"http://www.virustotal.com/_ah/upload/token\"}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -97,7 +97,7 @@ public partial class VirusTotalClientTests
         var uri = await client.GetUploadUrlAsync();
 
         Assert.NotNull(uri);
-        Assert.Equal("https://upload.example/upload", uri!.ToString());
+        Assert.Equal("https://www.virustotal.com/_ah/upload/token", uri!.ToString());
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/files/upload_url", handler.Request!.RequestUri!.AbsolutePath);
     }
@@ -169,7 +169,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task SubmitFileAsync_PostsDirectlyToFiles_ForSmallFiles()
     {
-        var analysisJson = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var analysisJson = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"queued\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(analysisJson, Encoding.UTF8, "application/json")
@@ -211,8 +211,8 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task SubmitFileAsync_UsesUploadUrlForLargeFiles()
     {
-        var uploadJson = "{\"data\":\"https://upload.example/upload\"}";
-        var analysisJson = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var uploadJson = "{\"data\":\"https://uploads.virustotal.com/upload\"}";
+        var analysisJson = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"queued\"}}}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -234,14 +234,14 @@ public partial class VirusTotalClientTests
         Assert.NotNull(report);
         Assert.Equal(2, handler.Requests.Count);
         Assert.Equal("/api/v3/files/upload_url", handler.Requests[0].RequestUri!.AbsolutePath);
-        Assert.Equal("https://upload.example/upload", handler.Requests[1].RequestUri!.ToString());
+        Assert.Equal("https://uploads.virustotal.com/upload", handler.Requests[1].RequestUri!.ToString());
         Assert.True(handler.Requests[1].Headers.Contains("x-virustotal-password"));
     }
 
     [Fact]
     public async Task ReanalyzeHashAsync_UsesCorrectPath()
     {
-        var json = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var json = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"queued\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -262,7 +262,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task SubmitUrlAsync_PostsFormEncodedContent()
     {
-        var json = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var json = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"queued\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -288,7 +288,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task ScanUrlAsync_PostsToUrlsAndReturnsReport()
     {
-        var json = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}"; 
+        var json = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"queued\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -312,8 +312,8 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task WaitForAnalysisCompletionAsync_PollsUntilCompleted()
     {
-        var queued = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
-        var completed = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"completed\"}}}";
+        var queued = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"queued\"}}}";
+        var completed = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"completed\"}}}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -332,14 +332,14 @@ public partial class VirusTotalClientTests
         var report = await client.WaitForAnalysisCompletionAsync("an", TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(1));
 
         Assert.NotNull(report);
-        Assert.Equal(AnalysisStatus.Completed, report!.Data.Attributes.Status);
+        Assert.Equal(AnalysisStatus.Completed, report!.Attributes.Status);
         Assert.Equal(2, handler.Requests.Count);
     }
 
     [Fact]
     public async Task WaitForAnalysisCompletionAsync_ThrowsTimeout()
     {
-        var queued = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var queued = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"queued\"}}}";
         var handler = new StubHandler(queued);
         var httpClient = new HttpClient(handler)
         {
@@ -354,7 +354,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task WaitForAnalysisCompletionAsync_ReturnsImmediately_WhenCompleted()
     {
-        var completed = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"completed\"}}}";
+        var completed = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"completed\"}}}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -369,14 +369,14 @@ public partial class VirusTotalClientTests
         var report = await client.WaitForAnalysisCompletionAsync("an", TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(1));
 
         Assert.NotNull(report);
-        Assert.Equal(AnalysisStatus.Completed, report!.Data.Attributes.Status);
+        Assert.Equal(AnalysisStatus.Completed, report!.Attributes.Status);
         Assert.Single(handler.Requests);
     }
 
     [Fact]
     public async Task WaitForAnalysisCompletionAsync_ThrowsOnCancellation()
     {
-        var queued = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var queued = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"queued\"}}}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -399,7 +399,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task WaitForAnalysisCompletionAsync_ThrowsApiException_OnError()
     {
-        var error = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"error\",\"error\":\"bad\"}}}";
+        var error = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"error\",\"error\":\"bad\"}}}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -422,7 +422,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task WaitForAnalysisCompletionAsync_ThrowsApiException_OnCancelled()
     {
-        var cancelled = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"cancelled\",\"error\":\"user cancelled\"}}}";
+        var cancelled = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"cancelled\",\"error\":\"user cancelled\"}}}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -445,7 +445,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task WaitForAnalysisCompletionAsync_ThrowsTimeout_OnStatusTimeout()
     {
-        var timeout = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"timeout\"}}}";
+        var timeout = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"timeout\"}}}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -466,7 +466,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetCommentsAsync_DeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"c1\",\"type\":\"comment\",\"data\":{\"attributes\":{\"date\":1,\"text\":\"hi\"}}}],\"meta\":{}}";
+        var json = "{\"data\":[{\"id\":\"c1\",\"type\":\"comment\",\"attributes\":{\"date\":1,\"text\":\"hi\"}}],\"meta\":{}}";
         var handler = new StubHandler(json);
         var httpClient = new HttpClient(handler)
         {
@@ -479,14 +479,14 @@ public partial class VirusTotalClientTests
         Assert.NotNull(page);
         Assert.Single(page!.Data);
         Assert.Equal("c1", page.Data[0].Id);
-        Assert.Equal("hi", page.Data[0].Data.Attributes.Text);
+        Assert.Equal("hi", page.Data[0].Attributes.Text);
     }
 
     [Fact]
     public async Task GetCommentsAsync_PaginatesThroughResults()
     {
-        var first = "{\"data\":[{\"id\":\"c1\",\"type\":\"comment\",\"data\":{\"attributes\":{\"date\":1,\"text\":\"hi\"}}}],\"meta\":{\"cursor\":\"abc\"}}";
-        var second = "{\"data\":[{\"id\":\"c2\",\"type\":\"comment\",\"data\":{\"attributes\":{\"date\":2,\"text\":\"bye\"}}}]}";
+        var first = "{\"data\":[{\"id\":\"c1\",\"type\":\"comment\",\"attributes\":{\"date\":1,\"text\":\"hi\"}}],\"meta\":{\"cursor\":\"abc\"}}";
+        var second = "{\"data\":[{\"id\":\"c2\",\"type\":\"comment\",\"attributes\":{\"date\":2,\"text\":\"bye\"}}]}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -515,7 +515,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetCommentAsync_DeserializesResponseAndUsesCorrectPath()
     {
-        var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""data"":{""attributes"":{""date"":1,""text"":""hello""}}}}";
+        var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""attributes"":{""date"":1,""text"":""hello""}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")

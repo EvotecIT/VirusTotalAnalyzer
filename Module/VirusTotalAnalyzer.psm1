@@ -217,6 +217,6 @@ if ($PSEdition -ne 'Core' -and $null -ne $PowerForgeDesktopAssemblyResolverState
 
 
 $FunctionsToExport = @()
-$CmdletsToExport = @('Get-VirusComment', 'Get-VirusReport', 'Get-VirusUser', 'New-VirusScan', 'New-VirusVote')
+$CmdletsToExport = @('Get-VirusComment', 'Get-VirusReport', 'Get-VirusTotalMonitorEvent', 'Get-VirusTotalMonitorItem', 'Get-VirusTotalMonitorStatistics', 'Get-VirusUser', 'New-VirusScan', 'New-VirusTotalMonitorFolder', 'New-VirusVote', 'Remove-VirusTotalMonitorItem', 'Send-VirusTotalMonitorFile', 'Set-VirusTotalMonitorItem')
 $AliasesToExport = @('Get-VirusScan')
 Export-ModuleMember -Function $FunctionsToExport -Alias $AliasesToExport -Cmdlet $CmdletsToExport

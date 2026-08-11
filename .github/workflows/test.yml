@@ -16,7 +16,7 @@ on:
 env:
   DOTNET_VERSIONS: |
     8.0.x
-    9.0.x
+    10.0.x
   BUILD_CONFIGURATION: 'Release'
 
 jobs:

@@ -11,22 +11,22 @@ Submits resources to VirusTotal for scanning.
 ## SYNTAX
 ### Hash
 ```powershell
-New-VirusScan -ApiKey <string> [-Hash <string>] [-Password <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+New-VirusScan [-Hash <string>] [-Password <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### FileHash
 ```powershell
-New-VirusScan -ApiKey <string> [-FileHash <string>] [-Password <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+New-VirusScan [-FileHash <string>] [-Password <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### FileInformation
 ```powershell
-New-VirusScan -ApiKey <string> [-File <string>] [-Password <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+New-VirusScan [-File <string>] [-Password <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### Url
 ```powershell
-New-VirusScan -ApiKey <string> [-Url <uri>] [-Password <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+New-VirusScan [-Url <uri>] [-Password <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -53,7 +53,7 @@ Queues the URL for analysis and returns its identifier.
 ## PARAMETERS
 
 ### -ApiKey
-VirusTotal API key.
+VirusTotal API key used when Client is not supplied.
 
 ```yaml
 Type: String
@@ -61,7 +61,7 @@ Parameter Sets: Hash, FileHash, FileInformation, Url
 Aliases: None
 Possible values:
 
-Required: True
+Required: False
 Position: named
 Default value: None
 Accept pipeline input: False
@@ -69,7 +69,7 @@ Accept wildcard characters: False
 ```
 
 ### -Client
-Existing IVirusTotalClient instance to reuse.
+Existing client to reuse. The cmdlet never disposes caller-owned clients.
 
 ```yaml
 Type: IVirusTotalClient

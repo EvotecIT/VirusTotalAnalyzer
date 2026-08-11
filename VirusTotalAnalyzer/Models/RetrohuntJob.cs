@@ -8,11 +8,6 @@ public sealed class RetrohuntJob
     public ResourceType Type { get; set; }
 
     public Links Links { get; set; } = new();
-    public RetrohuntJobData Data { get; set; } = new();
-}
-
-public sealed class RetrohuntJobData
-{
     public RetrohuntJobAttributes Attributes { get; set; } = new();
 }
 

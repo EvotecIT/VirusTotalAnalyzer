@@ -11,37 +11,37 @@ Retrieves analysis reports from VirusTotal.
 ## SYNTAX
 ### FileInformation (Default)
 ```powershell
-Get-VirusReport -ApiKey <string> [-File <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusReport [-File <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### Analysis
 ```powershell
-Get-VirusReport -ApiKey <string> [-AnalysisId <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusReport [-AnalysisId <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### Hash
 ```powershell
-Get-VirusReport -ApiKey <string> [-Hash <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusReport [-Hash <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### Url
 ```powershell
-Get-VirusReport -ApiKey <string> [-Url <uri>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusReport [-Url <uri>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### IPAddress
 ```powershell
-Get-VirusReport -ApiKey <string> [-IPAddress <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusReport [-IPAddress <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### DomainName
 ```powershell
-Get-VirusReport -ApiKey <string> [-DomainName <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusReport [-DomainName <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### Search
 ```powershell
-Get-VirusReport -ApiKey <string> [-Search <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusReport [-Search <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -84,7 +84,7 @@ Accept wildcard characters: False
 ```
 
 ### -ApiKey
-VirusTotal API key.
+VirusTotal API key used when Client is not supplied.
 
 ```yaml
 Type: String
@@ -92,7 +92,7 @@ Parameter Sets: FileInformation, Analysis, Hash, Url, IPAddress, DomainName, Sea
 Aliases: None
 Possible values:
 
-Required: True
+Required: False
 Position: named
 Default value: None
 Accept pipeline input: False
@@ -100,7 +100,7 @@ Accept wildcard characters: False
 ```
 
 ### -Client
-Existing IVirusTotalClient instance to reuse.
+Existing client to reuse. The cmdlet never disposes caller-owned clients.
 
 ```yaml
 Type: IVirusTotalClient

@@ -9,11 +9,6 @@ public sealed class SslCertificate
     public string Id { get; set; } = string.Empty;
     public ResourceType Type { get; set; }
     public Links Links { get; set; } = new();
-    public SslCertificateData Data { get; set; } = new();
-}
-
-public sealed class SslCertificateData
-{
     public SslCertificateAttributes Attributes { get; set; } = new();
 }
 
@@ -40,4 +35,3 @@ public sealed class SslCertificatesResponse
     public List<SslCertificate> Data { get; set; } = new();
     public PaginationMetadata? Meta { get; set; }
 }
-

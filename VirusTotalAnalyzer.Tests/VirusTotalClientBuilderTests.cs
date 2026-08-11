@@ -15,7 +15,7 @@ public class VirusTotalClientBuilderTests
     [Fact]
     public async Task CreateCommentAsync_WithRequest_PostsComment()
     {
-        var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""data"":{""attributes"":{""date"":1,""text"":""hello""}}}}";
+        var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""attributes"":{""date"":1,""text"":""hello""}}}";
         var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -40,7 +40,7 @@ public class VirusTotalClientBuilderTests
     [Fact]
     public async Task CreateVoteAsync_WithRequest_PostsVerdict()
     {
-        var json = @"{""data"":{""id"":""v1"",""type"":""vote"",""data"":{""attributes"":{""date"":1,""verdict"":""malicious""}}}}";
+        var json = @"{""data"":{""id"":""v1"",""type"":""vote"",""attributes"":{""date"":1,""verdict"":""malicious""}}}";
         var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")

@@ -11,7 +11,7 @@ Retrieves comments for a specified resource.
 ## SYNTAX
 ### __AllParameterSets
 ```powershell
-Get-VirusComment -ApiKey <string> -ResourceType <ResourceType> -Id <string> [-Limit <Int32>] [-Cursor <string>] [-Client <VirusTotalClient>] [<CommonParameters>]
+Get-VirusComment -ResourceType <ResourceType> -Id <string> [-Limit <Int32>] [-Cursor <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -29,7 +29,7 @@ Displays community feedback for the file with the given hash.
 ## PARAMETERS
 
 ### -ApiKey
-VirusTotal API key.
+VirusTotal API key used when Client is not supplied.
 
 ```yaml
 Type: String
@@ -37,7 +37,7 @@ Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
 
-Required: True
+Required: False
 Position: named
 Default value: None
 Accept pipeline input: False
@@ -45,10 +45,10 @@ Accept wildcard characters: False
 ```
 
 ### -Client
-Existing VirusTotal client to reuse.
+Existing client to reuse. The cmdlet never disposes caller-owned clients.
 
 ```yaml
-Type: VirusTotalClient
+Type: IVirusTotalClient
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
@@ -115,7 +115,7 @@ Resource type to retrieve comments for.
 Type: ResourceType
 Parameter Sets: __AllParameterSets
 Aliases: None
-Possible values: File, Url, IpAddress, Domain, Analysis, PrivateAnalysis, Comment, Vote, Relationship, Search, Feed, Graph, SslCertificate, User, Collection, Bundle, LivehuntNotification, RetrohuntJob, RetrohuntNotification, MonitorItem, MonitorEvent, IntelligenceHuntingRuleset, FileBehaviour
+Possible values: Unknown, File, Url, IpAddress, Domain, Analysis, PrivateAnalysis, Comment, Vote, Relationship, Search, Feed, Graph, SslCertificate, User, Collection, Bundle, LivehuntNotification, RetrohuntJob, RetrohuntNotification, IntelligenceHuntingRuleset, FileBehaviour
 
 Required: True
 Position: named

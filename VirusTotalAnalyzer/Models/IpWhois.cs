@@ -8,11 +8,6 @@ public sealed class IpWhois
     public ResourceType Type { get; set; }
 
     public Links Links { get; set; } = new();
-    public IpWhoisData Data { get; set; } = new();
-}
-
-public sealed class IpWhoisData
-{
     public IpWhoisAttributes Attributes { get; set; } = new();
 }
 

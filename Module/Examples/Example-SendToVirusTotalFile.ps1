@@ -11,7 +11,7 @@ $Output | Format-List
 Start-Sleep -Seconds 120
 
 # Since the output will return scan ID we can use it to get the report
-$OutputScan = Get-VirusReport -ApiKey $VTApi -AnalysisId $Output.data.id
+$OutputScan = Get-VirusReport -ApiKey $VTApi -AnalysisId $Output.Id
 $OutputScan | Format-List
-$OutputScan.Meta | Format-List
-$OutputScan.Data | Format-List
+$OutputScan.Attributes | Format-List
+$OutputScan.Attributes.Stats | Format-List

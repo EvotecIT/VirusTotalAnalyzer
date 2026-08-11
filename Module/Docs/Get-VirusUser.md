@@ -11,7 +11,7 @@ Retrieves information about a VirusTotal user.
 ## SYNTAX
 ### __AllParameterSets
 ```powershell
-Get-VirusUser -ApiKey <string> -Id <string> [-Client <VirusTotalClient>] [<CommonParameters>]
+Get-VirusUser -Id <string> [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -29,7 +29,7 @@ Returns details for the given user identifier.
 ## PARAMETERS
 
 ### -ApiKey
-VirusTotal API key.
+VirusTotal API key used when Client is not supplied.
 
 ```yaml
 Type: String
@@ -37,7 +37,7 @@ Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
 
-Required: True
+Required: False
 Position: named
 Default value: None
 Accept pipeline input: False
@@ -45,10 +45,10 @@ Accept wildcard characters: False
 ```
 
 ### -Client
-Existing VirusTotal client to reuse.
+Existing client to reuse. The cmdlet never disposes caller-owned clients.
 
 ```yaml
-Type: VirusTotalClient
+Type: IVirusTotalClient
 Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:

@@ -14,7 +14,7 @@ public partial class VirusTotalClientTests
         yield return new object[] { new Func<IVirusTotalClient, Task>(c => c.GetFileContactedUrlsAsync(null!)) };
         yield return new object[] { new Func<IVirusTotalClient, Task>(c => c.GetCommentAsync(null!)) };
         yield return new object[] { new Func<IVirusTotalClient, Task>(c => c.GetGraphAsync(null!)) };
-        yield return new object[] { new Func<IVirusTotalClient, Task>(c => c.DownloadPcapAsync(null!)) };
+        yield return new object[] { new Func<IVirusTotalClient, Task>(c => c.DownloadFileBehaviorArtifactAsync(null!, BehaviorArtifact.Pcap)) };
     }
 
     public static IEnumerable<object[]> EmptyIdOperations()
@@ -23,7 +23,7 @@ public partial class VirusTotalClientTests
         yield return new object[] { new Func<IVirusTotalClient, Task>(c => c.GetFileContactedUrlsAsync(string.Empty)) };
         yield return new object[] { new Func<IVirusTotalClient, Task>(c => c.GetCommentAsync(string.Empty)) };
         yield return new object[] { new Func<IVirusTotalClient, Task>(c => c.GetGraphAsync(string.Empty)) };
-        yield return new object[] { new Func<IVirusTotalClient, Task>(c => c.DownloadPcapAsync(string.Empty)) };
+        yield return new object[] { new Func<IVirusTotalClient, Task>(c => c.DownloadFileBehaviorArtifactAsync(string.Empty, BehaviorArtifact.Pcap)) };
     }
 
     [Theory]
@@ -42,4 +42,3 @@ public partial class VirusTotalClientTests
         await Assert.ThrowsAsync<ArgumentException>(async () => await operation(client));
     }
 }
-

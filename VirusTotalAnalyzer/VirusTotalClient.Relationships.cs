@@ -40,7 +40,12 @@ public sealed partial class VirusTotalClient
         var graphs = new List<Graph>(relationships.Data.Count);
         foreach (var relationship in relationships.Data)
         {
-            var graph = await GetGraphAsync(relationship.Id, cancellationToken).ConfigureAwait(false);
+            var graphId = relationship.Id;
+            if (string.IsNullOrEmpty(graphId))
+            {
+                continue;
+            }
+            var graph = await GetGraphAsync(graphId!, cancellationToken).ConfigureAwait(false);
             if (graph != null)
             {
                 graphs.Add(graph);

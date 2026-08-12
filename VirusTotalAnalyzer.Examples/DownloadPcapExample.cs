@@ -12,7 +12,7 @@ public static class DownloadPcapExample
         IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            using var stream = await client.DownloadPcapAsync("ANALYSIS_ID");
+            using var stream = await client.DownloadFileBehaviorArtifactAsync("BEHAVIOR_ID", BehaviorArtifact.Pcap);
             using var file = File.Create("analysis.pcap");
             await stream.CopyToAsync(file);
         }

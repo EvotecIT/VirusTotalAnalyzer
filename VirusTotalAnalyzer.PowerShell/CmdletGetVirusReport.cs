@@ -37,33 +37,33 @@ namespace VirusTotalAnalyzer.PowerShell;
 public sealed class CmdletGetVirusReport : VirusTotalCmdlet
 {
     /// <summary>Analysis identifier returned from a previous scan.</summary>
-    [Parameter(ParameterSetName = "Analysis", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
+    [Parameter(Mandatory = true, ParameterSetName = "Analysis", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
     public string? AnalysisId { get; set; }
 
     /// <summary>SHA256 or other supported hash to look up.</summary>
-    [Parameter(ParameterSetName = "Hash", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
+    [Parameter(Mandatory = true, ParameterSetName = "Hash", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
     public string? Hash { get; set; }
 
     /// <summary>Path to a local file to compute its hash.</summary>
     [Alias("FileHash")]
-    [Parameter(ParameterSetName = "FileInformation", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
+    [Parameter(Mandatory = true, ParameterSetName = "FileInformation", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
     public string? File { get; set; }
 
     /// <summary>URL to check against VirusTotal.</summary>
     [Alias("Uri")]
-    [Parameter(ParameterSetName = "Url", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
+    [Parameter(Mandatory = true, ParameterSetName = "Url", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
     public Uri? Url { get; set; }
 
     /// <summary>IP address to inspect.</summary>
-    [Parameter(ParameterSetName = "IPAddress", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
+    [Parameter(Mandatory = true, ParameterSetName = "IPAddress", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
     public string? IPAddress { get; set; }
 
     /// <summary>Domain name to inspect.</summary>
-    [Parameter(ParameterSetName = "DomainName", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
+    [Parameter(Mandatory = true, ParameterSetName = "DomainName", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
     public string? DomainName { get; set; }
 
     /// <summary>Free-form search expression.</summary>
-    [Parameter(ParameterSetName = "Search", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
+    [Parameter(Mandatory = true, ParameterSetName = "Search", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
     public string? Search { get; set; }
 
     /// <inheritdoc/>

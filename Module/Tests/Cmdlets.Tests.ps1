@@ -219,6 +219,28 @@ Describe 'Send-VirusTotalMonitorFile cmdlet' {
     }
 }
 
+Describe 'Cmdlet parameter contracts' {
+    It 'requires a report selector in every Get-VirusReport parameter set' {
+        $command = Get-Command Get-VirusReport
+        $selectors = 'AnalysisId', 'DomainName', 'File', 'Hash', 'IPAddress', 'Search', 'Url'
+
+        foreach ($selector in $selectors) {
+            $mandatory = @($command.Parameters[$selector].Attributes | Where-Object Mandatory)
+            $mandatory.Count | Should -BeGreaterThan 0
+        }
+    }
+
+    It 'requires an operation selector in every New-VirusScan parameter set' {
+        $command = Get-Command New-VirusScan
+        $selectors = 'File', 'FileHash', 'Hash', 'Url'
+
+        foreach ($selector in $selectors) {
+            $mandatory = @($command.Parameters[$selector].Attributes | Where-Object Mandatory)
+            $mandatory.Count | Should -BeGreaterThan 0
+        }
+    }
+}
+
 Describe 'Cmdlet help content' {
     It 'includes examples for Get-VirusReport' {
         (Get-Help Get-VirusReport -Examples).Examples | Should -Not -BeNullOrEmpty

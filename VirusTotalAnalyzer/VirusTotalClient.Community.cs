@@ -132,6 +132,13 @@ public sealed partial class VirusTotalClient
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>Deletes a comment by its global comment identifier.</summary>
+    public Task DeleteCommentAsync(string commentId, CancellationToken cancellationToken = default)
+    {
+        ValidateId(commentId, nameof(commentId));
+        return DeleteItemAsync(ResourceType.Comment, commentId, cancellationToken);
+    }
+
     public async Task<User?> GetUserAsync(string id, CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));

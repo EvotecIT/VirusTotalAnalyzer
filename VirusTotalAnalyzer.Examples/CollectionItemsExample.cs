@@ -11,17 +11,17 @@ public static class CollectionItemsExample
         IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var request = new AddItemsRequest
+            var request = new RelationshipDescriptorsRequest
             {
-                Data = { new Relationship { Id = "file-id", Type = ResourceType.File } }
+                Data = { new RelationshipDescriptor { Id = "file-id", Type = ResourceType.File } }
             };
-            var added = await client.AddCollectionItemsAsync("collection-id", request);
-            Console.WriteLine($"Added {added?.Data.Count ?? 0} items");
+            await client.AddCollectionItemsAsync("collection-id", "files", request);
+            Console.WriteLine("Item added");
 
-            var items = await client.ListCollectionItemsAsync("collection-id", limit: 10, fetchAll: true);
+            var items = await client.GetCollectionObjectsAsync("collection-id", "files", limit: 10, fetchAll: true);
             Console.WriteLine($"Retrieved {items?.Data.Count} items");
 
-            await client.DeleteCollectionItemAsync("collection-id", "file-id");
+            await client.DeleteCollectionItemsAsync("collection-id", "files", request);
             Console.WriteLine("Item deleted");
         }
         catch (RateLimitExceededException ex)
@@ -34,4 +34,3 @@ public static class CollectionItemsExample
         }
     }
 }
-

@@ -25,13 +25,13 @@ public sealed class IpAddressReportsResponse
     public PaginationMetadata? Meta { get; set; }
 }
 
-public sealed class IpAddressAttributes
+public sealed class IpAddressAttributes : ExtensibleAttributes
 {
     public string IpAddress { get; set; } = string.Empty;
 
-    public int Reputation { get; set; }
+    public int? Reputation { get; set; }
 
-    public DateTimeOffset CreationDate { get; set; }
+    public DateTimeOffset? CreationDate { get; set; }
 
     public List<string> Tags { get; set; } = new();
 
@@ -43,5 +43,5 @@ public sealed class IpAddressAttributes
 
     public Dictionary<string, Verdict> Categories { get; set; } = new();
 
-    public DateTimeOffset LastAnalysisDate { get; set; }
+    public DateTimeOffset? LastAnalysisDate { get; set; }
 }

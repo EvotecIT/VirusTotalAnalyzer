@@ -2,24 +2,34 @@ using System.Collections.Generic;
 
 namespace VirusTotalAnalyzer.Models;
 
-public sealed class CrowdsourcedIdsResult
+public sealed class CrowdsourcedIdsResult : ExtensibleAttributes
 {
-    public string? RuleName { get; set; }
+    public List<CrowdsourcedIdsAlertContext> AlertContext { get; set; } = new();
+
+    public string? AlertSeverity { get; set; }
+
+    public string? RuleCategory { get; set; }
 
     public string? RuleId { get; set; }
 
-    public string? RulesetId { get; set; }
+    public string? RuleMsg { get; set; }
 
-    public string? RulesetName { get; set; }
-
-    public string? Source { get; set; }
-
-    public int AlertSeverity { get; set; }
-
-    public string? Description { get; set; }
+    public string? RuleSource { get; set; }
 }
 
-public sealed class CrowdsourcedIdsResultsResponse
+public sealed class CrowdsourcedIdsAlertContext : ExtensibleAttributes
 {
-    public List<CrowdsourcedIdsResult> Data { get; set; } = new();
+    public string? DestIp { get; set; }
+
+    public int? DestPort { get; set; }
+
+    public string? Hostname { get; set; }
+
+    public string? Protocol { get; set; }
+
+    public string? SrcIp { get; set; }
+
+    public int? SrcPort { get; set; }
+
+    public string? Url { get; set; }
 }

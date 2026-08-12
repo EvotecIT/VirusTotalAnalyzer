@@ -1,8 +1,6 @@
-using System.Collections.Generic;
-
 namespace VirusTotalAnalyzer.Models;
 
-public sealed class CrowdsourcedYaraResult
+public sealed class CrowdsourcedYaraResult : ExtensibleAttributes
 {
     public string? RuleName { get; set; }
 
@@ -15,9 +13,6 @@ public sealed class CrowdsourcedYaraResult
     public string? Author { get; set; }
 
     public string? Description { get; set; }
-}
 
-public sealed class CrowdsourcedYaraResultsResponse
-{
-    public List<CrowdsourcedYaraResult> Data { get; set; } = new();
+    public bool? MatchInSubfile { get; set; }
 }

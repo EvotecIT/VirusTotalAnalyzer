@@ -405,7 +405,7 @@ public partial class VirusTotalClientTests
         Assert.Equal("ln1", notification!.Id);
         Assert.Equal("r1", notification.Attributes.RuleName);
         Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/livehunt_notifications/ln1", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("/api/v3/intelligence/hunting_notifications/ln1", handler.Request!.RequestUri!.AbsolutePath);
     }
 
     [Fact]
@@ -447,7 +447,7 @@ public partial class VirusTotalClientTests
         Assert.Equal("rj1", job!.Id);
         Assert.Equal("done", job.Attributes.Status);
         Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/retrohunt_jobs/rj1", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("/api/v3/intelligence/retrohunt_jobs/rj1", handler.Request!.RequestUri!.AbsolutePath);
     }
 
 
@@ -490,7 +490,7 @@ public partial class VirusTotalClientTests
         Assert.Equal("rn1", notification!.Id);
         Assert.Equal("j1", notification.Attributes.JobId);
         Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/retrohunt_notifications/rn1", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("/api/v3/intelligence/retrohunt_notifications/rn1", handler.Request!.RequestUri!.AbsolutePath);
     }
 
     [Fact]
@@ -554,30 +554,6 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
-    public async Task GetBundleAsync_DeserializesResponseAndUsesCorrectPath()
-    {
-        var json = "{\"data\":{\"id\":\"b1\",\"type\":\"bundle\",\"attributes\":{\"name\":\"Demo\",\"files\":[{\"id\":\"f1\",\"type\":\"file\"}]}}}";
-        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(json, Encoding.UTF8, "application/json")
-        });
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        var bundle = await client.GetBundleAsync("b1");
-
-        Assert.NotNull(bundle);
-        Assert.Equal("b1", bundle!.Id);
-        Assert.Equal(ResourceType.Bundle, bundle.Type);
-        Assert.Equal("Demo", bundle.Attributes.Name);
-        Assert.Single(bundle.Attributes.Files);
-        Assert.Equal("/api/v3/bundles/b1", handler.Request!.RequestUri!.AbsolutePath);
-    }
-
-    [Fact]
     public async Task SubmitFileAsync_IncludesPasswordHeader()
     {
         var analysisJson = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"queued\"}}}";
@@ -600,7 +576,7 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
-    public async Task SubmitPrivateFileAsync_PostsToPrivateAnalyses()
+    public async Task SubmitPrivateFileAsync_PostsToPrivateFilesWithOptions()
     {
         var json = "{\"data\":{\"id\":\"pa\",\"type\":\"private_analysis\",\"attributes\":{\"status\":\"queued\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
@@ -614,12 +590,28 @@ public partial class VirusTotalClientTests
         IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         using var ms = new System.IO.MemoryStream(new byte[1]);
-        var report = await client.SubmitPrivateFileAsync(ms, "demo.bin", "pass");
+        var report = await client.SubmitPrivateFileAsync(ms, "demo.bin", new PrivateFileUploadOptions
+        {
+            Password = "pass",
+            EnableInternet = true,
+            RetentionPeriodDays = 7,
+            StorageRegion = "EU",
+            InteractionSandbox = "windows",
+            InteractionTimeoutSeconds = 120
+        });
 
         Assert.NotNull(report);
         Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/private/analyses", handler.Request!.RequestUri!.AbsolutePath);
-        Assert.True(handler.Request.Headers.Contains("x-virustotal-password"));
+        Assert.Equal("/api/v3/private/files", handler.Request!.RequestUri!.AbsolutePath);
+        var body = handler.Content!;
+        Assert.Contains("name=\"password\"", body);
+        Assert.Contains("name=\"enable_internet\"", body);
+        Assert.Contains("name=\"retention_period_days\"", body);
+        Assert.Contains("name=\"storage_region\"", body);
+        Assert.Contains("name=\"interaction_sandbox\"", body);
+        Assert.Contains("windows", body);
+        Assert.Contains("name=\"interaction_timeout\"", body);
+        Assert.Contains("120", body);
     }
 
     [Fact]
@@ -682,7 +674,7 @@ public partial class VirusTotalClientTests
         };
         IVirusTotalClient client = new VirusTotalClient(httpClient);
 
-        var notifications = await client.ListLivehuntNotificationsAsync(limit: 1);
+        var notifications = await client.ListLivehuntNotificationsAsync(limit: 1, fetchAll: true);
 
         Assert.Equal(2, notifications.Data.Count);
         Assert.Null(notifications.NextCursor);

@@ -92,13 +92,12 @@
             <command:parameterValue required="false" variableLength="false">Comment</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">Vote</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">Relationship</command:parameterValue>
-            <command:parameterValue required="false" variableLength="false">Search</command:parameterValue>
-            <command:parameterValue required="false" variableLength="false">Feed</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">Graph</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">SslCertificate</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">User</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Group</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">Collection</command:parameterValue>
-            <command:parameterValue required="false" variableLength="false">Bundle</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">ZipFile</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">LivehuntNotification</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">RetrohuntJob</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">RetrohuntNotification</command:parameterValue>
@@ -191,13 +190,12 @@
           <command:parameterValue required="false" variableLength="false">Comment</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">Vote</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">Relationship</command:parameterValue>
-          <command:parameterValue required="false" variableLength="false">Search</command:parameterValue>
-          <command:parameterValue required="false" variableLength="false">Feed</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">Graph</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">SslCertificate</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">User</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Group</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">Collection</command:parameterValue>
-          <command:parameterValue required="false" variableLength="false">Bundle</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">ZipFile</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">LivehuntNotification</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">RetrohuntJob</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">RetrohuntNotification</command:parameterValue>
@@ -275,12 +273,12 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="FileHash">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="FileHash">
           <maml:name>File</maml:name>
           <maml:description>
             <maml:para>Path to a local file to compute its hash.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -290,12 +288,12 @@
       </command:syntaxItem>
       <command:syntaxItem parameterSetName="Analysis">
         <maml:name>Get-VirusReport</maml:name>
-        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
           <maml:name>AnalysisId</maml:name>
           <maml:description>
             <maml:para>Analysis identifier returned from a previous scan.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -353,12 +351,12 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
           <maml:name>Hash</maml:name>
           <maml:description>
             <maml:para>SHA256 or other supported hash to look up.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -392,12 +390,12 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="Uri">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="Uri">
           <maml:name>Url</maml:name>
           <maml:description>
             <maml:para>URL to check against VirusTotal.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">Uri</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">Uri</command:parameterValue>
           <dev:type>
             <maml:name>Uri</maml:name>
             <maml:uri />
@@ -431,12 +429,12 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
           <maml:name>IPAddress</maml:name>
           <maml:description>
             <maml:para>IP address to inspect.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -470,12 +468,12 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
           <maml:name>DomainName</maml:name>
           <maml:description>
             <maml:para>Domain name to inspect.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -509,12 +507,12 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
           <maml:name>Search</maml:name>
           <maml:description>
             <maml:para>Free-form search expression.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -524,12 +522,12 @@
       </command:syntaxItem>
     </command:syntax>
     <command:parameters>
-      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
         <maml:name>AnalysisId</maml:name>
         <maml:description>
           <maml:para>Analysis identifier returned from a previous scan.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
@@ -560,72 +558,72 @@
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
         <maml:name>DomainName</maml:name>
         <maml:description>
           <maml:para>Domain name to inspect.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="FileHash">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="FileHash">
         <maml:name>File</maml:name>
         <maml:description>
           <maml:para>Path to a local file to compute its hash.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
         <maml:name>Hash</maml:name>
         <maml:description>
           <maml:para>SHA256 or other supported hash to look up.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
         <maml:name>IPAddress</maml:name>
         <maml:description>
           <maml:para>IP address to inspect.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
         <maml:name>Search</maml:name>
         <maml:description>
           <maml:para>Free-form search expression.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="Uri">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="Uri">
         <maml:name>Url</maml:name>
         <maml:description>
           <maml:para>URL to check against VirusTotal.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">Uri</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">Uri</command:parameterValue>
         <dev:type>
           <maml:name>Uri</maml:name>
           <maml:uri />
@@ -1535,12 +1533,12 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
           <maml:name>Hash</maml:name>
           <maml:description>
             <maml:para>Hash of an already submitted file to reanalyse.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -1586,12 +1584,12 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
           <maml:name>FileHash</maml:name>
           <maml:description>
             <maml:para>Path to a file whose hash should be recalculated and reanalysed.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -1637,12 +1635,12 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
           <maml:name>File</maml:name>
           <maml:description>
             <maml:para>Path to a local file to upload for scanning.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -1700,12 +1698,12 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="Uri">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="Uri">
           <maml:name>Url</maml:name>
           <maml:description>
             <maml:para>URL to submit for scanning.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">Uri</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">Uri</command:parameterValue>
           <dev:type>
             <maml:name>Uri</maml:name>
             <maml:uri />
@@ -1739,36 +1737,36 @@
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
         <maml:name>File</maml:name>
         <maml:description>
           <maml:para>Path to a local file to upload for scanning.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
         <maml:name>FileHash</maml:name>
         <maml:description>
           <maml:para>Path to a file whose hash should be recalculated and reanalysed.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
         <maml:name>Hash</maml:name>
         <maml:description>
           <maml:para>Hash of an already submitted file to reanalyse.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
@@ -1787,12 +1785,12 @@
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="Uri">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="Uri">
         <maml:name>Url</maml:name>
         <maml:description>
           <maml:para>URL to submit for scanning.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">Uri</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">Uri</command:parameterValue>
         <dev:type>
           <maml:name>Uri</maml:name>
           <maml:uri />
@@ -2034,13 +2032,12 @@
             <command:parameterValue required="false" variableLength="false">Comment</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">Vote</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">Relationship</command:parameterValue>
-            <command:parameterValue required="false" variableLength="false">Search</command:parameterValue>
-            <command:parameterValue required="false" variableLength="false">Feed</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">Graph</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">SslCertificate</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">User</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Group</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">Collection</command:parameterValue>
-            <command:parameterValue required="false" variableLength="false">Bundle</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">ZipFile</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">LivehuntNotification</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">RetrohuntJob</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">RetrohuntNotification</command:parameterValue>
@@ -2125,13 +2122,12 @@
           <command:parameterValue required="false" variableLength="false">Comment</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">Vote</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">Relationship</command:parameterValue>
-          <command:parameterValue required="false" variableLength="false">Search</command:parameterValue>
-          <command:parameterValue required="false" variableLength="false">Feed</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">Graph</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">SslCertificate</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">User</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Group</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">Collection</command:parameterValue>
-          <command:parameterValue required="false" variableLength="false">Bundle</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">ZipFile</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">LivehuntNotification</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">RetrohuntJob</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">RetrohuntNotification</command:parameterValue>

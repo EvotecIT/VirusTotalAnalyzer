@@ -37,12 +37,6 @@ public enum ResourceType
     [EnumMember(Value = "relationship")]
     Relationship,
 
-    [EnumMember(Value = "search")]
-    Search,
-
-    [EnumMember(Value = "feed")]
-    Feed,
-
     [EnumMember(Value = "graph")]
     Graph,
 
@@ -52,11 +46,14 @@ public enum ResourceType
     [EnumMember(Value = "user")]
     User,
 
+    [EnumMember(Value = "group")]
+    Group,
+
     [EnumMember(Value = "collection")]
     Collection,
 
-    [EnumMember(Value = "bundle")]
-    Bundle,
+    [EnumMember(Value = "zip_file")]
+    ZipFile,
 
     [EnumMember(Value = "livehunt_notification")]
     LivehuntNotification,
@@ -70,6 +67,6 @@ public enum ResourceType
     [EnumMember(Value = "intelligence_hunting_ruleset")]
     IntelligenceHuntingRuleset,
 
-    [EnumMember(Value = "file-behaviour")]
+    [EnumMember(Value = "file_behaviour")]
     FileBehaviour
 }

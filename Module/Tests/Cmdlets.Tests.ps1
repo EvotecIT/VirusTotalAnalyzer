@@ -354,6 +354,18 @@ Describe 'Get-VirusRelationship cmdlet' {
         $result.Attributes.RegistrarName | Should -Be 'Example Registrar'
         $handler.LastRequest.RequestUri.AbsolutePath | Should -Be '/api/v3/domains/example.com/historical_whois'
     }
+
+    It 'returns a page envelope with the next relationship cursor when requested' {
+        $json = '{"data":[{"id":"w1","type":"whois","attributes":{"registrar_name":"Example Registrar"}}],"meta":{"cursor":"next-page"}}'
+        $handler = [FakeHandler]::new($json)
+        $client = New-TestVirusTotalClient -ApiHandler $handler
+
+        $page = Get-VirusRelationship -DomainName 'example.com' -Relationship HistoricalWhois -Limit 10 -Page -Client $client
+
+        $page.NextCursor | Should -Be 'next-page'
+        $page.Data.Count | Should -Be 1
+        $page.Data[0].Attributes.RegistrarName | Should -Be 'Example Registrar'
+    }
 }
 
 Describe 'Send-VirusTotalMonitorFile cmdlet' {

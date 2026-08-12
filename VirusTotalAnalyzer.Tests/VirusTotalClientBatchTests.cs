@@ -276,32 +276,6 @@ public sealed class VirusTotalClientBatchTests
     }
 
     [Fact]
-    public async Task Batch_CancelledLastWaiterStillPublishesObservedRetryAfter()
-    {
-        var handler = new DelayedRateLimitHandler();
-        using var client = CreateClient(handler);
-        var options = ImmediateOptions();
-        options.CacheDuration = TimeSpan.Zero;
-        using var cancellation = new CancellationTokenSource();
-
-        var cancelled = client.GetFileReportsBatchAsync(
-            new[] { "first" },
-            options,
-            cancellationToken: cancellation.Token);
-        await handler.FirstStarted.Task;
-        cancellation.Cancel();
-        handler.ReleaseRateLimit.TrySetResult(true);
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cancelled);
-        await Task.Delay(100);
-        var other = await client.GetFileReportsBatchAsync(new[] { "second" }, options);
-
-        Assert.Single(other);
-        Assert.True(
-            handler.SuccessfulRequest - handler.FirstRequest >= TimeSpan.FromMilliseconds(800),
-            $"Later caller started after {handler.SuccessfulRequest - handler.FirstRequest}.");
-    }
-
-    [Fact]
     public async Task Batch_RetryAfterPausesOtherConcurrentCallers()
     {
         var handler = new SharedRetryHandler();

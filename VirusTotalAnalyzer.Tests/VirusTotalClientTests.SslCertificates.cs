@@ -31,23 +31,27 @@ public partial class VirusTotalClientTests
     [Theory]
     [InlineData(true, "/api/v3/domains/example.com/historical_ssl_certificates")]
     [InlineData(false, "/api/v3/ip_addresses/1.2.3.4/historical_ssl_certificates")]
-    public async Task HistoricalSslCertificates_UseCurrentRelationshipAndType(bool domain, string expectedPath)
+    public async Task HistoricalSslCertificatePages_PreserveContextAndCursor(bool domain, string expectedPath)
     {
         var certificateWithContext = CertificateJson.Substring(0, CertificateJson.Length - 1) +
-                                     ",\"context_attributes\":{\"first_seen_date\":\"2020-06-11\",\"port\":\"443\"}}";
-        var json = "{\"data\":[" + certificateWithContext + "]}";
+                                     ",\"context_attributes\":{\"first_seen_date\":\"2020-06-11\",\"last_seen_date\":\"2020-07-12\",\"port\":\"443\",\"source\":\"passive-ssl\"}}";
+        var json = "{\"data\":[" + certificateWithContext + "],\"meta\":{\"cursor\":\"next-page\"}}";
         var handler = Handler(json);
         using var client = CreateCertificateClient(handler);
 
-        var certificates = domain
-            ? await client.GetDomainHistoricalSslCertificatesAsync("example.com", limit: 10, cursor: "abc")
-            : await client.GetIpAddressHistoricalSslCertificatesAsync("1.2.3.4", limit: 10, cursor: "abc");
+        var page = domain
+            ? await client.GetDomainHistoricalSslCertificatesPageAsync("example.com", limit: 10, cursor: "abc")
+            : await client.GetIpAddressHistoricalSslCertificatesPageAsync("1.2.3.4", limit: 10, cursor: "abc");
 
         Assert.Equal(expectedPath, handler.Request!.RequestUri!.AbsolutePath);
         Assert.Equal("?limit=10&cursor=abc", handler.Request.RequestUri.Query);
-        var certificate = Assert.Single(certificates!);
+        Assert.Equal("next-page", page!.NextCursor);
+        var certificate = Assert.Single(page.Data);
         Assert.Equal(ResourceType.SslCertificate, certificate.Type);
         Assert.Equal(443, certificate.ContextAttributes!.Port);
+        Assert.Equal("2020-06-11", certificate.ContextAttributes.FirstSeenDate);
+        Assert.Equal("2020-07-12", certificate.ContextAttributes.LastSeenDate);
+        Assert.True(certificate.ContextAttributes.AdditionalProperties.ContainsKey("source"));
         Assert.Equal("hash", certificate.Attributes.ThumbprintSha256);
     }
 

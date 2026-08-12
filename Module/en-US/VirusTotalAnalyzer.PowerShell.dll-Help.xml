@@ -308,6 +308,18 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="IncludePageInfo">
+          <maml:name>Page</maml:name>
+          <maml:description>
+            <maml:para>Returns the page envelope, including Data, Meta, Links, and NextCursor, instead of enumerating Data.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Relationship</maml:name>
           <maml:description>
@@ -386,6 +398,18 @@
           <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
           <dev:type>
             <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="IncludePageInfo">
+          <maml:name>Page</maml:name>
+          <maml:description>
+            <maml:para>Returns the page envelope, including Data, Meta, Links, and NextCursor, instead of enumerating Data.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -484,6 +508,18 @@
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="IncludePageInfo">
+        <maml:name>Page</maml:name>
+        <maml:description>
+          <maml:para>Returns the page envelope, including Data, Meta, Links, and NextCursor, instead of enumerating Data.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Relationship</maml:name>
         <maml:description>
@@ -530,6 +566,26 @@
       <command:returnValue>
         <dev:type>
           <maml:name>VirusTotalAnalyzer.Models.FileReport</maml:name>
+        </dev:type>
+      </command:returnValue>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.PagedResponse[VirusTotalAnalyzer.Models.WhoisRecord]</maml:name>
+        </dev:type>
+      </command:returnValue>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.PagedResponse[VirusTotalAnalyzer.Models.Resolution]</maml:name>
+        </dev:type>
+      </command:returnValue>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.PagedResponse[VirusTotalAnalyzer.Models.SslCertificate]</maml:name>
+        </dev:type>
+      </command:returnValue>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.PagedResponse[VirusTotalAnalyzer.Models.FileReport]</maml:name>
         </dev:type>
       </command:returnValue>
     </command:returnValues>

@@ -11,12 +11,12 @@ Retrieves useful typed relationships for VirusTotal network objects.
 ## SYNTAX
 ### Domain (Default)
 ```powershell
-Get-VirusRelationship -DomainName <string> -Relationship <VirusTotalRelationshipType> [-Limit <Int32>] [-Cursor <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusRelationship -DomainName <string> -Relationship <VirusTotalRelationshipType> [-Limit <Int32>] [-Cursor <string>] [-Page] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### IPAddress
 ```powershell
-Get-VirusRelationship -IPAddress <string> -Relationship <VirusTotalRelationshipType> [-Limit <Int32>] [-Cursor <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusRelationship -IPAddress <string> -Relationship <VirusTotalRelationshipType> [-Limit <Int32>] [-Cursor <string>] [-Page] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -134,6 +134,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Page
+Returns the page envelope, including Data, Meta, Links, and NextCursor, instead of enumerating Data.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: Domain, IPAddress
+Aliases: IncludePageInfo
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Relationship
 Typed relationship to retrieve.
 
@@ -163,6 +179,10 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 - `VirusTotalAnalyzer.Models.Resolution`
 - `VirusTotalAnalyzer.Models.SslCertificate`
 - `VirusTotalAnalyzer.Models.FileReport`
+- `VirusTotalAnalyzer.Models.PagedResponse[VirusTotalAnalyzer.Models.WhoisRecord]`
+- `VirusTotalAnalyzer.Models.PagedResponse[VirusTotalAnalyzer.Models.Resolution]`
+- `VirusTotalAnalyzer.Models.PagedResponse[VirusTotalAnalyzer.Models.SslCertificate]`
+- `VirusTotalAnalyzer.Models.PagedResponse[VirusTotalAnalyzer.Models.FileReport]`
 
 ## RELATED LINKS
 

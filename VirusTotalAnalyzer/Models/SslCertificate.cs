@@ -40,9 +40,10 @@ public sealed class SslCertificateValidity
 }
 
 /// <summary>Contains relationship-specific certificate metadata.</summary>
-public sealed class SslCertificateContextAttributes
+public sealed class SslCertificateContextAttributes : ExtensibleAttributes
 {
     public string? FirstSeenDate { get; set; }
+    public string? LastSeenDate { get; set; }
 
     [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
     public int? Port { get; set; }

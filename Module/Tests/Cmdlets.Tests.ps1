@@ -210,6 +210,40 @@ Describe 'Get-VirusReport cmdlet' {
         $handler.Requests.Count | Should -Be 3
     }
 
+    It 'stops a report batch after an authorization failure' {
+        $handler = [StatusQueueFakeHandler]::new(
+            [string[]] @(
+                '{"error":{"code":"AuthenticationRequiredError","message":"bad key"}}',
+                '{"data":{"id":"second","type":"file","attributes":{}}}'
+            ),
+            [int[]] @(401, 200))
+        $downloadHandler = [FakeHandler]::new('{}')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new('test-api-key', $handler, $downloadHandler)
+
+        $failure = { Get-VirusReport -Hash 'first','second' -Client $client `
+            -MinimumIntervalSeconds 0 -MaxRetries 0 } | Should -Throw -PassThru
+
+        $failure.FullyQualifiedErrorId | Should -Match '^AuthenticationRequiredError'
+        $handler.Requests.Count | Should -Be 1
+    }
+
+    It 'uses the original URL as the report error target' {
+        $handler = [StatusQueueFakeHandler]::new(
+            [string[]] @('{"error":{"code":"NotFoundError","message":"missing"}}'),
+            [int[]] @(404))
+        $downloadHandler = [FakeHandler]::new('{}')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new('test-api-key', $handler, $downloadHandler)
+        $url = [Uri] 'https://example.com/path?value=1'
+        $errors = @()
+
+        Get-VirusReport -Url $url -Client $client -MinimumIntervalSeconds 0 -MaxRetries 0 `
+            -ErrorAction SilentlyContinue -ErrorVariable +errors
+
+        $errors.Count | Should -Be 1
+        $errors[0].TargetObject | Should -Be $url.AbsoluteUri
+        $handler.Requests.Count | Should -Be 1
+    }
+
     It 'continues local file reports when a later file disappears before hashing' {
         $handler = [QueueFakeHandler]::new([string[]] @(
             '{"data":{"id":"first","type":"file","attributes":{}}}',

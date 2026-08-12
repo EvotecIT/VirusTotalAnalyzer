@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Management.Automation;
+using System.Net;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -209,19 +210,24 @@ public sealed class CmdletGetVirusReport : VirusTotalCmdlet
 
                         await WriteReportAsync(
                             hash,
+                            file,
                             (ids, token) => ActiveClient.GetFileReportsBatchAsync(ids, options, cancellationToken: token),
                             completedFileHashes,
                             failedFileHashes).ConfigureAwait(false);
                     }
                     break;
                 case "Url":
-                    var urlIds = new List<string>(_urls.Count);
+                    var completedUrls = new Dictionary<string, UrlReport?>(StringComparer.Ordinal);
+                    var failedUrls = new Dictionary<string, ApiException>(StringComparer.Ordinal);
                     foreach (var url in _urls)
-                        urlIds.Add(VirusTotalClientExtensions.GetUrlId(url));
-                    await WriteReportBatchAsync(
-                        urlIds,
-                        (ids, token) => ActiveClient.GetUrlReportsBatchAsync(ids, options, cancellationToken: token),
-                        StringComparer.Ordinal).ConfigureAwait(false);
+                    {
+                        await WriteReportAsync(
+                            VirusTotalClientExtensions.GetUrlId(url),
+                            url,
+                            (ids, token) => ActiveClient.GetUrlReportsBatchAsync(ids, options, cancellationToken: token),
+                            completedUrls,
+                            failedUrls).ConfigureAwait(false);
+                    }
                     break;
                 case "IPAddress":
                     await WriteReportBatchAsync(
@@ -253,12 +259,13 @@ public sealed class CmdletGetVirusReport : VirusTotalCmdlet
         var failures = new Dictionary<string, ApiException>(comparer);
         foreach (var id in ids)
         {
-            await WriteReportAsync(id, fetch, completed, failures).ConfigureAwait(false);
+            await WriteReportAsync(id, id, fetch, completed, failures).ConfigureAwait(false);
         }
     }
 
     private async Task WriteReportAsync<T>(
         string id,
+        object targetObject,
         Func<IEnumerable<string>, CancellationToken, Task<IReadOnlyList<T>>> fetch,
         IDictionary<string, T?> completed,
         IDictionary<string, ApiException> failures)
@@ -273,7 +280,7 @@ public sealed class CmdletGetVirusReport : VirusTotalCmdlet
         }
         if (failures.TryGetValue(id, out var repeatedFailure))
         {
-            WriteApiError(repeatedFailure, id);
+            WriteApiError(repeatedFailure, targetObject);
             return;
         }
 
@@ -285,12 +292,20 @@ public sealed class CmdletGetVirusReport : VirusTotalCmdlet
             if (report is not null)
                 WriteReport(report);
         }
+        catch (ApiException exception) when (IsAuthorizationFailure(exception))
+        {
+            ThrowApiError(exception, targetObject);
+        }
         catch (ApiException exception)
         {
             failures.Add(id, exception);
-            WriteApiError(exception, id);
+            WriteApiError(exception, targetObject);
         }
     }
+
+    private static bool IsAuthorizationFailure(ApiException exception)
+        => exception.StatusCode == HttpStatusCode.Unauthorized ||
+           exception.StatusCode == HttpStatusCode.Forbidden;
 
     private async Task<string> GetSha256Async(string path)
     {

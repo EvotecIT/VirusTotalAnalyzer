@@ -47,6 +47,15 @@ public abstract partial class AsyncPSCmdlet {
 
     /// <summary>Writes a standardized VirusTotal API error.</summary>
     protected void WriteApiError(ApiException exception, object? targetObject = null) {
+        WriteError(CreateApiErrorRecord(exception, targetObject));
+    }
+
+    /// <summary>Throws a standardized terminating VirusTotal API error.</summary>
+    protected void ThrowApiError(ApiException exception, object? targetObject = null) {
+        ThrowTerminatingError(CreateApiErrorRecord(exception, targetObject));
+    }
+
+    private static ErrorRecord CreateApiErrorRecord(ApiException exception, object? targetObject) {
         if (exception is null) {
             throw new ArgumentNullException(nameof(exception));
         }
@@ -72,6 +81,6 @@ public abstract partial class AsyncPSCmdlet {
             record.ErrorDetails = new ErrorDetails(details.ToString());
         }
 
-        WriteError(record);
+        return record;
     }
 }

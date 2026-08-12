@@ -148,21 +148,4 @@ public sealed partial class VirusTotalClient
         return await DeserializeDataAsync<User>(stream, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<UserPrivileges?> GetUserPrivilegesAsync(string id, CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        using var response = await _httpClient.GetAsync($"users/{Uri.EscapeDataString(id)}/privileges", cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<UserPrivileges>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-    }
-
-    public async Task<UserQuota?> GetUserQuotaAsync(string id, CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        using var response = await _httpClient.GetAsync($"users/{Uri.EscapeDataString(id)}/quotas", cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<UserQuota>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-    }
 }

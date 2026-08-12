@@ -191,8 +191,6 @@ public partial class VirusTotalClientTests
     [Theory]
     [InlineData("pcap", "/api/v3/file_behaviours/abc/pcap")]
     [InlineData("livehunt", "/api/v3/intelligence/hunting_notification_files/abc")]
-    [InlineData("retrohunt", "/api/v3/intelligence/retrohunt_notification_files/abc")]
-    [InlineData("yara", "/api/v3/intelligence/hunting_rulesets/abc/download")]
     public async Task RedirectingAuthenticatedDownloads_FollowSignedUrlWithoutApiKey(
         string downloadKind,
         string expectedApiPath)
@@ -217,8 +215,6 @@ public partial class VirusTotalClientTests
         {
             "pcap" => client.DownloadFileBehaviorArtifactAsync("abc", BehaviorArtifact.Pcap),
             "livehunt" => client.DownloadLivehuntNotificationFileAsync("abc"),
-            "retrohunt" => client.DownloadRetrohuntNotificationFileAsync("abc"),
-            "yara" => client.DownloadYaraRulesetAsync("abc"),
             _ => throw new InvalidOperationException($"Unknown download kind: {downloadKind}")
         };
 
@@ -311,66 +307,6 @@ public partial class VirusTotalClientTests
 
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/file_behaviours/abc/pcap", handler.Request!.RequestUri!.AbsolutePath);
-        Assert.Equal("NotFoundError", ex.Error?.Code);
-        Assert.Equal("not found", ex.Message);
-    }
-
-    [Fact]
-    public async Task DownloadRetrohuntNotificationFileAsync_UsesCorrectPathAndReturnsStream()
-    {
-        var trackingStream = new TrackingStream(new byte[] { 1, 2, 3 });
-        var response = new TrackingResponseMessage
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new StreamContent(trackingStream)
-        };
-        var handler = new SingleResponseHandler(response);
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-#if NETFRAMEWORK
-        using (var stream = await client.DownloadRetrohuntNotificationFileAsync("abc"))
-        {
-            Assert.NotNull(handler.Request);
-            Assert.Equal("/api/v3/intelligence/retrohunt_notification_files/abc", handler.Request!.RequestUri!.AbsolutePath);
-            Assert.False(trackingStream.Disposed);
-            Assert.False(response.Disposed);
-        }
-#else
-        await using (var stream = await client.DownloadRetrohuntNotificationFileAsync("abc"))
-        {
-            Assert.NotNull(handler.Request);
-            Assert.Equal("/api/v3/intelligence/retrohunt_notification_files/abc", handler.Request!.RequestUri!.AbsolutePath);
-            Assert.False(trackingStream.Disposed);
-            Assert.False(response.Disposed);
-        }
-#endif
-        Assert.True(trackingStream.Disposed);
-        Assert.True(response.Disposed);
-    }
-
-    [Fact]
-    public async Task DownloadRetrohuntNotificationFileAsync_ThrowsApiException()
-    {
-        var errorJson = "{\"error\":{\"code\":\"NotFoundError\",\"message\":\"not found\"}}";
-        var response = new HttpResponseMessage(HttpStatusCode.NotFound)
-        {
-            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
-        };
-        var handler = new SingleResponseHandler(response);
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        var ex = await Assert.ThrowsAsync<ApiException>(async () => await client.DownloadRetrohuntNotificationFileAsync("abc"));
-
-        Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/intelligence/retrohunt_notification_files/abc", handler.Request!.RequestUri!.AbsolutePath);
         Assert.Equal("NotFoundError", ex.Error?.Code);
         Assert.Equal("not found", ex.Message);
     }

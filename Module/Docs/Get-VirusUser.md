@@ -15,7 +15,7 @@ Get-VirusUser -Id <string> [-ApiKey <string>] [-Client <IVirusTotalClient>] [<Co
 ```
 
 ## DESCRIPTION
-Fetches public profile data for the specified username.
+Fetches the documented user object. Quotas and privileges are populated when visible to the caller.
 
 ## EXAMPLES
 
@@ -29,7 +29,7 @@ Returns details for the given user identifier.
 ## PARAMETERS
 
 ### -ApiKey
-VirusTotal API key used when Client is not supplied.
+VirusTotal API key used when Client is not supplied. Defaults to the VIRUSTOTAL_API_KEY environment variable.
 
 ```yaml
 Type: String

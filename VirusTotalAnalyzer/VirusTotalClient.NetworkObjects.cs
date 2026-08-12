@@ -42,15 +42,6 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<IpWhois?> GetIpAddressWhoisAsync(string id, CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        using var response = await _httpClient.GetAsync($"ip_addresses/{Uri.EscapeDataString(id)}/whois", cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await DeserializeDataAsync<IpWhois>(stream, cancellationToken).ConfigureAwait(false);
-    }
-
     /// <summary>Retrieves reports for multiple domains with one V3 object request per id.</summary>
     public async Task<IReadOnlyList<DomainReport>> GetDomainReportsAsync(
         IEnumerable<string> ids,
@@ -80,15 +71,6 @@ public sealed partial class VirusTotalClient
         var result = await JsonSerializer.DeserializeAsync<DomainReportResponse>(stream, _jsonOptions, cancellationToken)
             .ConfigureAwait(false);
         return result?.Data;
-    }
-
-    public async Task<DomainWhois?> GetDomainWhoisAsync(string id, CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        using var response = await _httpClient.GetAsync($"domains/{Uri.EscapeDataString(id)}/whois", cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await DeserializeDataAsync<DomainWhois>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     private static string BuildObjectUrl(

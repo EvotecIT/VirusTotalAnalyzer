@@ -11,22 +11,22 @@ Submits resources to VirusTotal for scanning.
 ## SYNTAX
 ### Hash
 ```powershell
-New-VirusScan -Hash <string> [-Password <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+New-VirusScan -Hash <string> [-Password <string>] [-Wait] [-TimeoutSeconds <int>] [-PollingIntervalSeconds <int>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### FileHash
 ```powershell
-New-VirusScan -FileHash <string> [-Password <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+New-VirusScan -FileHash <string> [-Password <string>] [-Wait] [-TimeoutSeconds <int>] [-PollingIntervalSeconds <int>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### FileInformation
 ```powershell
-New-VirusScan -File <string> [-Password <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+New-VirusScan -File <string> [-Password <string>] [-Wait] [-TimeoutSeconds <int>] [-PollingIntervalSeconds <int>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### Url
 ```powershell
-New-VirusScan -Url <uri> [-Password <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+New-VirusScan -Url <uri> [-Password <string>] [-Wait] [-TimeoutSeconds <int>] [-PollingIntervalSeconds <int>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -50,10 +50,17 @@ PS> New-VirusScan -ApiKey $ApiKey -Url 'https://example.com'
 
 Queues the URL for analysis and returns its identifier.
 
+### EXAMPLE 3
+```powershell
+PS> $env:VIRUSTOTAL_API_KEY = 'your-api-key'; New-VirusScan -File 'C:\samples\app.exe' -Wait
+```
+
+Uses the environment API key and polls at a free-API-friendly interval.
+
 ## PARAMETERS
 
 ### -ApiKey
-VirusTotal API key used when Client is not supplied.
+VirusTotal API key used when Client is not supplied. Defaults to the VIRUSTOTAL_API_KEY environment variable.
 
 ```yaml
 Type: String
@@ -148,6 +155,38 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -PollingIntervalSeconds
+Seconds between status requests. The default is suitable for the public API rate limit.
+
+```yaml
+Type: Int32
+Parameter Sets: Hash, FileHash, FileInformation, Url
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: 20
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TimeoutSeconds
+Maximum number of seconds to wait for analysis completion.
+
+```yaml
+Type: Int32
+Parameter Sets: Hash, FileHash, FileInformation, Url
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: 300
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Url
 URL to submit for scanning.
 
@@ -164,6 +203,22 @@ Accept pipeline input: True (ByValue, ByPropertyName)
 Accept wildcard characters: False
 ```
 
+### -Wait
+Wait for VirusTotal to finish the submitted analysis.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: Hash, FileHash, FileInformation, Url
+Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
@@ -174,7 +229,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## OUTPUTS
 
-- `None`
+- `VirusTotalAnalyzer.Models.AnalysisReport`
 
 ## RELATED LINKS
 

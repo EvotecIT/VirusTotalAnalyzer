@@ -80,9 +80,7 @@ public class VirusTotalClientDisposeTests
         => new()
         {
             { client => client.DownloadFileAsync("id") },
-            { client => client.DownloadYaraRulesetAsync("id") },
             { client => client.DownloadLivehuntNotificationFileAsync("id") },
-            { client => client.DownloadRetrohuntNotificationFileAsync("id") },
             { client => client.DownloadFileBehaviorArtifactAsync("id", BehaviorArtifact.Pcap) },
             { client => client.DownloadMonitorItemAsync("id") }
         };

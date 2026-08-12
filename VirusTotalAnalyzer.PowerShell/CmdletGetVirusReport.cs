@@ -10,7 +10,7 @@ namespace VirusTotalAnalyzer.PowerShell;
 
 /// <summary>Retrieves analysis reports from VirusTotal.</summary>
 /// <para>Queries the VirusTotal API for information about files, hashes, URLs, IP addresses, domains, or existing analyses.</para>
-/// <para>Provide an API key or an existing <see cref="IVirusTotalClient"/> to authenticate requests.</para>
+/// <para>Provide an API key or an existing <see cref="IVirusTotalClient"/> to authenticate requests, or set VIRUSTOTAL_API_KEY.</para>
 /// <list type="alertSet">
 ///   <item>
 ///     <description>Each request consumes your VirusTotal API quota.</description>
@@ -62,7 +62,7 @@ public sealed class CmdletGetVirusReport : VirusTotalCmdlet
     [Parameter(Mandatory = true, ParameterSetName = "DomainName", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
     public string? DomainName { get; set; }
 
-    /// <summary>Free-form search expression.</summary>
+    /// <summary>Public search query for an exact IOC or a comment tag.</summary>
     [Parameter(Mandatory = true, ParameterSetName = "Search", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
     public string? Search { get; set; }
 

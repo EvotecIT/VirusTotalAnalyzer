@@ -8,65 +8,62 @@ namespace VirusTotalAnalyzer;
 public enum ResourceType
 {
     /// <summary>An unrecognized or missing API resource type.</summary>
-    Unknown,
+    Unknown = 0,
 
     [EnumMember(Value = "file")]
-    File,
+    File = 1,
 
     [EnumMember(Value = "url")]
-    Url,
+    Url = 2,
 
     [EnumMember(Value = "ip_address")]
-    IpAddress,
+    IpAddress = 3,
 
     [EnumMember(Value = "domain")]
-    Domain,
+    Domain = 4,
 
     [EnumMember(Value = "analysis")]
-    Analysis,
+    Analysis = 5,
 
     [EnumMember(Value = "private_analysis")]
-    PrivateAnalysis,
+    PrivateAnalysis = 6,
 
     [EnumMember(Value = "comment")]
-    Comment,
+    Comment = 7,
 
     [EnumMember(Value = "vote")]
-    Vote,
+    Vote = 8,
 
     [EnumMember(Value = "relationship")]
-    Relationship,
+    Relationship = 9,
 
     [EnumMember(Value = "graph")]
-    Graph,
+    Graph = 10,
 
     [EnumMember(Value = "ssl_certificate")]
-    SslCertificate,
+    SslCertificate = 11,
 
     [EnumMember(Value = "user")]
-    User,
+    User = 12,
 
     [EnumMember(Value = "group")]
-    Group,
+    Group = 13,
 
     [EnumMember(Value = "collection")]
-    Collection,
+    Collection = 14,
 
     [EnumMember(Value = "zip_file")]
-    ZipFile,
+    ZipFile = 15,
 
     [EnumMember(Value = "livehunt_notification")]
-    LivehuntNotification,
+    LivehuntNotification = 16,
 
     [EnumMember(Value = "retrohunt_job")]
-    RetrohuntJob,
-
-    [EnumMember(Value = "retrohunt_notification")]
-    RetrohuntNotification,
+    RetrohuntJob = 17,
 
     [EnumMember(Value = "intelligence_hunting_ruleset")]
-    IntelligenceHuntingRuleset,
+    IntelligenceHuntingRuleset = 19,
 
     [EnumMember(Value = "file_behaviour")]
-    FileBehaviour
+    FileBehaviour = 20
 }

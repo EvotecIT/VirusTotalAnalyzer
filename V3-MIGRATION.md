@@ -8,7 +8,9 @@ This change removes methods that targeted routes not provided by the VirusTotal 
 
 ## Reports and file behavior
 
-The multi-report methods now make one documented object request per id and preserve input order. They return a non-null list and are no longer limited to four ids.
+The multi-report methods now make one documented object request per id and preserve input order. They return a non-null list and are no longer limited to four ids. Use the new `*BatchAsync` report methods when the caller needs request spacing, rate-limit retries, duplicate suppression, and short-lived caching. Their defaults follow the Public API's four-request-per-minute limit.
+
+`ToVerdict()` projects file, URL, domain, IP, and analysis reports into a concise `VirusTotalVerdict`. The complete source object remains available through `VirusTotalVerdict.Report`.
 
 Use these file behavior APIs:
 
@@ -46,7 +48,9 @@ Comments are deleted through the global comment id with `DeleteCommentAsync(comm
 
 ## Resource types
 
-`ResourceType.Search`, `ResourceType.Feed`, and `ResourceType.Bundle` were removed because they are not V3 object types. `Group` and `ZipFile` were added, and file behavior serializes as `file_behaviour`.
+`ResourceType.Search`, `ResourceType.Feed`, and `ResourceType.Bundle` were removed because they are not V3 object types. `Group`, `ZipFile`, and `Whois` were added, file behavior serializes as `file_behaviour`, and SSL certificates now use the current `ssl_cert` type and `/ssl_certs/{id}` route.
+
+The undocumented `dns_records` and `ssl_certificates` relationship methods were removed. Use domain/IP `resolutions`, `historical_ssl_certificates`, and `historical_whois`. Historical certificate objects now model nested issuer, subject, validity, public-key, signature, extension, and relationship context fields.
 
 ## Current documented surface
 
@@ -66,3 +70,7 @@ The final cleanup removes additional methods that pointed at routes absent from 
 PowerShell cmdlets now use `VIRUSTOTAL_API_KEY` when neither `-ApiKey` nor `-Client` is supplied. `New-VirusScan -Wait` submits or reanalyses an item and returns the completed analysis. Its default polling interval is 20 seconds, matching the Public API's four-request-per-minute constraint conservatively when combined with the submission request.
 
 `WaitForAnalysisCompletionAsync` uses the same 20-second default, honors server rate-limit delays while waiting, and rejects non-positive timeout or polling values. The general rate-limit retry helpers now also use 20 seconds when the service does not supply `Retry-After`.
+
+`Get-VirusReport` accepts arrays, buffers pipeline records, and applies the same public-key-friendly batching policy. Use `-Summary` for concise verdicts and `-MinimumIntervalSeconds 0` only when the account's licensed quota permits it.
+
+`Get-VirusRelationship` exposes typed public domain/IP resolutions, historical WHOIS, historical SSL certificates, and communicating/referrer files. `Get-VirusAccount` aliases `Get-VirusUser`; set `VIRUSTOTAL_USER_ID` or pass `-Id`, and use `-Quota` for quota rows. The API key is never substituted into the user-id URL path.

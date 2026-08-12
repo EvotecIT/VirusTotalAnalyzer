@@ -9,6 +9,7 @@ public sealed class AnalysisStats
     public int Suspicious { get; set; }
     public int Undetected { get; set; }
     public int Timeout { get; set; }
+    [JsonPropertyName("confirmed-timeout")] public int ConfirmedTimeout { get; set; }
     public int Failure { get; set; }
     [JsonPropertyName("type-unsupported")] public int TypeUnsupported { get; set; }
 }

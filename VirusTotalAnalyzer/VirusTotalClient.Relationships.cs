@@ -62,6 +62,20 @@ public sealed partial class VirusTotalClient
         CancellationToken cancellationToken = default)
         => GetResolutionsAsync(ResourceType.Domain, id, limit, cursor, cancellationToken);
 
+    /// <summary>Gets historical WHOIS snapshots for a domain.</summary>
+    public Task<IReadOnlyList<WhoisRecord>?> GetDomainHistoricalWhoisAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetDomainRelationshipsAsync<WhoisRecordsResponse, WhoisRecord>(
+            id,
+            "historical_whois",
+            response => response.Data,
+            limit,
+            cursor,
+            cancellationToken);
+
     public Task<IReadOnlyList<Submission>?> GetDomainSubmissionsAsync(
         string id,
         int? limit = null,
@@ -90,19 +104,19 @@ public sealed partial class VirusTotalClient
         CancellationToken cancellationToken = default)
         => GetDomainRelationshipsAsync<DomainUrlsResponse, UrlSummary>(id, "urls", r => r.Data, limit, cursor, cancellationToken);
 
-    public Task<IReadOnlyList<DnsRecord>?> GetDomainDnsRecordsAsync(
-        string id,
-        int? limit = null,
-        string? cursor = null,
-        CancellationToken cancellationToken = default)
-        => GetDomainRelationshipsAsync<DnsRecordsResponse, DnsRecord>(id, "dns_records", r => r.Data, limit, cursor, cancellationToken);
-
     public Task<IReadOnlyList<FileReport>?> GetDomainReferrerFilesAsync(
         string id,
         int? limit = null,
         string? cursor = null,
         CancellationToken cancellationToken = default)
         => GetDomainRelationshipsAsync<FileReportsResponse, FileReport>(id, "referrer_files", r => r.Data, limit, cursor, cancellationToken);
+
+    public Task<IReadOnlyList<FileReport>?> GetDomainCommunicatingFilesAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetDomainRelationshipsAsync<FileReportsResponse, FileReport>(id, "communicating_files", r => r.Data, limit, cursor, cancellationToken);
 
     public Task<IReadOnlyList<FileReport>?> GetDomainDownloadedFilesAsync(
         string id,
@@ -111,12 +125,12 @@ public sealed partial class VirusTotalClient
         CancellationToken cancellationToken = default)
         => GetDomainRelationshipsAsync<FileReportsResponse, FileReport>(id, "downloaded_files", r => r.Data, limit, cursor, cancellationToken);
 
-    public Task<IReadOnlyList<SslCertificate>?> GetDomainSslCertificatesAsync(
+    public Task<IReadOnlyList<SslCertificate>?> GetDomainHistoricalSslCertificatesAsync(
         string id,
         int? limit = null,
         string? cursor = null,
         CancellationToken cancellationToken = default)
-        => GetDomainRelationshipsAsync<SslCertificatesResponse, SslCertificate>(id, "ssl_certificates", r => r.Data, limit, cursor, cancellationToken);
+        => GetDomainRelationshipsAsync<SslCertificatesResponse, SslCertificate>(id, "historical_ssl_certificates", r => r.Data, limit, cursor, cancellationToken);
 
     public Task<IReadOnlyList<Resolution>?> GetIpAddressResolutionsAsync(
         string id,
@@ -124,6 +138,32 @@ public sealed partial class VirusTotalClient
         string? cursor = null,
         CancellationToken cancellationToken = default)
         => GetResolutionsAsync(ResourceType.IpAddress, id, limit, cursor, cancellationToken);
+
+    /// <summary>Gets historical WHOIS snapshots for an IP address.</summary>
+    public async Task<IReadOnlyList<WhoisRecord>?> GetIpAddressHistoricalWhoisAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateId(id, nameof(id));
+        var path = new System.Text.StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}/historical_whois");
+        var hasQuery = false;
+        if (limit.HasValue)
+        {
+            path.Append("?limit=").Append(limit.Value);
+            hasQuery = true;
+        }
+        if (!string.IsNullOrEmpty(cursor))
+            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
+
+        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+        var result = await JsonSerializer.DeserializeAsync<WhoisRecordsResponse>(stream, _jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
+        return result?.Data;
+    }
 
     public Task<IReadOnlyList<Submission>?> GetIpAddressSubmissionsAsync(
         string id,
@@ -232,14 +272,14 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<IReadOnlyList<SslCertificate>?> GetIpAddressSslCertificatesAsync(
+    public async Task<IReadOnlyList<SslCertificate>?> GetIpAddressHistoricalSslCertificatesAsync(
         string id,
         int? limit = null,
         string? cursor = null,
         CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        var path = new System.Text.StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}/ssl_certificates");
+        var path = new System.Text.StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}/historical_ssl_certificates");
         var hasQuery = false;
         if (limit.HasValue)
         {

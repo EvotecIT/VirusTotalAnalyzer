@@ -115,7 +115,7 @@ Resource type to retrieve comments for.
 Type: ResourceType
 Parameter Sets: __AllParameterSets
 Aliases: None
-Possible values: Unknown, File, Url, IpAddress, Domain, Analysis, PrivateAnalysis, Comment, Vote, Relationship, Graph, SslCertificate, User, Group, Collection, ZipFile, LivehuntNotification, RetrohuntJob, IntelligenceHuntingRuleset, FileBehaviour
+Possible values: Unknown, File, Url, IpAddress, Domain, Analysis, PrivateAnalysis, Comment, Vote, Relationship, Graph, SslCertificate, User, Group, Collection, ZipFile, LivehuntNotification, RetrohuntJob, IntelligenceHuntingRuleset, FileBehaviour, Whois
 
 Required: True
 Position: named

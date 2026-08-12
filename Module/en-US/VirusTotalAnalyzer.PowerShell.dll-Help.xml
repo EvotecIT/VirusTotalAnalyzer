@@ -102,6 +102,7 @@
             <command:parameterValue required="false" variableLength="false">RetrohuntJob</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">IntelligenceHuntingRuleset</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">FileBehaviour</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Whois</command:parameterValue>
           </command:parameterValueGroup>
           <dev:type>
             <maml:name>ResourceType</maml:name>
@@ -199,6 +200,7 @@
           <command:parameterValue required="false" variableLength="false">RetrohuntJob</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">IntelligenceHuntingRuleset</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">FileBehaviour</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Whois</command:parameterValue>
         </command:parameterValueGroup>
         <dev:type>
           <maml:name>ResourceType</maml:name>
@@ -233,6 +235,334 @@
   </command:command>
   <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
     <command:details>
+      <command:name>Get-VirusRelationship</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>VirusRelationship</command:noun>
+      <maml:description>
+        <maml:para>Retrieves useful typed relationships for VirusTotal network objects.</maml:para>
+      </maml:description>
+    </command:details>
+    <maml:description>
+      <maml:para>Returns typed historical WHOIS, DNS, resolution, certificate, and related-file objects instead of generic relationship descriptors.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem parameterSetName="Domain">
+        <maml:name>Get-VirusRelationship</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key used when Client is not supplied. Defaults to the VIRUSTOTAL_API_KEY environment variable.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Cursor</maml:name>
+          <maml:description>
+            <maml:para>Cursor returned by a previous relationship request.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+          <maml:name>DomainName</maml:name>
+          <maml:description>
+            <maml:para>Domain whose relationships should be retrieved.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Limit</maml:name>
+          <maml:description>
+            <maml:para>Maximum number of relationship objects to request.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Relationship</maml:name>
+          <maml:description>
+            <maml:para>Typed relationship to retrieve.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">VirusTotalRelationshipType</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">HistoricalWhois</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Resolutions</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">HistoricalSslCertificates</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">CommunicatingFiles</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">ReferrerFiles</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>VirusTotalRelationshipType</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem parameterSetName="IPAddress">
+        <maml:name>Get-VirusRelationship</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>ApiKey</maml:name>
+          <maml:description>
+            <maml:para>VirusTotal API key used when Client is not supplied. Defaults to the VIRUSTOTAL_API_KEY environment variable.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Client</maml:name>
+          <maml:description>
+            <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+          <dev:type>
+            <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Cursor</maml:name>
+          <maml:description>
+            <maml:para>Cursor returned by a previous relationship request.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+          <maml:name>IPAddress</maml:name>
+          <maml:description>
+            <maml:para>IP address whose relationships should be retrieved.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <dev:type>
+            <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Limit</maml:name>
+          <maml:description>
+            <maml:para>Maximum number of relationship objects to request.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+          <maml:name>Relationship</maml:name>
+          <maml:description>
+            <maml:para>Typed relationship to retrieve.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">VirusTotalRelationshipType</command:parameterValue>
+          <command:parameterValueGroup>
+            <command:parameterValue required="false" variableLength="false">HistoricalWhois</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Resolutions</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">HistoricalSslCertificates</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">CommunicatingFiles</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">ReferrerFiles</command:parameterValue>
+          </command:parameterValueGroup>
+          <dev:type>
+            <maml:name>VirusTotalRelationshipType</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>ApiKey</maml:name>
+        <maml:description>
+          <maml:para>VirusTotal API key used when Client is not supplied. Defaults to the VIRUSTOTAL_API_KEY environment variable.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Client</maml:name>
+        <maml:description>
+          <maml:para>Existing client to reuse. The cmdlet never disposes caller-owned clients.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
+        <dev:type>
+          <maml:name>IVirusTotalClient</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Cursor</maml:name>
+        <maml:description>
+          <maml:para>Cursor returned by a previous relationship request.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <maml:name>DomainName</maml:name>
+        <maml:description>
+          <maml:para>Domain whose relationships should be retrieved.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <maml:name>IPAddress</maml:name>
+        <maml:description>
+          <maml:para>IP address whose relationships should be retrieved.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Limit</maml:name>
+        <maml:description>
+          <maml:para>Maximum number of relationship objects to request.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
+        <maml:name>Relationship</maml:name>
+        <maml:description>
+          <maml:para>Typed relationship to retrieve.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">VirusTotalRelationshipType</command:parameterValue>
+        <command:parameterValueGroup>
+          <command:parameterValue required="false" variableLength="false">HistoricalWhois</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Resolutions</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">HistoricalSslCertificates</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">CommunicatingFiles</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">ReferrerFiles</command:parameterValue>
+        </command:parameterValueGroup>
+        <dev:type>
+          <maml:name>VirusTotalRelationshipType</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+        </dev:type>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.WhoisRecord</maml:name>
+        </dev:type>
+      </command:returnValue>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.Resolution</maml:name>
+        </dev:type>
+      </command:returnValue>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.SslCertificate</maml:name>
+        </dev:type>
+      </command:returnValue>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.FileReport</maml:name>
+        </dev:type>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para></maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>Get historical WHOIS snapshots for a domain.</maml:title>
+        <dev:code>PS&gt; Get-VirusRelationship -DomainName 'example.com' -Relationship HistoricalWhois</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>Find files that communicated with an IP address.</maml:title>
+        <dev:code>PS&gt; Get-VirusRelationship -IPAddress '1.1.1.1' -Relationship CommunicatingFiles -Limit 10</dev:code>
+        <dev:remarks>
+          <maml:para></maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <command:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText />
+        <maml:uri>https://docs.virustotal.com/reference/domain-object-historical-whois</maml:uri>
+      </maml:navigationLink>
+    </command:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10">
+    <command:details>
       <command:name>Get-VirusReport</command:name>
       <command:verb>Get</command:verb>
       <command:noun>VirusReport</command:noun>
@@ -259,6 +589,18 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>CacheSeconds</maml:name>
+          <maml:description>
+            <maml:para>Seconds to reuse successful reports within the client. Use 0 to disable cross-batch caching.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Client</maml:name>
           <maml:description>
@@ -271,14 +613,50 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="FileHash">
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="FileHash">
           <maml:name>File</maml:name>
           <maml:description>
             <maml:para>Path to a local file to compute its hash.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
-            <maml:name>String</maml:name>
+            <maml:name>String[]</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>MaxRetries</maml:name>
+          <maml:description>
+            <maml:para>Maximum retries after VirusTotal responds with a rate limit.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>MinimumIntervalSeconds</maml:name>
+          <maml:description>
+            <maml:para>Minimum seconds between report request starts. The public-key default is 20; use 0 only when your quota permits it.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Summary</maml:name>
+          <maml:description>
+            <maml:para>Returns a concise verdict object while retaining the complete report in its Report property.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -286,14 +664,14 @@
       </command:syntaxItem>
       <command:syntaxItem parameterSetName="Analysis">
         <maml:name>Get-VirusReport</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
           <maml:name>AnalysisId</maml:name>
           <maml:description>
             <maml:para>Analysis identifier returned from a previous scan.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
-            <maml:name>String</maml:name>
+            <maml:name>String[]</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -310,6 +688,18 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>CacheSeconds</maml:name>
+          <maml:description>
+            <maml:para>Seconds to reuse successful reports within the client. Use 0 to disable cross-batch caching.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Client</maml:name>
           <maml:description>
@@ -318,6 +708,42 @@
           <command:parameterValue required="false" variableLength="false">IVirusTotalClient</command:parameterValue>
           <dev:type>
             <maml:name>IVirusTotalClient</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>MaxRetries</maml:name>
+          <maml:description>
+            <maml:para>Maximum retries after VirusTotal responds with a rate limit.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>MinimumIntervalSeconds</maml:name>
+          <maml:description>
+            <maml:para>Minimum seconds between report request starts. The public-key default is 20; use 0 only when your quota permits it.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Summary</maml:name>
+          <maml:description>
+            <maml:para>Returns a concise verdict object while retaining the complete report in its Report property.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -337,6 +763,18 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>CacheSeconds</maml:name>
+          <maml:description>
+            <maml:para>Seconds to reuse successful reports within the client. Use 0 to disable cross-batch caching.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Client</maml:name>
           <maml:description>
@@ -349,14 +787,50 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
           <maml:name>Hash</maml:name>
           <maml:description>
             <maml:para>SHA256 or other supported hash to look up.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
-            <maml:name>String</maml:name>
+            <maml:name>String[]</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>MaxRetries</maml:name>
+          <maml:description>
+            <maml:para>Maximum retries after VirusTotal responds with a rate limit.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>MinimumIntervalSeconds</maml:name>
+          <maml:description>
+            <maml:para>Minimum seconds between report request starts. The public-key default is 20; use 0 only when your quota permits it.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Summary</maml:name>
+          <maml:description>
+            <maml:para>Returns a concise verdict object while retaining the complete report in its Report property.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -376,6 +850,18 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>CacheSeconds</maml:name>
+          <maml:description>
+            <maml:para>Seconds to reuse successful reports within the client. Use 0 to disable cross-batch caching.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Client</maml:name>
           <maml:description>
@@ -388,14 +874,50 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="Uri">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>MaxRetries</maml:name>
+          <maml:description>
+            <maml:para>Maximum retries after VirusTotal responds with a rate limit.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>MinimumIntervalSeconds</maml:name>
+          <maml:description>
+            <maml:para>Minimum seconds between report request starts. The public-key default is 20; use 0 only when your quota permits it.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Summary</maml:name>
+          <maml:description>
+            <maml:para>Returns a concise verdict object while retaining the complete report in its Report property.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="Uri">
           <maml:name>Url</maml:name>
           <maml:description>
             <maml:para>URL to check against VirusTotal.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">Uri</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">Uri[]</command:parameterValue>
           <dev:type>
-            <maml:name>Uri</maml:name>
+            <maml:name>Uri[]</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -415,6 +937,18 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>CacheSeconds</maml:name>
+          <maml:description>
+            <maml:para>Seconds to reuse successful reports within the client. Use 0 to disable cross-batch caching.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Client</maml:name>
           <maml:description>
@@ -427,14 +961,50 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
           <maml:name>IPAddress</maml:name>
           <maml:description>
             <maml:para>IP address to inspect.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
-            <maml:name>String</maml:name>
+            <maml:name>String[]</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>MaxRetries</maml:name>
+          <maml:description>
+            <maml:para>Maximum retries after VirusTotal responds with a rate limit.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>MinimumIntervalSeconds</maml:name>
+          <maml:description>
+            <maml:para>Minimum seconds between report request starts. The public-key default is 20; use 0 only when your quota permits it.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Summary</maml:name>
+          <maml:description>
+            <maml:para>Returns a concise verdict object while retaining the complete report in its Report property.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -454,6 +1024,18 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>CacheSeconds</maml:name>
+          <maml:description>
+            <maml:para>Seconds to reuse successful reports within the client. Use 0 to disable cross-batch caching.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
           <maml:name>Client</maml:name>
           <maml:description>
@@ -466,14 +1048,50 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
           <maml:name>DomainName</maml:name>
           <maml:description>
             <maml:para>Domain name to inspect.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
           <dev:type>
-            <maml:name>String</maml:name>
+            <maml:name>String[]</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>MaxRetries</maml:name>
+          <maml:description>
+            <maml:para>Maximum retries after VirusTotal responds with a rate limit.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>MinimumIntervalSeconds</maml:name>
+          <maml:description>
+            <maml:para>Minimum seconds between report request starts. The public-key default is 20; use 0 only when your quota permits it.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+          <dev:type>
+            <maml:name>Int32</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Summary</maml:name>
+          <maml:description>
+            <maml:para>Returns a concise verdict object while retaining the complete report in its Report property.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -520,14 +1138,14 @@
       </command:syntaxItem>
     </command:syntax>
     <command:parameters>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
         <maml:name>AnalysisId</maml:name>
         <maml:description>
           <maml:para>Analysis identifier returned from a previous scan.</maml:para>
         </maml:description>
-        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
-          <maml:name>String</maml:name>
+          <maml:name>String[]</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -544,6 +1162,18 @@
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>CacheSeconds</maml:name>
+        <maml:description>
+          <maml:para>Seconds to reuse successful reports within the client. Use 0 to disable cross-batch caching.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="None">
         <maml:name>Client</maml:name>
         <maml:description>
@@ -556,50 +1186,74 @@
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
         <maml:name>DomainName</maml:name>
         <maml:description>
           <maml:para>Domain name to inspect.</maml:para>
         </maml:description>
-        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
-          <maml:name>String</maml:name>
+          <maml:name>String[]</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="FileHash">
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="FileHash">
         <maml:name>File</maml:name>
         <maml:description>
           <maml:para>Path to a local file to compute its hash.</maml:para>
         </maml:description>
-        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
-          <maml:name>String</maml:name>
+          <maml:name>String[]</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
         <maml:name>Hash</maml:name>
         <maml:description>
           <maml:para>SHA256 or other supported hash to look up.</maml:para>
         </maml:description>
-        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
-          <maml:name>String</maml:name>
+          <maml:name>String[]</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
         <maml:name>IPAddress</maml:name>
         <maml:description>
           <maml:para>IP address to inspect.</maml:para>
         </maml:description>
-        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
-          <maml:name>String</maml:name>
+          <maml:name>String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>MaxRetries</maml:name>
+        <maml:description>
+          <maml:para>Maximum retries after VirusTotal responds with a rate limit.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>MinimumIntervalSeconds</maml:name>
+        <maml:description>
+          <maml:para>Minimum seconds between report request starts. The public-key default is 20; use 0 only when your quota permits it.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -616,14 +1270,26 @@
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="Uri">
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Summary</maml:name>
+        <maml:description>
+          <maml:para>Returns a concise verdict object while retaining the complete report in its Report property.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="Uri">
         <maml:name>Url</maml:name>
         <maml:description>
           <maml:para>URL to check against VirusTotal.</maml:para>
         </maml:description>
-        <command:parameterValue required="true" variableLength="false">Uri</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">Uri[]</command:parameterValue>
         <dev:type>
-          <maml:name>Uri</maml:name>
+          <maml:name>Uri[]</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -641,10 +1307,46 @@
         </dev:type>
       </command:inputType>
     </command:inputTypes>
-    <command:returnValues />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.FileReport</maml:name>
+        </dev:type>
+      </command:returnValue>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.UrlReport</maml:name>
+        </dev:type>
+      </command:returnValue>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.IpAddressReport</maml:name>
+        </dev:type>
+      </command:returnValue>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.DomainReport</maml:name>
+        </dev:type>
+      </command:returnValue>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.AnalysisReport</maml:name>
+        </dev:type>
+      </command:returnValue>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.VirusTotalVerdict</maml:name>
+        </dev:type>
+      </command:returnValue>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.SearchResponse</maml:name>
+        </dev:type>
+      </command:returnValue>
+    </command:returnValues>
     <maml:alertSet>
       <maml:alert>
-        <maml:para>Each request consumes your VirusTotal API quota.</maml:para>
+        <maml:para></maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -1415,14 +2117,26 @@
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
         </command:parameter>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
           <maml:name>Id</maml:name>
           <maml:description>
             <maml:para>Identifier of the user to retrieve.</maml:para>
           </maml:description>
-          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
+            <maml:uri />
+          </dev:type>
+          <dev:defaultValue>None</dev:defaultValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Quota</maml:name>
+          <maml:description>
+            <maml:para>Returns one concise row for each visible quota instead of the complete user object.</maml:para>
+          </maml:description>
+          <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+          <dev:type>
+            <maml:name>SwitchParameter</maml:name>
             <maml:uri />
           </dev:type>
           <dev:defaultValue>None</dev:defaultValue>
@@ -1454,14 +2168,26 @@
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="True (ByValue, ByPropertyName)" position="named" aliases="None">
         <maml:name>Id</maml:name>
         <maml:description>
           <maml:para>Identifier of the user to retrieve.</maml:para>
         </maml:description>
-        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Quota</maml:name>
+        <maml:description>
+          <maml:para>Returns one concise row for each visible quota instead of the complete user object.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -1474,7 +2200,18 @@
         </dev:type>
       </command:inputType>
     </command:inputTypes>
-    <command:returnValues />
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.User</maml:name>
+        </dev:type>
+      </command:returnValue>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>VirusTotalAnalyzer.Models.VirusTotalQuotaStatus</maml:name>
+        </dev:type>
+      </command:returnValue>
+    </command:returnValues>
     <maml:alertSet>
       <maml:alert>
         <maml:para></maml:para>
@@ -2233,6 +2970,7 @@
             <command:parameterValue required="false" variableLength="false">RetrohuntJob</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">IntelligenceHuntingRuleset</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">FileBehaviour</command:parameterValue>
+            <command:parameterValue required="false" variableLength="false">Whois</command:parameterValue>
           </command:parameterValueGroup>
           <dev:type>
             <maml:name>ResourceType</maml:name>
@@ -2322,6 +3060,7 @@
           <command:parameterValue required="false" variableLength="false">RetrohuntJob</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">IntelligenceHuntingRuleset</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">FileBehaviour</command:parameterValue>
+          <command:parameterValue required="false" variableLength="false">Whois</command:parameterValue>
         </command:parameterValueGroup>
         <dev:type>
           <maml:name>ResourceType</maml:name>

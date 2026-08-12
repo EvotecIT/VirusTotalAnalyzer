@@ -40,7 +40,7 @@ public enum ResourceType
     [EnumMember(Value = "graph")]
     Graph = 10,
 
-    [EnumMember(Value = "ssl_certificate")]
+    [EnumMember(Value = "ssl_cert")]
     SslCertificate = 11,
 
     [EnumMember(Value = "user")]
@@ -65,5 +65,8 @@ public enum ResourceType
     IntelligenceHuntingRuleset = 19,
 
     [EnumMember(Value = "file_behaviour")]
-    FileBehaviour = 20
+    FileBehaviour = 20,
+
+    [EnumMember(Value = "whois")]
+    Whois = 21
 }

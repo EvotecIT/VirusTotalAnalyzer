@@ -190,7 +190,7 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
             ResourceType.Vote => "votes",
             ResourceType.Relationship => "relationships",
             ResourceType.Graph => "graphs",
-            ResourceType.SslCertificate => "ssl_certificates",
+            ResourceType.SslCertificate => "ssl_certs",
             ResourceType.User => "users",
             ResourceType.Group => "groups",
             ResourceType.Collection => "collections",
@@ -489,6 +489,9 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
         {
             _downloadClient.Dispose();
         }
+
+        _batchRequestGate.Dispose();
+        _batchCache.Clear();
 
         _disposed = true;
         GC.SuppressFinalize(this);

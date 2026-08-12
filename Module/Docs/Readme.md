@@ -13,6 +13,9 @@ VirusTotal API v3 module for reports, submissions, community data, and publisher
 ### [Get-VirusComment](Get-VirusComment.md)
 Retrieves comments for a specified resource.
 
+### [Get-VirusRelationship](Get-VirusRelationship.md)
+Retrieves useful typed relationships for VirusTotal network objects.
+
 ### [Get-VirusReport](Get-VirusReport.md)
 Retrieves analysis reports from VirusTotal.
 

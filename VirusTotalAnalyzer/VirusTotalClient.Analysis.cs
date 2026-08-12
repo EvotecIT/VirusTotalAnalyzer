@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -690,48 +689,4 @@ public sealed partial class VirusTotalClient
         }
     }
 
-    private static string[] ValidateIds(IEnumerable<string> ids, string paramName)
-    {
-        if (ids == null)
-        {
-            throw new ArgumentNullException(paramName);
-        }
-
-        var array = ids as string[] ?? ids.ToArray();
-        if (array.Length == 0)
-        {
-            throw new ArgumentException("The collection must not be empty.", paramName);
-        }
-
-        for (var i = 0; i < array.Length; i++)
-        {
-            if (string.IsNullOrWhiteSpace(array[i]))
-            {
-                throw new ArgumentException("The collection cannot contain null, empty, or whitespace ids.", paramName);
-            }
-        }
-
-        return array;
-    }
-
-    private static async Task<IReadOnlyList<T>> GetManyAsync<T>(
-        IEnumerable<string> ids,
-        Func<string, CancellationToken, Task<T?>> fetch,
-        string paramName,
-        CancellationToken cancellationToken)
-        where T : class
-    {
-        var idArray = ValidateIds(ids, paramName);
-        var results = new List<T>(idArray.Length);
-        foreach (var id in idArray)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var result = await fetch(id, cancellationToken).ConfigureAwait(false);
-            if (result is not null)
-            {
-                results.Add(result);
-            }
-        }
-        return results;
-    }
 }

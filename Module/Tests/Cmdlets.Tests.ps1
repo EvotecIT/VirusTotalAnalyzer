@@ -134,6 +134,36 @@ Describe 'Get-VirusReport cmdlet' {
             $ps.Dispose()
         }
     }
+
+    It 'deduplicates a report batch and can return concise verdicts' {
+        $handler = [QueueFakeHandler]::new([string[]] @(
+            '{"data":{"id":"abc","type":"file","attributes":{"reputation":-2,"last_analysis_stats":{"malicious":1,"harmless":4}}}}'
+        ))
+        $downloadHandler = [FakeHandler]::new('{}')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new('test-api-key', $handler, $downloadHandler)
+
+        $result = @(Get-VirusReport -Hash 'abc','ABC' -Client $client -Summary -MinimumIntervalSeconds 0)
+
+        $result.Count | Should -Be 2
+        $result[0].Verdict.ToString() | Should -Be 'Malicious'
+        $result[0].Report.Id | Should -Be 'abc'
+        $handler.Requests.Count | Should -Be 1
+    }
+
+    It 'accepts hash objects from the pipeline by property name' {
+        $handler = [QueueFakeHandler]::new([string[]] @(
+            '{"data":{"id":"abc","type":"file","attributes":{}}}'
+        ))
+        $downloadHandler = [FakeHandler]::new('{}')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new('test-api-key', $handler, $downloadHandler)
+
+        $result = @([pscustomobject] @{ Hash = 'abc' }, [pscustomobject] @{ Hash = 'ABC' }) |
+            Get-VirusReport -Client $client -MinimumIntervalSeconds 0
+
+        @($result).Count | Should -Be 2
+        $handler.Requests.Count | Should -Be 1
+        $handler.Requests[0].RequestUri.AbsolutePath | Should -Be '/api/v3/files/abc'
+    }
 }
 
 Describe 'New-VirusScan cmdlet' {
@@ -235,6 +265,50 @@ Describe 'Get-VirusUser cmdlet' {
         $result.Id | Should -Be 'user1'
         $handler.LastRequest.RequestUri.AbsolutePath | Should -Be '/api/v3/users/user1'
     }
+
+    It 'uses VIRUSTOTAL_USER_ID without putting the API key in the route' {
+        $json = '{"data":{"id":"user2","type":"user"}}'
+        $handler = [FakeHandler]::new($json)
+        $client = New-TestVirusTotalClient -ApiHandler $handler
+        $previous = $env:VIRUSTOTAL_USER_ID
+        try {
+            $env:VIRUSTOTAL_USER_ID = 'user2'
+            $result = Get-VirusAccount -Client $client
+
+            $result.Id | Should -Be 'user2'
+            $handler.LastRequest.RequestUri.AbsolutePath | Should -Be '/api/v3/users/user2'
+            $handler.LastRequest.RequestUri.AbsolutePath | Should -Not -Match 'test-api-key'
+        }
+        finally {
+            $env:VIRUSTOTAL_USER_ID = $previous
+        }
+    }
+
+    It 'returns quota rows with remaining usage' {
+        $json = '{"data":{"id":"user1","type":"user","attributes":{"quotas":{"api_requests_daily":{"allowed":500,"used":25}}}}}'
+        $handler = [FakeHandler]::new($json)
+        $client = New-TestVirusTotalClient -ApiHandler $handler
+
+        $quota = Get-VirusUser -Id 'user1' -Client $client -Quota
+
+        $quota.Name | Should -Be 'api_requests_daily'
+        $quota.Remaining | Should -Be 475
+        $quota.PercentUsed | Should -Be 5
+    }
+}
+
+Describe 'Get-VirusRelationship cmdlet' {
+    It 'returns typed historical WHOIS records' {
+        $json = '{"data":[{"id":"w1","type":"whois","attributes":{"registrar_name":"Example Registrar"}}]}'
+        $handler = [FakeHandler]::new($json)
+        $client = New-TestVirusTotalClient -ApiHandler $handler
+
+        $result = Get-VirusRelationship -DomainName 'example.com' -Relationship HistoricalWhois -Client $client
+
+        $result.Type.ToString() | Should -Be 'Whois'
+        $result.Attributes.RegistrarName | Should -Be 'Example Registrar'
+        $handler.LastRequest.RequestUri.AbsolutePath | Should -Be '/api/v3/domains/example.com/historical_whois'
+    }
 }
 
 Describe 'Send-VirusTotalMonitorFile cmdlet' {
@@ -299,6 +373,9 @@ Describe 'Cmdlet help content' {
     }
     It 'includes examples for Get-VirusUser' {
         (Get-Help Get-VirusUser -Examples).Examples | Should -Not -BeNullOrEmpty
+    }
+    It 'includes examples for Get-VirusRelationship' {
+        (Get-Help Get-VirusRelationship -Examples).Examples | Should -Not -BeNullOrEmpty
     }
 }
 }

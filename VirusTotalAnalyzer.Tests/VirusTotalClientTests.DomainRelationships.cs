@@ -11,6 +11,27 @@ namespace VirusTotalAnalyzer.Tests;
 public partial class VirusTotalClientTests
 {
     [Fact]
+    public async Task GetDomainCommunicatingFilesAsync_UsesCurrentPublicRelationship()
+    {
+        var json = "{\"data\":[{\"id\":\"f1\",\"type\":\"file\",\"attributes\":{}}]}";
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        var handler = new SingleResponseHandler(response);
+        using var client = new VirusTotalClient(new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        });
+
+        var files = await client.GetDomainCommunicatingFilesAsync("example.com", limit: 10);
+
+        Assert.Equal("/api/v3/domains/example.com/communicating_files", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("?limit=10", handler.Request.RequestUri.Query);
+        Assert.Equal("f1", Assert.Single(files!).Id);
+    }
+
+    [Fact]
     public async Task GetDomainSubdomainsAsync_UsesCorrectPathAndDeserializesResponse()
     {
         var json = "{\"data\":[{\"id\":\"d1\",\"type\":\"domain\",\"attributes\":{\"domain\":\"sub.example.com\"}}]}";
@@ -137,52 +158,6 @@ public partial class VirusTotalClientTests
         IVirusTotalClient client = new VirusTotalClient(httpClient);
 
         await client.GetDomainUrlsAsync("example.com", limit: 10, cursor: "abc");
-
-        Assert.NotNull(handler.Request);
-        Assert.Equal("?limit=10&cursor=abc", handler.Request!.RequestUri!.Query);
-    }
-
-    [Fact]
-    public async Task GetDomainDnsRecordsAsync_UsesCorrectPathAndDeserializesResponse()
-    {
-        var json = "{\"data\":[{\"id\":\"d1\",\"type\":\"dns_record\",\"attributes\":{\"type\":\"A\",\"value\":\"1.2.3.4\",\"ttl\":300}}]}";
-        var response = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(json, Encoding.UTF8, "application/json")
-        };
-        var handler = new SingleResponseHandler(response);
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        var records = await client.GetDomainDnsRecordsAsync("example.com");
-
-        Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/domains/example.com/dns_records", handler.Request!.RequestUri!.AbsolutePath);
-        Assert.NotNull(records);
-        Assert.Single(records!);
-        Assert.Equal("A", records[0].Attributes.RecordType);
-        Assert.Equal("1.2.3.4", records[0].Attributes.Value);
-        Assert.Equal(300, records[0].Attributes.Ttl);
-    }
-
-    [Fact]
-    public async Task GetDomainDnsRecordsAsync_BuildsQueryWithLimitAndCursor()
-    {
-        var response = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent("{}", Encoding.UTF8, "application/json")
-        };
-        var handler = new SingleResponseHandler(response);
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        await client.GetDomainDnsRecordsAsync("example.com", limit: 10, cursor: "abc");
 
         Assert.NotNull(handler.Request);
         Assert.Equal("?limit=10&cursor=abc", handler.Request!.RequestUri!.Query);

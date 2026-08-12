@@ -16,6 +16,7 @@ public sealed partial class VirusTotalClient
         CancellationToken cancellationToken)
     {
         var allData = new List<T>();
+        var seenCursors = new HashSet<string>(StringComparer.Ordinal);
         PagedResponse<T>? page;
         var nextCursor = cursor;
         do
@@ -27,6 +28,10 @@ public sealed partial class VirusTotalClient
             }
             allData.AddRange(page.Data);
             nextCursor = page.Meta?.Cursor;
+            if (nextCursor is string cursorValue && cursorValue.Length > 0 && !seenCursors.Add(cursorValue))
+            {
+                throw new InvalidOperationException("VirusTotal returned a repeated pagination cursor.");
+            }
         }
         while (fetchAll && !string.IsNullOrEmpty(nextCursor));
 
@@ -35,7 +40,8 @@ public sealed partial class VirusTotalClient
             return new PagedResponse<T>
             {
                 Data = allData,
-                Meta = page.Meta
+                Meta = page.Meta,
+                Links = page.Links
             };
         }
 
@@ -48,6 +54,7 @@ public sealed partial class VirusTotalClient
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var nextCursor = cursor;
+        var seenCursors = new HashSet<string>(StringComparer.Ordinal);
         while (true)
         {
             var page = await fetch(nextCursor, cancellationToken).ConfigureAwait(false);
@@ -65,6 +72,10 @@ public sealed partial class VirusTotalClient
             if (string.IsNullOrEmpty(nextCursor))
             {
                 yield break;
+            }
+            if (!seenCursors.Add(nextCursor!))
+            {
+                throw new InvalidOperationException("VirusTotal returned a repeated pagination cursor.");
             }
         }
     }

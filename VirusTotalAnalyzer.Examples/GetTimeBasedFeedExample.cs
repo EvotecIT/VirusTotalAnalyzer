@@ -11,8 +11,11 @@ public static class GetTimeBasedFeedExample
         IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var feed = await client.GetFeedAsync(ResourceType.FileBehaviour, DateTime.UtcNow.AddHours(-1), FeedGranularity.Hourly);
-            Console.WriteLine(feed?.Data.Count);
+            using var feed = await client.DownloadFeedBatchAsync(
+                FeedType.FileBehaviors,
+                DateTimeOffset.UtcNow.AddHours(-2),
+                FeedGranularity.Hour);
+            Console.WriteLine(feed.Length);
         }
         catch (RateLimitExceededException ex)
         {

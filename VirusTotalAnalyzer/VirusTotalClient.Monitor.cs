@@ -62,7 +62,7 @@ public sealed partial class VirusTotalClient
 
         ValidateMonitorUploadOptions(options);
 
-        using var prepared = await PreparedMonitorUpload.CreateAsync(stream, cancellationToken).ConfigureAwait(false);
+        using var prepared = await PreparedUpload.CreateAsync(stream, cancellationToken).ConfigureAwait(false);
         var useLargeUploadUrl = prepared.Length > MonitorDirectUploadLimit;
         var requestUrl = useLargeUploadUrl
             ? (await GetMonitorUploadUrlAsync(cancellationToken).ConfigureAwait(false)).ToString()

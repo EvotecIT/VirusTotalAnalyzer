@@ -36,20 +36,20 @@ namespace VirusTotalAnalyzer.PowerShell;
 public sealed class CmdletNewVirusScan : VirusTotalCmdlet
 {
     /// <summary>Hash of an already submitted file to reanalyse.</summary>
-    [Parameter(ParameterSetName = "Hash", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
+    [Parameter(Mandatory = true, ParameterSetName = "Hash", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
     public string? Hash { get; set; }
 
     /// <summary>Path to a file whose hash should be recalculated and reanalysed.</summary>
-    [Parameter(ParameterSetName = "FileHash", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
+    [Parameter(Mandatory = true, ParameterSetName = "FileHash", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
     public string? FileHash { get; set; }
 
     /// <summary>Path to a local file to upload for scanning.</summary>
-    [Parameter(ParameterSetName = "FileInformation", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
+    [Parameter(Mandatory = true, ParameterSetName = "FileInformation", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
     public string? File { get; set; }
 
     /// <summary>URL to submit for scanning.</summary>
     [Alias("Uri")]
-    [Parameter(ParameterSetName = "Url", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
+    [Parameter(Mandatory = true, ParameterSetName = "Url", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
     public Uri? Url { get; set; }
 
     /// <summary>Password to use when submitting a protected archive.</summary>

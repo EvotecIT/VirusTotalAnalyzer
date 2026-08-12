@@ -76,7 +76,7 @@ Parameter Sets: Analysis
 Aliases: None
 Possible values:
 
-Required: False
+Required: True
 Position: named
 Default value: None
 Accept pipeline input: True (ByValue, ByPropertyName)
@@ -124,7 +124,7 @@ Parameter Sets: DomainName
 Aliases: None
 Possible values:
 
-Required: False
+Required: True
 Position: named
 Default value: None
 Accept pipeline input: True (ByValue, ByPropertyName)
@@ -140,7 +140,7 @@ Parameter Sets: FileInformation
 Aliases: FileHash
 Possible values:
 
-Required: False
+Required: True
 Position: named
 Default value: None
 Accept pipeline input: True (ByValue, ByPropertyName)
@@ -156,7 +156,7 @@ Parameter Sets: Hash
 Aliases: None
 Possible values:
 
-Required: False
+Required: True
 Position: named
 Default value: None
 Accept pipeline input: True (ByValue, ByPropertyName)
@@ -172,7 +172,7 @@ Parameter Sets: IPAddress
 Aliases: None
 Possible values:
 
-Required: False
+Required: True
 Position: named
 Default value: None
 Accept pipeline input: True (ByValue, ByPropertyName)
@@ -188,7 +188,7 @@ Parameter Sets: Search
 Aliases: None
 Possible values:
 
-Required: False
+Required: True
 Position: named
 Default value: None
 Accept pipeline input: True (ByValue, ByPropertyName)
@@ -204,7 +204,7 @@ Parameter Sets: Url
 Aliases: Uri
 Possible values:
 
-Required: False
+Required: True
 Position: named
 Default value: None
 Accept pipeline input: True (ByValue, ByPropertyName)

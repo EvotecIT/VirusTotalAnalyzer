@@ -1,3 +1,10 @@
+param(
+    [ValidateSet('Manifest', 'Build', 'Publish', 'Documentation')]
+    [string] $ConfigurationGateMode = 'Build'
+)
+
+Import-Module PSPublishModule -Force -ErrorAction Stop
+
 Build-Module -ModuleName 'VirusTotalAnalyzer' {
     # Usual defaults as per standard module
     $Manifest = [ordered] @{
@@ -104,4 +111,4 @@ Build-Module -ModuleName 'VirusTotalAnalyzer' {
     # global options for publishing to github/psgallery
     #New-ConfigurationPublish -Type PowerShellGallery -FilePath 'C:\Support\Important\PowerShellGalleryAPI.txt' -Enabled:$true
     #New-ConfigurationPublish -Type GitHub -FilePath 'C:\Support\Important\GitHubAPI.txt' -UserName 'EvotecIT' -Enabled:$true
-}
+} -RunMode $ConfigurationGateMode -NoInteractive

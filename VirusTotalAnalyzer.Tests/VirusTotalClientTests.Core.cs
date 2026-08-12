@@ -189,7 +189,7 @@ public partial class VirusTotalClientTests
     }
 
     [Theory]
-    [InlineData("pcap", "/api/v3/analyses/abc/pcap")]
+    [InlineData("pcap", "/api/v3/file_behaviours/abc/pcap")]
     [InlineData("livehunt", "/api/v3/intelligence/hunting_notification_files/abc")]
     [InlineData("retrohunt", "/api/v3/intelligence/retrohunt_notification_files/abc")]
     [InlineData("yara", "/api/v3/intelligence/hunting_rulesets/abc/download")]
@@ -215,7 +215,7 @@ public partial class VirusTotalClientTests
 
         var downloadTask = downloadKind switch
         {
-            "pcap" => client.DownloadPcapAsync("abc"),
+            "pcap" => client.DownloadFileBehaviorArtifactAsync("abc", BehaviorArtifact.Pcap),
             "livehunt" => client.DownloadLivehuntNotificationFileAsync("abc"),
             "retrohunt" => client.DownloadRetrohuntNotificationFileAsync("abc"),
             "yara" => client.DownloadYaraRulesetAsync("abc"),
@@ -236,7 +236,7 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
-    public async Task DownloadPcapAsync_RejectsInsecureRedirectBeforeUnauthenticatedRequest()
+    public async Task DownloadFileBehaviorArtifactAsync_RejectsInsecureRedirectBeforeUnauthenticatedRequest()
     {
         var apiRedirect = new HttpResponseMessage(HttpStatusCode.Redirect);
         apiRedirect.Headers.Location = new Uri("http://storage.example/downloads/abc");
@@ -249,14 +249,14 @@ public partial class VirusTotalClientTests
         var downloadHandler = new QueueHandler();
         using var client = new VirusTotalClient(apiClient, new HttpClient(downloadHandler));
 
-        await Assert.ThrowsAsync<InvalidDataException>(() => client.DownloadPcapAsync("abc"));
+        await Assert.ThrowsAsync<InvalidDataException>(() => client.DownloadFileBehaviorArtifactAsync("abc", BehaviorArtifact.Pcap));
 
         Assert.Single(apiHandler.Requests);
         Assert.Empty(downloadHandler.Requests);
     }
 
     [Fact]
-    public async Task DownloadPcapAsync_UsesCorrectPathAndReturnsStream()
+    public async Task DownloadFileBehaviorArtifactAsync_UsesCorrectPathAndReturnsStream()
     {
         var trackingStream = new TrackingStream(new byte[] { 1, 2, 3 });
         var response = new TrackingResponseMessage
@@ -272,18 +272,18 @@ public partial class VirusTotalClientTests
         IVirusTotalClient client = new VirusTotalClient(httpClient);
 
 #if NETFRAMEWORK
-        using (var stream = await client.DownloadPcapAsync("abc"))
+        using (var stream = await client.DownloadFileBehaviorArtifactAsync("abc", BehaviorArtifact.Pcap))
         {
             Assert.NotNull(handler.Request);
-            Assert.Equal("/api/v3/analyses/abc/pcap", handler.Request!.RequestUri!.AbsolutePath);
+            Assert.Equal("/api/v3/file_behaviours/abc/pcap", handler.Request!.RequestUri!.AbsolutePath);
             Assert.False(trackingStream.Disposed);
             Assert.False(response.Disposed);
         }
 #else
-        await using (var stream = await client.DownloadPcapAsync("abc"))
+        await using (var stream = await client.DownloadFileBehaviorArtifactAsync("abc", BehaviorArtifact.Pcap))
         {
             Assert.NotNull(handler.Request);
-            Assert.Equal("/api/v3/analyses/abc/pcap", handler.Request!.RequestUri!.AbsolutePath);
+            Assert.Equal("/api/v3/file_behaviours/abc/pcap", handler.Request!.RequestUri!.AbsolutePath);
             Assert.False(trackingStream.Disposed);
             Assert.False(response.Disposed);
         }
@@ -293,7 +293,7 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
-    public async Task DownloadPcapAsync_ThrowsApiException()
+    public async Task DownloadFileBehaviorArtifactAsync_ThrowsApiException()
     {
         var errorJson = @"{""error"":{""code"":""NotFoundError"",""message"":""not found""}}";
         var response = new HttpResponseMessage(HttpStatusCode.NotFound)
@@ -307,10 +307,10 @@ public partial class VirusTotalClientTests
         };
         IVirusTotalClient client = new VirusTotalClient(httpClient);
 
-        var ex = await Assert.ThrowsAsync<ApiException>(async () => await client.DownloadPcapAsync("abc"));
+        var ex = await Assert.ThrowsAsync<ApiException>(async () => await client.DownloadFileBehaviorArtifactAsync("abc", BehaviorArtifact.Pcap));
 
         Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/analyses/abc/pcap", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("/api/v3/file_behaviours/abc/pcap", handler.Request!.RequestUri!.AbsolutePath);
         Assert.Equal("NotFoundError", ex.Error?.Code);
         Assert.Equal("not found", ex.Message);
     }

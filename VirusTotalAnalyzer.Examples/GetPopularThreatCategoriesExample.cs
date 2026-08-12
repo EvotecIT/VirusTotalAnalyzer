@@ -14,7 +14,7 @@ public static class GetPopularThreatCategoriesExample
             var categories = await client.GetPopularThreatCategoriesAsync();
             foreach (var category in categories)
             {
-                Console.WriteLine($"{category.Id}: {category.Attributes.Count}");
+                Console.WriteLine(category);
             }
         }
         catch (RateLimitExceededException ex)

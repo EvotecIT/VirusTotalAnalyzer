@@ -189,26 +189,18 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
             ResourceType.Comment => "comments",
             ResourceType.Vote => "votes",
             ResourceType.Relationship => "relationships",
-            ResourceType.Search => "intelligence/search",
-            ResourceType.Feed => "feeds",
             ResourceType.Graph => "graphs",
             ResourceType.SslCertificate => "ssl_certificates",
             ResourceType.User => "users",
+            ResourceType.Group => "groups",
             ResourceType.Collection => "collections",
-            ResourceType.Bundle => "bundles",
-            ResourceType.LivehuntNotification => "livehunt_notifications",
-            ResourceType.RetrohuntJob => "retrohunt_jobs",
-            ResourceType.RetrohuntNotification => "retrohunt_notifications",
+            ResourceType.ZipFile => "intelligence/zip_files",
+            ResourceType.LivehuntNotification => "intelligence/hunting_notifications",
+            ResourceType.RetrohuntJob => "intelligence/retrohunt_jobs",
+            ResourceType.RetrohuntNotification => "intelligence/retrohunt_notifications",
             ResourceType.IntelligenceHuntingRuleset => "intelligence/hunting_rulesets",
-            ResourceType.FileBehaviour => "file-behaviour",
+            ResourceType.FileBehaviour => "file_behaviours",
             _ => throw new ArgumentOutOfRangeException(nameof(type))
-        };
-
-    private static string GetFeedPath(ResourceType type)
-        => type switch
-        {
-            ResourceType.FileBehaviour => "file-behaviours",
-            _ => GetPath(type)
         };
 
     private static void ValidateId(string id, string paramName)
@@ -217,9 +209,25 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
         {
             throw new ArgumentNullException(paramName);
         }
-        if (id.Length == 0)
+        if (string.IsNullOrWhiteSpace(id))
         {
-            throw new ArgumentException("Id must not be empty.", paramName);
+            throw new ArgumentException("Id must not be empty or whitespace.", paramName);
+        }
+    }
+
+    private static void ValidateLimit(int? limit, string paramName)
+    {
+        if (limit < 0)
+        {
+            throw new ArgumentOutOfRangeException(paramName, "Limit must be zero or greater.");
+        }
+    }
+
+    private void ThrowIfDisposed()
+    {
+        if (_disposed)
+        {
+            throw new ObjectDisposedException(nameof(VirusTotalClient));
         }
     }
 
@@ -237,6 +245,10 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
         try
         {
             rawBody = await response.Content.ReadContentStringAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch
         {
@@ -448,11 +460,23 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
             cancellationToken);
     }
 
-    public Task<Stream> DownloadPcapAsync(string analysisId, CancellationToken cancellationToken = default)
+    /// <summary>Downloads an artifact produced by a file behavior report.</summary>
+    public Task<Stream> DownloadFileBehaviorArtifactAsync(
+        string behaviorId,
+        BehaviorArtifact artifact,
+        CancellationToken cancellationToken = default)
     {
-        ValidateId(analysisId, nameof(analysisId));
+        ValidateId(behaviorId, nameof(behaviorId));
+        var artifactPath = artifact switch
+        {
+            BehaviorArtifact.Html => "html",
+            BehaviorArtifact.Evtx => "evtx",
+            BehaviorArtifact.Pcap => "pcap",
+            BehaviorArtifact.Memdump => "memdump",
+            _ => throw new ArgumentOutOfRangeException(nameof(artifact))
+        };
         return DownloadFromAuthenticatedEndpointAsync(
-            $"analyses/{Uri.EscapeDataString(analysisId)}/pcap",
+            $"file_behaviours/{Uri.EscapeDataString(behaviorId)}/{artifactPath}",
             cancellationToken);
     }
 

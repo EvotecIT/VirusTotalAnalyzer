@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace VirusTotalAnalyzer;
 
-internal sealed class PreparedMonitorUpload : IDisposable
+internal sealed class PreparedUpload : IDisposable
 {
     private readonly bool _ownsStream;
     private readonly string? _temporaryPath;
 
-    private PreparedMonitorUpload(Stream stream, long length, string sha256, bool ownsStream, string? temporaryPath)
+    private PreparedUpload(Stream stream, long length, string sha256, bool ownsStream, string? temporaryPath)
     {
         Stream = stream;
         Length = length;
@@ -27,17 +27,26 @@ internal sealed class PreparedMonitorUpload : IDisposable
 
     public string Sha256 { get; }
 
-    public static async Task<PreparedMonitorUpload> CreateAsync(
+    public static async Task<PreparedUpload> CreateAsync(
         Stream source,
         CancellationToken cancellationToken)
     {
+        if (source is null)
+        {
+            throw new ArgumentNullException(nameof(source));
+        }
+        if (!source.CanRead)
+        {
+            throw new ArgumentException("Upload stream must be readable.", nameof(source));
+        }
+
         if (source.CanSeek)
         {
             var position = source.Position;
             try
             {
                 var hash = await ComputeSha256Async(source, cancellationToken).ConfigureAwait(false);
-                return new PreparedMonitorUpload(source, source.Length - position, hash, false, null);
+                return new PreparedUpload(source, source.Length - position, hash, false, null);
             }
             finally
             {
@@ -71,7 +80,7 @@ internal sealed class PreparedMonitorUpload : IDisposable
                 FileShare.Read,
                 81920,
                 useAsync: true);
-            return new PreparedMonitorUpload(uploadStream, uploadStream.Length, hash, true, temporaryPath);
+            return new PreparedUpload(uploadStream, uploadStream.Length, hash, true, temporaryPath);
         }
         catch
         {
@@ -133,7 +142,7 @@ internal sealed class PreparedMonitorUpload : IDisposable
         }
         catch
         {
-            // Cleanup is best effort. The upload result or primary exception is more important.
+            // Cleanup is best effort. Preserve the upload result or primary exception.
         }
     }
 }

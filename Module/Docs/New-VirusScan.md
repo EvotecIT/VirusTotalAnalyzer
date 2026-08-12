@@ -93,7 +93,7 @@ Parameter Sets: FileInformation
 Aliases: None
 Possible values:
 
-Required: False
+Required: True
 Position: named
 Default value: None
 Accept pipeline input: True (ByValue, ByPropertyName)
@@ -109,7 +109,7 @@ Parameter Sets: FileHash
 Aliases: None
 Possible values:
 
-Required: False
+Required: True
 Position: named
 Default value: None
 Accept pipeline input: True (ByValue, ByPropertyName)
@@ -125,7 +125,7 @@ Parameter Sets: Hash
 Aliases: None
 Possible values:
 
-Required: False
+Required: True
 Position: named
 Default value: None
 Accept pipeline input: True (ByValue, ByPropertyName)
@@ -157,7 +157,7 @@ Parameter Sets: Url
 Aliases: Uri
 Possible values:
 
-Required: False
+Required: True
 Position: named
 Default value: None
 Accept pipeline input: True (ByValue, ByPropertyName)

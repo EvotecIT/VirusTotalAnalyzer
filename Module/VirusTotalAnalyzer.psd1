@@ -1,7 +1,7 @@
 ﻿@{
-    AliasesToExport      = @('Get-VirusScan')
+    AliasesToExport      = @('Get-VirusAccount', 'Get-VirusScan')
     Author               = 'Przemyslaw Klys'
-    CmdletsToExport      = @('Get-VirusComment', 'Get-VirusReport', 'Get-VirusTotalMonitorEvent', 'Get-VirusTotalMonitorItem', 'Get-VirusTotalMonitorStatistics', 'Get-VirusUser', 'New-VirusScan', 'New-VirusTotalMonitorFolder', 'New-VirusVote', 'Remove-VirusTotalMonitorItem', 'Send-VirusTotalMonitorFile', 'Set-VirusTotalMonitorItem')
+    CmdletsToExport      = @('Get-VirusComment', 'Get-VirusRelationship', 'Get-VirusReport', 'Get-VirusTotalMonitorEvent', 'Get-VirusTotalMonitorItem', 'Get-VirusTotalMonitorStatistics', 'Get-VirusUser', 'New-VirusScan', 'New-VirusTotalMonitorFolder', 'New-VirusVote', 'Remove-VirusTotalMonitorItem', 'Send-VirusTotalMonitorFile', 'Set-VirusTotalMonitorItem')
     CompanyName          = 'Evotec'
     CompatiblePSEditions = @('Desktop', 'Core')
     Copyright            = '(c) 2011 - 2026 Przemyslaw Klys @ Evotec. All rights reserved.'

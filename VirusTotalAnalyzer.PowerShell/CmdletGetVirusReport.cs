@@ -1,161 +1,363 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Management.Automation;
+using System.Net;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
-using VirusTotalAnalyzer;
 using VirusTotalAnalyzer.Models;
 
 namespace VirusTotalAnalyzer.PowerShell;
 
 /// <summary>Retrieves analysis reports from VirusTotal.</summary>
-/// <para>Queries the VirusTotal API for information about files, hashes, URLs, IP addresses, domains, or existing analyses.</para>
+/// <para>Buffers report selectors for one invocation, removes duplicate requests, caches results, retries rate limits, and spaces requests for public API quotas.</para>
 /// <para>Provide an API key or an existing <see cref="IVirusTotalClient"/> to authenticate requests, or set VIRUSTOTAL_API_KEY.</para>
-/// <list type="alertSet">
-///   <item>
-///     <description>Each request consumes your VirusTotal API quota.</description>
-///   </item>
-/// </list>
 /// <example>
-///   <summary>Get a report for a local file.</summary>
+///   <summary>Get concise verdicts for several hashes with free-key defaults.</summary>
 ///   <code>
-///     <para><prefix>PS&gt; </prefix>Get-VirusReport -ApiKey $ApiKey -File 'C:\\samples\\app.exe'</para>
+///     <para><prefix>PS&gt; </prefix>Get-VirusReport -Hash $hashes -Client $Client -Summary</para>
 ///   </code>
-///   <para>Calculates the file hash and returns the latest analysis.</para>
+///   <para>Deduplicates the array, spaces network requests by 20 seconds, and returns pipeline-friendly verdict objects that retain the full report.</para>
 /// </example>
 /// <example>
-///   <summary>Check a URL against VirusTotal.</summary>
+///   <summary>Use a faster interval for a key with a higher quota.</summary>
 ///   <code>
-///     <para><prefix>PS&gt; </prefix>Get-VirusReport -ApiKey $ApiKey -Url 'https://example.com'</para>
+///     <para><prefix>PS&gt; </prefix>Get-VirusReport -DomainName 'example.com','example.net' -MinimumIntervalSeconds 1 -ApiKey $ApiKey</para>
 ///   </code>
-///   <para>Displays detection results for the provided URL.</para>
 /// </example>
-/// <seealso href="https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/invoke-restmethod" />
+/// <seealso href="https://docs.virustotal.com/reference/public-vs-premium-api" />
 /// <seealso href="https://github.com/EvotecIT/VirusTotalAnalyzer" />
 [Cmdlet(VerbsCommon.Get, "VirusReport", DefaultParameterSetName = "FileInformation")]
 [Alias("Get-VirusScan")]
+[OutputType(typeof(FileReport), typeof(UrlReport), typeof(IpAddressReport), typeof(DomainReport), typeof(AnalysisReport), typeof(VirusTotalVerdict), typeof(SearchResponse))]
 public sealed class CmdletGetVirusReport : VirusTotalCmdlet
 {
-    /// <summary>Analysis identifier returned from a previous scan.</summary>
+    private readonly List<string> _analysisIds = new();
+    private readonly List<string> _hashes = new();
+    private readonly List<string> _files = new();
+    private readonly List<string> _urls = new();
+    private readonly List<string> _ipAddresses = new();
+    private readonly List<string> _domainNames = new();
+
+    /// <summary>Analysis identifiers returned from previous scans.</summary>
     [Parameter(Mandatory = true, ParameterSetName = "Analysis", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
-    public string? AnalysisId { get; set; }
+    public string[] AnalysisId { get; set; } = Array.Empty<string>();
 
-    /// <summary>SHA256 or other supported hash to look up.</summary>
+    /// <summary>SHA256 or other supported hashes to look up.</summary>
     [Parameter(Mandatory = true, ParameterSetName = "Hash", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
-    public string? Hash { get; set; }
+    public string[] Hash { get; set; } = Array.Empty<string>();
 
-    /// <summary>Path to a local file to compute its hash.</summary>
+    /// <summary>Paths to local files whose SHA256 hashes should be looked up.</summary>
     [Alias("FileHash")]
     [Parameter(Mandatory = true, ParameterSetName = "FileInformation", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
-    public string? File { get; set; }
+    public string[] File { get; set; } = Array.Empty<string>();
 
-    /// <summary>URL to check against VirusTotal.</summary>
+    /// <summary>URLs to check against VirusTotal.</summary>
     [Alias("Uri")]
     [Parameter(Mandatory = true, ParameterSetName = "Url", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
-    public Uri? Url { get; set; }
+    public Uri[] Url { get; set; } = Array.Empty<Uri>();
 
-    /// <summary>IP address to inspect.</summary>
+    /// <summary>IP addresses to inspect.</summary>
     [Parameter(Mandatory = true, ParameterSetName = "IPAddress", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
-    public string? IPAddress { get; set; }
+    public string[] IPAddress { get; set; } = Array.Empty<string>();
 
-    /// <summary>Domain name to inspect.</summary>
+    /// <summary>Domain names to inspect.</summary>
     [Parameter(Mandatory = true, ParameterSetName = "DomainName", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
-    public string? DomainName { get; set; }
+    public string[] DomainName { get; set; } = Array.Empty<string>();
 
     /// <summary>Public search query for an exact IOC or a comment tag.</summary>
     [Parameter(Mandatory = true, ParameterSetName = "Search", ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
     public string? Search { get; set; }
 
+    /// <summary>Minimum seconds between report request starts. The public-key default is 20; use 0 only when your quota permits it.</summary>
+    [Parameter(ParameterSetName = "Analysis")]
+    [Parameter(ParameterSetName = "Hash")]
+    [Parameter(ParameterSetName = "FileInformation")]
+    [Parameter(ParameterSetName = "Url")]
+    [Parameter(ParameterSetName = "IPAddress")]
+    [Parameter(ParameterSetName = "DomainName")]
+    [ValidateRange(0, 86400)]
+    public int MinimumIntervalSeconds { get; set; } = 20;
+
+    /// <summary>Seconds to reuse successful reports within the client. Use 0 to disable cross-batch caching.</summary>
+    [Parameter(ParameterSetName = "Analysis")]
+    [Parameter(ParameterSetName = "Hash")]
+    [Parameter(ParameterSetName = "FileInformation")]
+    [Parameter(ParameterSetName = "Url")]
+    [Parameter(ParameterSetName = "IPAddress")]
+    [Parameter(ParameterSetName = "DomainName")]
+    [ValidateRange(0, 31536000)]
+    public int CacheSeconds { get; set; } = 300;
+
+    /// <summary>Maximum retries after VirusTotal responds with a rate limit.</summary>
+    [Parameter(ParameterSetName = "Analysis")]
+    [Parameter(ParameterSetName = "Hash")]
+    [Parameter(ParameterSetName = "FileInformation")]
+    [Parameter(ParameterSetName = "Url")]
+    [Parameter(ParameterSetName = "IPAddress")]
+    [Parameter(ParameterSetName = "DomainName")]
+    [ValidateRange(0, 100)]
+    public int MaxRetries { get; set; } = 3;
+
+    /// <summary>Returns a concise verdict object while retaining the complete report in its Report property.</summary>
+    [Parameter(ParameterSetName = "Analysis")]
+    [Parameter(ParameterSetName = "Hash")]
+    [Parameter(ParameterSetName = "FileInformation")]
+    [Parameter(ParameterSetName = "Url")]
+    [Parameter(ParameterSetName = "IPAddress")]
+    [Parameter(ParameterSetName = "DomainName")]
+    public SwitchParameter Summary { get; set; }
+
     /// <inheritdoc/>
     protected override async Task ProcessRecordAsync()
     {
+        if (ParameterSetName == "Search")
+        {
+            try
+            {
+                WriteObject(await ActiveClient.SearchAsync(Search!, cancellationToken: CancelToken).ConfigureAwait(false));
+            }
+            catch (ApiException exception)
+            {
+                WriteApiError(exception, Search);
+            }
+            return;
+        }
+
+        switch (ParameterSetName)
+        {
+            case "Analysis":
+                _analysisIds.AddRange(AnalysisId);
+                break;
+            case "Hash":
+                _hashes.AddRange(Hash);
+                break;
+            case "FileInformation":
+                foreach (var path in File)
+                {
+                    if (EnsureFileExists(path, GetErrorActionPreference()))
+                        _files.Add(path);
+                }
+                break;
+            case "Url":
+                foreach (var uri in Url)
+                    _urls.Add(uri.AbsoluteUri);
+                break;
+            case "IPAddress":
+                _ipAddresses.AddRange(IPAddress);
+                break;
+            case "DomainName":
+                _domainNames.AddRange(DomainName);
+                break;
+        }
+
+        await Task.CompletedTask.ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    protected override async Task EndProcessingAsync()
+    {
         try
         {
+            if (ParameterSetName == "Search")
+                return;
+
+            var options = new VirusTotalBatchOptions
+            {
+                MinimumInterval = TimeSpan.FromSeconds(MinimumIntervalSeconds),
+                CacheDuration = TimeSpan.FromSeconds(CacheSeconds),
+                MaxRetries = MaxRetries
+            };
+
             switch (ParameterSetName)
             {
-                case "FileInformation":
-                    if (!EnsureFileExists(File!, GetErrorActionPreference()))
-                        return;
-                    string hash;
-                    var progress = new ProgressRecord(1, "Hashing file", File!);
-                    WriteProgress(progress);
-                    try
-                    {
-                        using var sha256 = SHA256.Create();
-                        using var stream = System.IO.File.OpenRead(File!);
-                        var length = stream.Length;
-                        var buffer = new byte[81920];
-                        int read;
-                        long total = 0;
-                        while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, CancelToken).ConfigureAwait(false)) > 0)
-                        {
-                            sha256.TransformBlock(buffer, 0, read, null, 0);
-                            total += read;
-                            progress.PercentComplete = length > 0 ? (int)(total * 100 / length) : 0;
-                            WriteProgress(progress);
-                        }
-                        sha256.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
-                        var bytes = sha256.Hash!;
-#if NET472
-                        hash = BitConverter.ToString(bytes).Replace("-", string.Empty).ToLowerInvariant();
-#else
-                        hash = Convert.ToHexString(bytes).ToLowerInvariant();
-#endif
-                    }
-                    finally
-                    {
-                        progress.RecordType = ProgressRecordType.Completed;
-                        WriteProgress(progress);
-                    }
-                    var fileReport = await ActiveClient.GetFileReportAsync(hash, cancellationToken: CancelToken).ConfigureAwait(false);
-                    WriteObject(fileReport);
-                    break;
-
-                case "Hash":
-                    var hashReport = await ActiveClient.GetFileReportAsync(Hash!, cancellationToken: CancelToken).ConfigureAwait(false);
-                    WriteObject(hashReport);
-                    break;
-
-                case "Url":
-                    var urlReport = await ActiveClient.GetUrlReportAsync(Url!, cancellationToken: CancelToken).ConfigureAwait(false);
-                    WriteObject(urlReport);
-                    break;
-
-                case "IPAddress":
-                    var ipReport = await ActiveClient.GetIpAddressReportAsync(IPAddress!, cancellationToken: CancelToken).ConfigureAwait(false);
-                    WriteObject(ipReport);
-                    break;
-
-                case "DomainName":
-                    var domainReport = await ActiveClient.GetDomainReportAsync(DomainName!, cancellationToken: CancelToken).ConfigureAwait(false);
-                    WriteObject(domainReport);
-                    break;
-
                 case "Analysis":
-                    var analysis = await ActiveClient.GetAnalysisAsync(AnalysisId!, CancelToken).ConfigureAwait(false);
-                    WriteObject(analysis);
+                    await WriteReportBatchAsync(
+                        _analysisIds,
+                        (ids, token) => ActiveClient.GetAnalysesBatchAsync(ids, options, token),
+                        StringComparer.Ordinal).ConfigureAwait(false);
                     break;
+                case "Hash":
+                    await WriteReportBatchAsync(
+                        _hashes,
+                        (ids, token) => ActiveClient.GetFileReportsBatchAsync(ids, options, cancellationToken: token),
+                        StringComparer.OrdinalIgnoreCase).ConfigureAwait(false);
+                    break;
+                case "FileInformation":
+                    var completedFileHashes = new Dictionary<string, FileReport?>(StringComparer.OrdinalIgnoreCase);
+                    var failedFileHashes = new Dictionary<string, ApiException>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var file in _files)
+                    {
+                        string hash;
+                        try
+                        {
+                            hash = await GetSha256Async(file).ConfigureAwait(false);
+                        }
+                        catch (OperationCanceledException) when (CancelToken.IsCancellationRequested)
+                        {
+                            throw;
+                        }
+                        catch (Exception exception)
+                        {
+                            WriteError(new ErrorRecord(
+                                exception,
+                                "FileHashFailed",
+                                ErrorCategory.ReadError,
+                                file));
+                            continue;
+                        }
 
-                case "Search":
-                    var search = await ActiveClient.SearchAsync(Search!, cancellationToken: CancelToken).ConfigureAwait(false);
-                    WriteObject(search);
+                        await WriteReportAsync(
+                            hash,
+                            file,
+                            (ids, token) => ActiveClient.GetFileReportsBatchAsync(ids, options, cancellationToken: token),
+                            completedFileHashes,
+                            failedFileHashes).ConfigureAwait(false);
+                    }
+                    break;
+                case "Url":
+                    var completedUrls = new Dictionary<string, UrlReport?>(StringComparer.Ordinal);
+                    var failedUrls = new Dictionary<string, ApiException>(StringComparer.Ordinal);
+                    foreach (var url in _urls)
+                    {
+                        await WriteReportAsync(
+                            VirusTotalClientExtensions.GetUrlId(url),
+                            url,
+                            (ids, token) => ActiveClient.GetUrlReportsBatchAsync(ids, options, cancellationToken: token),
+                            completedUrls,
+                            failedUrls).ConfigureAwait(false);
+                    }
+                    break;
+                case "IPAddress":
+                    await WriteReportBatchAsync(
+                        _ipAddresses,
+                        (ids, token) => ActiveClient.GetIpAddressReportsBatchAsync(ids, options, cancellationToken: token),
+                        StringComparer.OrdinalIgnoreCase).ConfigureAwait(false);
+                    break;
+                case "DomainName":
+                    await WriteReportBatchAsync(
+                        _domainNames,
+                        (ids, token) => ActiveClient.GetDomainReportsBatchAsync(ids, options, cancellationToken: token),
+                        StringComparer.OrdinalIgnoreCase).ConfigureAwait(false);
                     break;
             }
         }
-        catch (ApiException ex)
+        finally
         {
-            var target = ParameterSetName switch
-            {
-                "FileInformation" => File,
-                "Hash" => Hash,
-                "Url" => Url?.ToString(),
-                "IPAddress" => IPAddress,
-                "DomainName" => DomainName,
-                "Analysis" => AnalysisId,
-                "Search" => Search,
-                _ => null
-            };
-            WriteApiError(ex, target);
+            await base.EndProcessingAsync().ConfigureAwait(false);
         }
+    }
+
+    private async Task WriteReportBatchAsync<T>(
+        IReadOnlyList<string> ids,
+        Func<IEnumerable<string>, CancellationToken, Task<IReadOnlyList<T>>> fetch,
+        IEqualityComparer<string> comparer)
+        where T : class
+    {
+        var completed = new Dictionary<string, T?>(comparer);
+        var failures = new Dictionary<string, ApiException>(comparer);
+        foreach (var id in ids)
+        {
+            await WriteReportAsync(id, id, fetch, completed, failures).ConfigureAwait(false);
+        }
+    }
+
+    private async Task WriteReportAsync<T>(
+        string id,
+        object targetObject,
+        Func<IEnumerable<string>, CancellationToken, Task<IReadOnlyList<T>>> fetch,
+        IDictionary<string, T?> completed,
+        IDictionary<string, ApiException> failures)
+        where T : class
+    {
+        CancelToken.ThrowIfCancellationRequested();
+        if (completed.TryGetValue(id, out var duplicate))
+        {
+            if (duplicate is not null)
+                WriteReport(duplicate);
+            return;
+        }
+        if (failures.TryGetValue(id, out var repeatedFailure))
+        {
+            WriteApiError(repeatedFailure, targetObject);
+            return;
+        }
+
+        try
+        {
+            var reports = await fetch(new[] { id }, CancelToken).ConfigureAwait(false);
+            var report = reports.Count > 0 ? reports[0] : null;
+            completed.Add(id, report);
+            if (report is not null)
+                WriteReport(report);
+        }
+        catch (ApiException exception) when (IsAuthorizationFailure(exception))
+        {
+            ThrowApiError(exception, targetObject);
+        }
+        catch (ApiException exception)
+        {
+            failures.Add(id, exception);
+            WriteApiError(exception, targetObject);
+        }
+    }
+
+    private static bool IsAuthorizationFailure(ApiException exception)
+        => exception.StatusCode == HttpStatusCode.Unauthorized ||
+           exception.StatusCode == HttpStatusCode.Forbidden;
+
+    private async Task<string> GetSha256Async(string path)
+    {
+        var progress = new ProgressRecord(1, "Hashing file", path);
+        WriteProgress(progress);
+        try
+        {
+            using var sha256 = SHA256.Create();
+            using var stream = System.IO.File.OpenRead(path);
+            var length = stream.Length;
+            var buffer = new byte[81920];
+            int read;
+            long total = 0;
+            while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, CancelToken).ConfigureAwait(false)) > 0)
+            {
+                sha256.TransformBlock(buffer, 0, read, null, 0);
+                total += read;
+                progress.PercentComplete = length > 0 ? (int)(total * 100 / length) : 0;
+                WriteProgress(progress);
+            }
+            sha256.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+            var bytes = sha256.Hash!;
+#if NET472
+            return BitConverter.ToString(bytes).Replace("-", string.Empty).ToLowerInvariant();
+#else
+            return Convert.ToHexString(bytes).ToLowerInvariant();
+#endif
+        }
+        finally
+        {
+            progress.RecordType = ProgressRecordType.Completed;
+            WriteProgress(progress);
+        }
+    }
+
+    private void WriteReport<T>(T report) where T : class
+    {
+        if (!Summary)
+        {
+            WriteObject(report);
+            return;
+        }
+
+        var verdict = report switch
+        {
+            FileReport value => value.ToVerdict(),
+            UrlReport value => value.ToVerdict(),
+            DomainReport value => value.ToVerdict(),
+            IpAddressReport value => value.ToVerdict(),
+            AnalysisReport value => value.ToVerdict(),
+            _ => throw new InvalidOperationException($"Unsupported report type {report.GetType().FullName}.")
+        };
+        WriteObject(verdict);
     }
 }

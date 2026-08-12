@@ -40,7 +40,7 @@ public enum ResourceType
     [EnumMember(Value = "graph")]
     Graph = 10,
 
-    [EnumMember(Value = "ssl_certificate")]
+    [EnumMember(Value = "ssl_cert")]
     SslCertificate = 11,
 
     [EnumMember(Value = "user")]

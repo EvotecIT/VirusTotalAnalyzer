@@ -11,32 +11,32 @@ Retrieves analysis reports from VirusTotal.
 ## SYNTAX
 ### FileInformation (Default)
 ```powershell
-Get-VirusReport -File <string> [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusReport -File <string[]> [-MinimumIntervalSeconds <int>] [-CacheSeconds <int>] [-MaxRetries <int>] [-Summary] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### Analysis
 ```powershell
-Get-VirusReport -AnalysisId <string> [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusReport -AnalysisId <string[]> [-MinimumIntervalSeconds <int>] [-CacheSeconds <int>] [-MaxRetries <int>] [-Summary] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### Hash
 ```powershell
-Get-VirusReport -Hash <string> [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusReport -Hash <string[]> [-MinimumIntervalSeconds <int>] [-CacheSeconds <int>] [-MaxRetries <int>] [-Summary] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### Url
 ```powershell
-Get-VirusReport -Url <uri> [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusReport -Url <uri[]> [-MinimumIntervalSeconds <int>] [-CacheSeconds <int>] [-MaxRetries <int>] [-Summary] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### IPAddress
 ```powershell
-Get-VirusReport -IPAddress <string> [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusReport -IPAddress <string[]> [-MinimumIntervalSeconds <int>] [-CacheSeconds <int>] [-MaxRetries <int>] [-Summary] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### DomainName
 ```powershell
-Get-VirusReport -DomainName <string> [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusReport -DomainName <string[]> [-MinimumIntervalSeconds <int>] [-CacheSeconds <int>] [-MaxRetries <int>] [-Summary] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### Search
@@ -71,7 +71,7 @@ Displays detection results for the provided URL.
 Analysis identifier returned from a previous scan.
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: Analysis
 Aliases: None
 Possible values:
@@ -90,6 +90,22 @@ VirusTotal API key used when Client is not supplied. Defaults to the VIRUSTOTAL_
 Type: String
 Parameter Sets: FileInformation, Analysis, Hash, Url, IPAddress, DomainName, Search
 Aliases: None
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CacheSeconds
+Seconds to reuse successful reports within the client. Use 0 to disable cross-batch caching.
+
+```yaml
+Type: Int32
+Parameter Sets: FileInformation, Analysis, Hash, Url, IPAddress, DomainName
+Aliases: none
 Possible values:
 
 Required: False
@@ -119,7 +135,7 @@ Accept wildcard characters: False
 Domain name to inspect.
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: DomainName
 Aliases: None
 Possible values:
@@ -135,7 +151,7 @@ Accept wildcard characters: False
 Path to a local file to compute its hash.
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: FileInformation
 Aliases: FileHash
 Possible values:
@@ -151,7 +167,7 @@ Accept wildcard characters: False
 SHA256 or other supported hash to look up.
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: Hash
 Aliases: None
 Possible values:
@@ -167,7 +183,7 @@ Accept wildcard characters: False
 IP address to inspect.
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: IPAddress
 Aliases: None
 Possible values:
@@ -176,6 +192,38 @@ Required: True
 Position: named
 Default value: None
 Accept pipeline input: True (ByValue, ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -MaxRetries
+Maximum retries after VirusTotal responds with a rate limit.
+
+```yaml
+Type: Int32
+Parameter Sets: FileInformation, Analysis, Hash, Url, IPAddress, DomainName
+Aliases: none
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -MinimumIntervalSeconds
+Minimum seconds between report request starts. The public-key default is 20; use 0 only when your quota permits it.
+
+```yaml
+Type: Int32
+Parameter Sets: FileInformation, Analysis, Hash, Url, IPAddress, DomainName
+Aliases: none
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
@@ -195,11 +243,27 @@ Accept pipeline input: True (ByValue, ByPropertyName)
 Accept wildcard characters: False
 ```
 
+### -Summary
+Returns a concise verdict object while retaining the complete report in its Report property.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: FileInformation, Analysis, Hash, Url, IPAddress, DomainName
+Aliases: none
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Url
 URL to check against VirusTotal.
 
 ```yaml
-Type: Uri
+Type: Uri[]
 Parameter Sets: Url
 Aliases: Uri
 Possible values:
@@ -221,15 +285,15 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## OUTPUTS
 
-- `None`
+- `VirusTotalAnalyzer.Models.FileReport`
+- `VirusTotalAnalyzer.Models.UrlReport`
+- `VirusTotalAnalyzer.Models.IpAddressReport`
+- `VirusTotalAnalyzer.Models.DomainReport`
+- `VirusTotalAnalyzer.Models.AnalysisReport`
+- `VirusTotalAnalyzer.Models.VirusTotalVerdict`
+- `VirusTotalAnalyzer.Models.SearchResponse`
 
 ## RELATED LINKS
 
 - [https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/invoke-restmethod](https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/invoke-restmethod)
 - [https://github.com/EvotecIT/VirusTotalAnalyzer](https://github.com/EvotecIT/VirusTotalAnalyzer)
-
-## NOTES
-
-### Note
-
-Each request consumes your VirusTotal API quota.

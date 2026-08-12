@@ -11,7 +11,7 @@ Retrieves information about a VirusTotal user.
 ## SYNTAX
 ### __AllParameterSets
 ```powershell
-Get-VirusUser -Id <string> [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusUser [-Id <string>] [-Quota] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -69,10 +69,26 @@ Parameter Sets: __AllParameterSets
 Aliases: None
 Possible values:
 
-Required: True
+Required: False
 Position: named
 Default value: None
 Accept pipeline input: True (ByValue, ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -Quota
+Returns one concise row for each visible quota instead of the complete user object.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: __AllParameterSets
+Aliases: none
+Possible values:
+
+Required: False
+Position: named
+Default value: None
+Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
@@ -85,7 +101,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## OUTPUTS
 
-- `None`
+- `VirusTotalAnalyzer.Models.User`
+- `VirusTotalAnalyzer.Models.VirusTotalQuotaStatus`
 
 ## RELATED LINKS
 

@@ -80,6 +80,30 @@ public class QueueFakeHandler : HttpMessageHandler
         return Task.FromResult(message);
     }
 }
+
+public class StatusQueueFakeHandler : HttpMessageHandler
+{
+    private readonly System.Collections.Queue _responses;
+    private readonly System.Collections.Queue _statusCodes;
+    public System.Collections.ArrayList Requests { get; private set; }
+
+    public StatusQueueFakeHandler(string[] responses, int[] statusCodes)
+    {
+        _responses = new System.Collections.Queue(responses);
+        _statusCodes = new System.Collections.Queue(statusCodes);
+        Requests = new System.Collections.ArrayList();
+    }
+
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        Requests.Add(request);
+        var response = _responses.Count > 0 ? (string)_responses.Dequeue() : "{}";
+        var statusCode = _statusCodes.Count > 0 ? (int)_statusCodes.Dequeue() : 200;
+        var message = new HttpResponseMessage((HttpStatusCode)statusCode);
+        message.Content = new StringContent(response);
+        return Task.FromResult(message);
+    }
+}
 "@ | Out-Null
 
     function New-TestVirusTotalClient {
@@ -132,6 +156,146 @@ Describe 'Get-VirusReport cmdlet' {
         }
         finally {
             $ps.Dispose()
+        }
+    }
+
+    It 'deduplicates a report batch and can return concise verdicts' {
+        $handler = [QueueFakeHandler]::new([string[]] @(
+            '{"data":{"id":"abc","type":"file","attributes":{"reputation":-2,"last_analysis_stats":{"malicious":1,"harmless":4}}}}'
+        ))
+        $downloadHandler = [FakeHandler]::new('{}')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new('test-api-key', $handler, $downloadHandler)
+
+        $result = @(Get-VirusReport -Hash 'abc','ABC' -Client $client -Summary -MinimumIntervalSeconds 0)
+
+        $result.Count | Should -Be 2
+        $result[0].Verdict.ToString() | Should -Be 'Malicious'
+        $result[0].Report.Id | Should -Be 'abc'
+        $handler.Requests.Count | Should -Be 1
+    }
+
+    It 'accepts hash objects from the pipeline by property name' {
+        $handler = [QueueFakeHandler]::new([string[]] @(
+            '{"data":{"id":"abc","type":"file","attributes":{}}}'
+        ))
+        $downloadHandler = [FakeHandler]::new('{}')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new('test-api-key', $handler, $downloadHandler)
+
+        $result = @([pscustomobject] @{ Hash = 'abc' }, [pscustomobject] @{ Hash = 'ABC' }) |
+            Get-VirusReport -Client $client -MinimumIntervalSeconds 0
+
+        @($result).Count | Should -Be 2
+        $handler.Requests.Count | Should -Be 1
+        $handler.Requests[0].RequestUri.AbsolutePath | Should -Be '/api/v3/files/abc'
+    }
+
+    It 'preserves successful reports when another batch item fails' {
+        $handler = [StatusQueueFakeHandler]::new(
+            [string[]] @(
+                '{"data":{"id":"first","type":"file","attributes":{}}}',
+                '{"error":{"code":"NotFoundError","message":"missing"}}',
+                '{"data":{"id":"third","type":"file","attributes":{}}}'
+            ),
+            [int[]] @(200, 404, 200))
+        $downloadHandler = [FakeHandler]::new('{}')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new('test-api-key', $handler, $downloadHandler)
+        $errors = @()
+
+        $result = @(Get-VirusReport -Hash 'first','missing','third' -Client $client `
+            -MinimumIntervalSeconds 0 -MaxRetries 0 -ErrorAction SilentlyContinue -ErrorVariable +errors)
+
+        $result.Id | Should -Be @('first', 'third')
+        $errors.Count | Should -Be 1
+        $errors[0].TargetObject | Should -Be 'missing'
+        $handler.Requests.Count | Should -Be 3
+    }
+
+    It 'stops a report batch after an authorization failure' {
+        $handler = [StatusQueueFakeHandler]::new(
+            [string[]] @(
+                '{"error":{"code":"AuthenticationRequiredError","message":"bad key"}}',
+                '{"data":{"id":"second","type":"file","attributes":{}}}'
+            ),
+            [int[]] @(401, 200))
+        $downloadHandler = [FakeHandler]::new('{}')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new('test-api-key', $handler, $downloadHandler)
+
+        $failure = { Get-VirusReport -Hash 'first','second' -Client $client `
+            -MinimumIntervalSeconds 0 -MaxRetries 0 } | Should -Throw -PassThru
+
+        $failure.FullyQualifiedErrorId | Should -Match '^AuthenticationRequiredError'
+        $handler.Requests.Count | Should -Be 1
+    }
+
+    It 'uses the original URL as the report error target' {
+        $handler = [StatusQueueFakeHandler]::new(
+            [string[]] @('{"error":{"code":"NotFoundError","message":"missing"}}'),
+            [int[]] @(404))
+        $downloadHandler = [FakeHandler]::new('{}')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new('test-api-key', $handler, $downloadHandler)
+        $url = [Uri] 'https://example.com/path?value=1'
+        $errors = @()
+
+        Get-VirusReport -Url $url -Client $client -MinimumIntervalSeconds 0 -MaxRetries 0 `
+            -ErrorAction SilentlyContinue -ErrorVariable +errors
+
+        $errors.Count | Should -Be 1
+        $errors[0].TargetObject | Should -Be $url.AbsoluteUri
+        $handler.Requests.Count | Should -Be 1
+    }
+
+    It 'continues local file reports when a later file disappears before hashing' {
+        $handler = [QueueFakeHandler]::new([string[]] @(
+            '{"data":{"id":"first","type":"file","attributes":{}}}',
+            '{"data":{"id":"third","type":"file","attributes":{}}}'
+        ))
+        $downloadHandler = [FakeHandler]::new('{}')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new('test-api-key', $handler, $downloadHandler)
+        $first = New-TemporaryFile
+        $missing = New-TemporaryFile
+        $third = New-TemporaryFile
+        $errors = @()
+
+        try {
+            Set-Content -LiteralPath $first -Value 'first'
+            Set-Content -LiteralPath $missing -Value 'missing'
+            Set-Content -LiteralPath $third -Value 'third'
+            $result = @(& { $first; $missing; Remove-Item -LiteralPath $missing -Force; $third; $first } |
+                Get-VirusReport -Client $client -MinimumIntervalSeconds 0 `
+                    -ErrorAction SilentlyContinue -ErrorVariable +errors)
+
+            $result.Id | Should -Be @('first', 'third', 'first')
+            $errors.Count | Should -Be 1
+            $errors[0].FullyQualifiedErrorId | Should -Match '^FileHashFailed'
+            $errors[0].TargetObject | Should -Be $missing.FullName
+            $handler.Requests.Count | Should -Be 2
+        }
+        finally {
+            Remove-Item -LiteralPath $first,$missing,$third -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'does not misclassify a remote report failure as a file hashing error' {
+        $handler = [QueueFakeHandler]::new([string[]] @(
+            'not-json',
+            '{"data":{"id":"second","type":"file","attributes":{}}}'
+        ))
+        $downloadHandler = [FakeHandler]::new('{}')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new('test-api-key', $handler, $downloadHandler)
+        $first = New-TemporaryFile
+        $second = New-TemporaryFile
+
+        try {
+            Set-Content -LiteralPath $first -Value 'first'
+            Set-Content -LiteralPath $second -Value 'second'
+
+            $failure = { @($first, $second) | Get-VirusReport -Client $client -MinimumIntervalSeconds 0 } |
+                Should -Throw -PassThru
+            $failure.FullyQualifiedErrorId | Should -Not -Match '^FileHashFailed'
+            $handler.Requests.Count | Should -Be 1
+        }
+        finally {
+            Remove-Item -LiteralPath $first,$second -Force -ErrorAction SilentlyContinue
         }
     }
 }
@@ -235,6 +399,62 @@ Describe 'Get-VirusUser cmdlet' {
         $result.Id | Should -Be 'user1'
         $handler.LastRequest.RequestUri.AbsolutePath | Should -Be '/api/v3/users/user1'
     }
+
+    It 'uses VIRUSTOTAL_USER_ID without putting the API key in the route' {
+        $json = '{"data":{"id":"user2","type":"user"}}'
+        $handler = [FakeHandler]::new($json)
+        $client = New-TestVirusTotalClient -ApiHandler $handler
+        $previous = $env:VIRUSTOTAL_USER_ID
+        try {
+            $env:VIRUSTOTAL_USER_ID = 'user2'
+            $result = Get-VirusAccount -Client $client
+
+            $result.Id | Should -Be 'user2'
+            $handler.LastRequest.RequestUri.AbsolutePath | Should -Be '/api/v3/users/user2'
+            $handler.LastRequest.RequestUri.AbsolutePath | Should -Not -Match 'test-api-key'
+        }
+        finally {
+            $env:VIRUSTOTAL_USER_ID = $previous
+        }
+    }
+
+    It 'returns quota rows with remaining usage' {
+        $json = '{"data":{"id":"user1","type":"user","attributes":{"quotas":{"api_requests_daily":{"allowed":500,"used":25}}}}}'
+        $handler = [FakeHandler]::new($json)
+        $client = New-TestVirusTotalClient -ApiHandler $handler
+
+        $quota = Get-VirusUser -Id 'user1' -Client $client -Quota
+
+        $quota.Name | Should -Be 'api_requests_daily'
+        $quota.Remaining | Should -Be 475
+        $quota.PercentUsed | Should -Be 5
+    }
+}
+
+Describe 'Get-VirusRelationship cmdlet' {
+    It 'returns typed historical WHOIS records' {
+        $json = '{"data":[{"id":"w1","type":"whois","attributes":{"registrar_name":"Example Registrar"}}]}'
+        $handler = [FakeHandler]::new($json)
+        $client = New-TestVirusTotalClient -ApiHandler $handler
+
+        $result = Get-VirusRelationship -DomainName 'example.com' -Relationship HistoricalWhois -Client $client
+
+        $result.Type.ToString() | Should -Be 'Whois'
+        $result.Attributes.RegistrarName | Should -Be 'Example Registrar'
+        $handler.LastRequest.RequestUri.AbsolutePath | Should -Be '/api/v3/domains/example.com/historical_whois'
+    }
+
+    It 'returns a page envelope with the next relationship cursor when requested' {
+        $json = '{"data":[{"id":"w1","type":"whois","attributes":{"registrar_name":"Example Registrar"}}],"meta":{"cursor":"next-page"}}'
+        $handler = [FakeHandler]::new($json)
+        $client = New-TestVirusTotalClient -ApiHandler $handler
+
+        $page = Get-VirusRelationship -DomainName 'example.com' -Relationship HistoricalWhois -Limit 10 -Page -Client $client
+
+        $page.NextCursor | Should -Be 'next-page'
+        $page.Data.Count | Should -Be 1
+        $page.Data[0].Attributes.RegistrarName | Should -Be 'Example Registrar'
+    }
 }
 
 Describe 'Send-VirusTotalMonitorFile cmdlet' {
@@ -299,6 +519,9 @@ Describe 'Cmdlet help content' {
     }
     It 'includes examples for Get-VirusUser' {
         (Get-Help Get-VirusUser -Examples).Examples | Should -Not -BeNullOrEmpty
+    }
+    It 'includes examples for Get-VirusRelationship' {
+        (Get-Help Get-VirusRelationship -Examples).Examples | Should -Not -BeNullOrEmpty
     }
 }
 }

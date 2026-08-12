@@ -20,6 +20,26 @@ using var client = VirusTotalClient.Create(
 var report = await client.GetFileReportAsync(sha256, cancellationToken: cancellationToken);
 ```
 
+Use the batch methods for public-key-friendly lookups. They preserve input order, suppress duplicate requests, cache successful reports, retry rate limits using `Retry-After`, and start requests 20 seconds apart by default:
+
+```csharp
+var reports = await client.GetFileReportsBatchAsync(hashes, cancellationToken: cancellationToken);
+foreach (var report in reports)
+{
+    var verdict = report.ToVerdict();
+    Console.WriteLine($"{verdict.Id}: {verdict.Verdict} ({verdict.Malicious} malicious)");
+}
+```
+
+Pass `VirusTotalBatchOptions` to tune the interval, cache duration, and retries for the account's quota. Direct singular and plural report methods remain unthrottled.
+
+Typed network-object relationships include historical WHOIS, DNS resolutions, SSL certificate history, and communicating, referrer, or downloaded files:
+
+```csharp
+var whois = await client.GetDomainHistoricalWhoisAsync("example.com", cancellationToken: cancellationToken);
+var resolutions = await client.GetIpAddressResolutionsAsync("1.1.1.1", cancellationToken: cancellationToken);
+```
+
 `VirusTotalClient.Create` applies a bounded HTTP timeout. For custom proxies, client certificates,
 DNS behavior, or deterministic test transports, pass separate API and unauthenticated-download
 `HttpMessageHandler` instances. Automatic redirects must be disabled on both handler chains so the
@@ -108,3 +128,5 @@ Get-VirusTotalMonitorStatistics -ApiKey $env:VIRUSTOTAL_MONITOR_API_KEY
 
 API keys are confined to authenticated VirusTotal API and upload requests. They are not sent to
 signed download URLs, included in upload results, or written to request diagnostics.
+
+The Public API is intended for VirusTotal Community users and currently documents 500 requests per day and four requests per minute. It is not licensed for commercial products or services. Use an entitled service for commercial workflows and for relationships or account fields that the public key does not expose.

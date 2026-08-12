@@ -188,14 +188,10 @@ public sealed class CmdletGetVirusReport : VirusTotalCmdlet
                     var failedFileHashes = new Dictionary<string, ApiException>(StringComparer.OrdinalIgnoreCase);
                     foreach (var file in _files)
                     {
+                        string hash;
                         try
                         {
-                            var hash = await GetSha256Async(file).ConfigureAwait(false);
-                            await WriteReportAsync(
-                                hash,
-                                (ids, token) => ActiveClient.GetFileReportsBatchAsync(ids, options, cancellationToken: token),
-                                completedFileHashes,
-                                failedFileHashes).ConfigureAwait(false);
+                            hash = await GetSha256Async(file).ConfigureAwait(false);
                         }
                         catch (OperationCanceledException) when (CancelToken.IsCancellationRequested)
                         {
@@ -208,7 +204,14 @@ public sealed class CmdletGetVirusReport : VirusTotalCmdlet
                                 "FileHashFailed",
                                 ErrorCategory.ReadError,
                                 file));
+                            continue;
                         }
+
+                        await WriteReportAsync(
+                            hash,
+                            (ids, token) => ActiveClient.GetFileReportsBatchAsync(ids, options, cancellationToken: token),
+                            completedFileHashes,
+                            failedFileHashes).ConfigureAwait(false);
                     }
                     break;
                 case "Url":

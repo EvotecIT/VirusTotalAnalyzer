@@ -240,6 +240,30 @@ Describe 'Get-VirusReport cmdlet' {
             Remove-Item -LiteralPath $first,$missing,$third -Force -ErrorAction SilentlyContinue
         }
     }
+
+    It 'does not misclassify a remote report failure as a file hashing error' {
+        $handler = [QueueFakeHandler]::new([string[]] @(
+            'not-json',
+            '{"data":{"id":"second","type":"file","attributes":{}}}'
+        ))
+        $downloadHandler = [FakeHandler]::new('{}')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new('test-api-key', $handler, $downloadHandler)
+        $first = New-TemporaryFile
+        $second = New-TemporaryFile
+
+        try {
+            Set-Content -LiteralPath $first -Value 'first'
+            Set-Content -LiteralPath $second -Value 'second'
+
+            $failure = { @($first, $second) | Get-VirusReport -Client $client -MinimumIntervalSeconds 0 } |
+                Should -Throw -PassThru
+            $failure.FullyQualifiedErrorId | Should -Not -Match '^FileHashFailed'
+            $handler.Requests.Count | Should -Be 1
+        }
+        finally {
+            Remove-Item -LiteralPath $first,$second -Force -ErrorAction SilentlyContinue
+        }
+    }
 }
 
 Describe 'New-VirusScan cmdlet' {

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -12,9 +11,12 @@ namespace VirusTotalAnalyzer;
 
 public sealed partial class VirusTotalClient
 {
-    private readonly ConcurrentDictionary<string, BatchCacheEntry> _batchCache = new(StringComparer.Ordinal);
-    private readonly ConcurrentDictionary<string, Lazy<Task<object?>>> _batchInFlight = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, BatchCacheEntry> _batchCache = new(StringComparer.Ordinal);
+    private readonly object _batchCacheSync = new();
+    private readonly Dictionary<string, BatchInFlightEntry> _batchInFlight = new(StringComparer.Ordinal);
+    private readonly object _batchInFlightSync = new();
     private readonly SemaphoreSlim _batchRequestGate = new(1, 1);
+    private long _batchFetchGeneration;
     private long _nextBatchRequestTimestamp;
 
     /// <summary>Retrieves file reports with quota-aware spacing, retry, cache, and duplicate suppression.</summary>
@@ -220,34 +222,72 @@ public sealed partial class VirusTotalClient
         CancellationToken cancellationToken)
         where T : class
     {
-        var candidate = new Lazy<Task<object?>>(
-            async () =>
+        var inFlightKey = CreateInFlightKey(cacheKey, options);
+        BatchInFlightEntry shared;
+        var created = false;
+        lock (_batchInFlightSync)
+        {
+            // Cache publication happens before a completed entry is removed, and
+            // removal requires this coordination lock. Recheck here so a caller that
+            // missed the optimistic lookup cannot fall through the handoff gap
+            // and start a duplicate request after the producer has completed.
+            if (TryGetCached(cacheKey, options.CacheDuration, out T? cached))
+                return cached;
+
+            if (!_batchInFlight.TryGetValue(inFlightKey, out shared!) ||
+                !shared.TryAddWaiter(options.CacheDuration))
             {
-                var result = await FetchWithBatchPolicyAsync(fetch, id, options, CancellationToken.None)
-                    .ConfigureAwait(false);
-                SetCached(cacheKey, result, options.CacheDuration);
-                return result;
-            },
-            LazyThreadSafetyMode.ExecutionAndPublication);
-        var shared = _batchInFlight.GetOrAdd(cacheKey, candidate);
-        var task = shared.Value;
-        if (ReferenceEquals(shared, candidate))
+                var generation = Interlocked.Increment(ref _batchFetchGeneration);
+                shared = new BatchInFlightEntry(
+                    async token => (object?)await FetchWithBatchPolicyAsync(fetch, id, options, token)
+                        .ConfigureAwait(false),
+                    (value, duration) => SetCached(cacheKey, value, duration, generation),
+                    generation);
+                if (!shared.TryAddWaiter(options.CacheDuration))
+                    throw new InvalidOperationException("Unable to register a batch fetch waiter.");
+                _batchInFlight[inFlightKey] = shared;
+                created = true;
+            }
+        }
+
+        var task = shared.Task;
+        if (created)
         {
             _ = task.ContinueWith(
-                _ => RemoveCompletedBatchFetch(cacheKey, shared),
+                completed => CompleteBatchFetch(inFlightKey, shared, completed),
                 CancellationToken.None,
                 TaskContinuationOptions.ExecuteSynchronously,
                 TaskScheduler.Default);
         }
 
-        var value = await AwaitSharedBatchFetchAsync(task, cancellationToken).ConfigureAwait(false);
-        return value as T;
+        try
+        {
+            var value = await AwaitSharedBatchFetchAsync(task, cancellationToken).ConfigureAwait(false);
+            var result = value as T;
+            SetCached(cacheKey, result, options.CacheDuration, shared.Generation);
+            return result;
+        }
+        finally
+        {
+            if (shared.ReleaseWaiter())
+                RemoveBatchFetch(inFlightKey, shared);
+        }
     }
 
-    private void RemoveCompletedBatchFetch(string cacheKey, Lazy<Task<object?>> completed)
+    private void CompleteBatchFetch(string inFlightKey, BatchInFlightEntry entry, Task<object?> task)
     {
-        if (_batchInFlight.TryGetValue(cacheKey, out var current) && ReferenceEquals(current, completed))
-            _batchInFlight.TryRemove(cacheKey, out _);
+        if (task.IsFaulted)
+            _ = task.Exception;
+        RemoveBatchFetch(inFlightKey, entry);
+    }
+
+    private void RemoveBatchFetch(string inFlightKey, BatchInFlightEntry entry)
+    {
+        lock (_batchInFlightSync)
+        {
+            if (_batchInFlight.TryGetValue(inFlightKey, out var current) && ReferenceEquals(current, entry))
+                _batchInFlight.Remove(inFlightKey);
+        }
     }
 
     private static async Task<object?> AwaitSharedBatchFetchAsync(
@@ -291,16 +331,16 @@ public sealed partial class VirusTotalClient
                 var retryDelay = exception.RetryAfter.GetValueOrDefault(fallbackDelay);
                 if (retryDelay < TimeSpan.Zero)
                     retryDelay = TimeSpan.Zero;
-                await ApplySharedRetryDelayAsync(retryDelay, cancellationToken).ConfigureAwait(false);
+                await ApplySharedRetryDelayAsync(retryDelay).ConfigureAwait(false);
                 if (attempt >= options.MaxRetries)
                     throw;
             }
         }
     }
 
-    private async Task ApplySharedRetryDelayAsync(TimeSpan retryDelay, CancellationToken cancellationToken)
+    private async Task ApplySharedRetryDelayAsync(TimeSpan retryDelay)
     {
-        await _batchRequestGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await _batchRequestGate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
         try
         {
             var now = Stopwatch.GetTimestamp();
@@ -320,26 +360,31 @@ public sealed partial class VirusTotalClient
 
     private async Task WaitForBatchRequestSlotAsync(TimeSpan minimumInterval, CancellationToken cancellationToken)
     {
-        await _batchRequestGate.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
+        while (true)
         {
-            var now = Stopwatch.GetTimestamp();
-            var remainingTicks = _nextBatchRequestTimestamp - now;
-            if (remainingTicks > 0)
+            TimeSpan delay;
+            await _batchRequestGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
             {
-                var delay = TimeSpan.FromSeconds((double)remainingTicks / Stopwatch.Frequency);
-                await DelaySafelyAsync(delay, cancellationToken).ConfigureAwait(false);
-                now = Stopwatch.GetTimestamp();
+                var now = Stopwatch.GetTimestamp();
+                var remainingTicks = _nextBatchRequestTimestamp - now;
+                if (remainingTicks <= 0)
+                {
+                    var intervalTicks = minimumInterval <= TimeSpan.Zero
+                        ? 0L
+                        : checked((long)Math.Ceiling(minimumInterval.TotalSeconds * Stopwatch.Frequency));
+                    _nextBatchRequestTimestamp = checked(now + intervalTicks);
+                    return;
+                }
+
+                delay = TimeSpan.FromSeconds((double)remainingTicks / Stopwatch.Frequency);
+            }
+            finally
+            {
+                _batchRequestGate.Release();
             }
 
-            var intervalTicks = minimumInterval <= TimeSpan.Zero
-                ? 0L
-                : checked((long)Math.Ceiling(minimumInterval.TotalSeconds * Stopwatch.Frequency));
-            _nextBatchRequestTimestamp = checked(now + intervalTicks);
-        }
-        finally
-        {
-            _batchRequestGate.Release();
+            await DelaySafelyAsync(delay, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -358,36 +403,81 @@ public sealed partial class VirusTotalClient
         where T : class
     {
         value = null;
-        if (cacheDuration <= TimeSpan.Zero || !_batchCache.TryGetValue(key, out var cached))
+        if (cacheDuration <= TimeSpan.Zero)
             return false;
 
-        if (cached.ExpiresAt <= DateTimeOffset.UtcNow)
+        lock (_batchCacheSync)
         {
-            _batchCache.TryRemove(key, out _);
-            return false;
-        }
+            if (!_batchCache.TryGetValue(key, out var cached))
+                return false;
 
-        value = cached.Value as T;
-        return cached.Value is null || value is not null;
+            var callerExpiration = cached.CreatedAt.Add(cacheDuration);
+            var effectiveExpiration = callerExpiration < cached.ExpiresAt
+                ? callerExpiration
+                : cached.ExpiresAt;
+            if (effectiveExpiration <= DateTimeOffset.UtcNow)
+            {
+                if (cached.ExpiresAt <= DateTimeOffset.UtcNow)
+                    _batchCache.Remove(key);
+                return false;
+            }
+
+            value = cached.Value as T;
+            return cached.Value is null || value is not null;
+        }
     }
 
-    private void SetCached<T>(string key, T? value, TimeSpan cacheDuration)
+    private void SetCached<T>(string key, T? value, TimeSpan cacheDuration, long generation)
         where T : class
     {
         if (cacheDuration <= TimeSpan.Zero)
             return;
 
-        _batchCache[key] = new BatchCacheEntry(value, DateTimeOffset.UtcNow.Add(cacheDuration));
+        var now = DateTimeOffset.UtcNow;
+        lock (_batchCacheSync)
+        {
+            if (_batchCache.TryGetValue(key, out var current))
+            {
+                if (current.Generation > generation)
+                    return;
+                if (current.Generation == generation)
+                {
+                    var requestedExpiration = current.CreatedAt.Add(cacheDuration);
+                    if (requestedExpiration > current.ExpiresAt)
+                        _batchCache[key] = new BatchCacheEntry(
+                            value,
+                            current.CreatedAt,
+                            requestedExpiration,
+                            generation);
+                    return;
+                }
+            }
+
+            _batchCache[key] = new BatchCacheEntry(value, now, now.Add(cacheDuration), generation);
+        }
     }
 
     private void PruneExpiredBatchCache()
     {
-        var now = DateTimeOffset.UtcNow;
-        foreach (var pair in _batchCache)
+        lock (_batchCacheSync)
         {
-            if (pair.Value.ExpiresAt <= now)
-                _batchCache.TryRemove(pair.Key, out _);
+            var now = DateTimeOffset.UtcNow;
+            var expiredKeys = _batchCache
+                .Where(pair => pair.Value.ExpiresAt <= now)
+                .Select(pair => pair.Key)
+                .ToArray();
+            foreach (var key in expiredKeys)
+                _batchCache.Remove(key);
         }
+    }
+
+    private static string CreateInFlightKey(string cacheKey, VirusTotalBatchOptions options)
+    {
+        var key = new StringBuilder();
+        AppendCacheComponent(key, cacheKey);
+        AppendCacheComponent(key, options.MinimumInterval.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        AppendCacheComponent(key, options.MaxRetries.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        return key.ToString();
     }
 
     private static string CreateCacheKey(
@@ -417,13 +507,101 @@ public sealed partial class VirusTotalClient
 
     private sealed class BatchCacheEntry
     {
-        internal BatchCacheEntry(object? value, DateTimeOffset expiresAt)
+        internal BatchCacheEntry(
+            object? value,
+            DateTimeOffset createdAt,
+            DateTimeOffset expiresAt,
+            long generation)
         {
             Value = value;
+            CreatedAt = createdAt;
             ExpiresAt = expiresAt;
+            Generation = generation;
         }
 
         internal object? Value { get; }
+        internal DateTimeOffset CreatedAt { get; }
         internal DateTimeOffset ExpiresAt { get; }
+        internal long Generation { get; }
+    }
+
+    private sealed class BatchInFlightEntry
+    {
+        private readonly CancellationTokenSource _cancellation = new();
+        private readonly Action<object?, TimeSpan> _cacheResult;
+        private readonly object _sync = new();
+        private readonly Lazy<Task<object?>> _task;
+        private bool _acceptingWaiters = true;
+        private bool _completed;
+        private TimeSpan _maximumCacheDuration;
+        private int _waiters;
+
+        internal BatchInFlightEntry(
+            Func<CancellationToken, Task<object?>> fetch,
+            Action<object?, TimeSpan> cacheResult,
+            long generation)
+        {
+            _cacheResult = cacheResult;
+            Generation = generation;
+            _task = new Lazy<Task<object?>>(
+                () => ExecuteAsync(fetch),
+                LazyThreadSafetyMode.ExecutionAndPublication);
+        }
+
+        internal Task<object?> Task => _task.Value;
+        internal long Generation { get; }
+
+        internal bool TryAddWaiter(TimeSpan cacheDuration)
+        {
+            lock (_sync)
+            {
+                if (!_acceptingWaiters)
+                    return false;
+                _waiters++;
+                if (cacheDuration > _maximumCacheDuration)
+                    _maximumCacheDuration = cacheDuration;
+                return true;
+            }
+        }
+
+        internal bool ReleaseWaiter()
+        {
+            var cancel = false;
+            lock (_sync)
+            {
+                if (_waiters <= 0)
+                    throw new InvalidOperationException("The batch fetch waiter count is invalid.");
+                _waiters--;
+                if (_waiters == 0 && !_completed)
+                {
+                    _acceptingWaiters = false;
+                    cancel = true;
+                }
+            }
+
+            if (cancel)
+                _cancellation.Cancel();
+            return cancel;
+        }
+
+        private async Task<object?> ExecuteAsync(Func<CancellationToken, Task<object?>> fetch)
+        {
+            try
+            {
+                var result = await fetch(_cancellation.Token).ConfigureAwait(false);
+                lock (_sync)
+                {
+                    _completed = true;
+                    _cacheResult(result, _maximumCacheDuration);
+                }
+                return result;
+            }
+            catch
+            {
+                lock (_sync)
+                    _completed = true;
+                throw;
+            }
+        }
     }
 }

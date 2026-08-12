@@ -143,6 +143,165 @@ public sealed class VirusTotalClientBatchTests
     }
 
     [Fact]
+    public async Task Batch_FinalCancelledWaiterCancelsFetchAndAllowsLaterRetry()
+    {
+        var handler = new CancellationThenSuccessHandler();
+        using var client = CreateClient(handler);
+        var options = ImmediateOptions();
+        options.CacheDuration = TimeSpan.Zero;
+        using var cancellation = new CancellationTokenSource();
+
+        var cancelled = client.GetFileReportsBatchAsync(
+            new[] { "abc" },
+            options,
+            cancellationToken: cancellation.Token);
+        await handler.Started.Task;
+        cancellation.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cancelled);
+        await handler.Cancelled.Task;
+        var reports = await client.GetFileReportsBatchAsync(new[] { "abc" }, options);
+
+        Assert.Single(reports);
+        Assert.Equal(2, handler.RequestCount);
+    }
+
+    [Fact]
+    public async Task Batch_DifferentRetryPoliciesDoNotShareAnInFlightOperation()
+    {
+        var handler = new PolicyHandler();
+        using var client = CreateClient(handler);
+        var noRetry = ImmediateOptions();
+        noRetry.CacheDuration = TimeSpan.Zero;
+        noRetry.MaxRetries = 0;
+        var retry = ImmediateOptions();
+        retry.CacheDuration = TimeSpan.Zero;
+
+        var first = client.GetFileReportsBatchAsync(new[] { "abc" }, noRetry);
+        await handler.FirstStarted.Task;
+        var second = client.GetFileReportsBatchAsync(new[] { "abc" }, retry);
+        await Task.Delay(25);
+        handler.ReleaseFirst.TrySetResult(true);
+
+        await Assert.ThrowsAsync<RateLimitExceededException>(() => first);
+        var reports = await second;
+
+        Assert.Single(reports);
+        Assert.Equal(2, handler.RequestCount);
+    }
+
+    [Fact]
+    public async Task Batch_CoalescedCallersApplyTheirOwnCacheDuration()
+    {
+        var handler = new BlockingFileHandler();
+        using var client = CreateClient(handler);
+        var noCache = ImmediateOptions();
+        noCache.CacheDuration = TimeSpan.Zero;
+        var cached = ImmediateOptions();
+        cached.CacheDuration = TimeSpan.FromMinutes(1);
+
+        var first = client.GetFileReportsBatchAsync(new[] { "abc" }, noCache);
+        await handler.Started.Task;
+        var second = client.GetFileReportsBatchAsync(new[] { "abc" }, cached);
+        await Task.Delay(25);
+        handler.Release.TrySetResult(true);
+        await Task.WhenAll(first, second);
+        var third = await client.GetFileReportsBatchAsync(new[] { "abc" }, cached);
+
+        Assert.Single(third);
+        Assert.Equal(1, handler.RequestCount);
+    }
+
+    [Fact]
+    public async Task Batch_CallerCacheDurationLimitsOlderSharedEntries()
+    {
+        var handler = new QueueHandler(FileResponse("old"), FileResponse("new"));
+        using var client = CreateClient(handler);
+        var longCache = ImmediateOptions();
+        longCache.CacheDuration = TimeSpan.FromMinutes(5);
+        var shortCache = ImmediateOptions();
+        shortCache.CacheDuration = TimeSpan.FromMilliseconds(10);
+
+        await client.GetFileReportsBatchAsync(new[] { "abc" }, longCache);
+        await Task.Delay(30);
+        var refreshed = await client.GetFileReportsBatchAsync(new[] { "abc" }, shortCache);
+
+        Assert.Equal("new", refreshed[0].Id);
+        Assert.Equal(2, handler.Requests.Count);
+    }
+
+    [Fact]
+    public async Task Batch_OlderPolicyFetchCannotOverwriteNewerCacheValue()
+    {
+        var handler = new OutOfOrderHandler();
+        using var client = CreateClient(handler);
+        var olderPolicy = ImmediateOptions();
+        olderPolicy.MaxRetries = 0;
+        var newerPolicy = ImmediateOptions();
+        newerPolicy.MaxRetries = 1;
+
+        var older = client.GetFileReportsBatchAsync(new[] { "abc" }, olderPolicy);
+        await handler.FirstStarted.Task;
+        var newer = await client.GetFileReportsBatchAsync(new[] { "abc" }, newerPolicy);
+        handler.ReleaseFirst.TrySetResult(true);
+        var olderResult = await older;
+        var cached = await client.GetFileReportsBatchAsync(new[] { "abc" }, newerPolicy);
+
+        Assert.Equal("new", newer[0].Id);
+        Assert.Equal("old", olderResult[0].Id);
+        Assert.Equal("new", cached[0].Id);
+        Assert.Equal(2, handler.RequestCount);
+    }
+
+    [Fact]
+    public async Task Batch_RefreshedNullResultUsesNewFetchGeneration()
+    {
+        var nullResponse = "{\"data\":null}";
+        var handler = new QueueHandler(
+            JsonResponse(nullResponse),
+            JsonResponse(nullResponse),
+            JsonResponse(nullResponse));
+        using var client = CreateClient(handler);
+        var longCache = ImmediateOptions();
+        longCache.CacheDuration = TimeSpan.FromMinutes(5);
+        var shortCache = ImmediateOptions();
+        shortCache.CacheDuration = TimeSpan.FromMilliseconds(20);
+
+        Assert.Empty(await client.GetFileReportsBatchAsync(new[] { "abc" }, longCache));
+        await Task.Delay(40);
+        Assert.Empty(await client.GetFileReportsBatchAsync(new[] { "abc" }, shortCache));
+        Assert.Empty(await client.GetFileReportsBatchAsync(new[] { "abc" }, shortCache));
+
+        Assert.Equal(2, handler.Requests.Count);
+    }
+
+    [Fact]
+    public async Task Batch_CancelledLastWaiterStillPublishesObservedRetryAfter()
+    {
+        var handler = new DelayedRateLimitHandler();
+        using var client = CreateClient(handler);
+        var options = ImmediateOptions();
+        options.CacheDuration = TimeSpan.Zero;
+        using var cancellation = new CancellationTokenSource();
+
+        var cancelled = client.GetFileReportsBatchAsync(
+            new[] { "first" },
+            options,
+            cancellationToken: cancellation.Token);
+        await handler.FirstStarted.Task;
+        cancellation.Cancel();
+        handler.ReleaseRateLimit.TrySetResult(true);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cancelled);
+        await Task.Delay(100);
+        var other = await client.GetFileReportsBatchAsync(new[] { "second" }, options);
+
+        Assert.Single(other);
+        Assert.True(
+            handler.SuccessfulRequest - handler.FirstRequest >= TimeSpan.FromMilliseconds(800),
+            $"Later caller started after {handler.SuccessfulRequest - handler.FirstRequest}.");
+    }
+
+    [Fact]
     public async Task Batch_RetryAfterPausesOtherConcurrentCallers()
     {
         var handler = new SharedRetryHandler();
@@ -185,6 +344,31 @@ public sealed class VirusTotalClientBatchTests
         Assert.True(
             handler.EarliestSuccessfulRequest - handler.FirstRequest >= TimeSpan.FromMilliseconds(700),
             $"Other caller started after {handler.EarliestSuccessfulRequest - handler.FirstRequest}.");
+    }
+
+    [Fact]
+    public async Task Batch_RetryAfterCanAdvanceScheduleWhileAnotherCallerWaits()
+    {
+        var handler = new DelayedRateLimitHandler();
+        using var client = CreateClient(handler);
+        var options = ImmediateOptions();
+        options.MinimumInterval = TimeSpan.FromMilliseconds(300);
+        options.CacheDuration = TimeSpan.Zero;
+        options.MaxRetries = 0;
+
+        var rateLimited = client.GetFileReportsBatchAsync(new[] { "first" }, options);
+        await handler.FirstStarted.Task;
+        var other = client.GetFileReportsBatchAsync(new[] { "second" }, options);
+        await Task.Delay(50);
+        handler.ReleaseRateLimit.TrySetResult(true);
+
+        await Assert.ThrowsAsync<RateLimitExceededException>(() => rateLimited);
+        var reports = await other;
+
+        Assert.Single(reports);
+        Assert.True(
+            handler.SuccessfulRequest - handler.FirstRequest >= TimeSpan.FromMilliseconds(800),
+            $"Waiting caller started after {handler.SuccessfulRequest - handler.FirstRequest}.");
     }
 
     [Fact]
@@ -260,6 +444,12 @@ public sealed class VirusTotalClientBatchTests
             Content = new StringContent($"{{\"data\":{{\"id\":\"{id}\",\"type\":\"file\",\"attributes\":{{}}}}}}", Encoding.UTF8, "application/json")
         };
 
+    private static HttpResponseMessage JsonResponse(string json)
+        => new(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+
     private sealed class BlockingFileHandler : HttpMessageHandler
     {
         private int _requestCount;
@@ -325,5 +515,140 @@ public sealed class VirusTotalClientBatchTests
 
         private static TimeSpan ToElapsed(long timestamp)
             => TimeSpan.FromSeconds((double)timestamp / Stopwatch.Frequency);
+    }
+
+    private sealed class CancellationThenSuccessHandler : HttpMessageHandler
+    {
+        private int _requestCount;
+
+        internal TaskCompletionSource<bool> Started { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource<bool> Cancelled { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal int RequestCount => Volatile.Read(ref _requestCount);
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            var requestNumber = Interlocked.Increment(ref _requestCount);
+            if (requestNumber == 1)
+            {
+                Started.TrySetResult(true);
+                try
+                {
+                    await Task.Delay(Timeout.Infinite, cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    Cancelled.TrySetResult(true);
+                    throw;
+                }
+            }
+
+            return FileResponse("abc");
+        }
+    }
+
+    private sealed class PolicyHandler : HttpMessageHandler
+    {
+        private int _requestCount;
+
+        internal TaskCompletionSource<bool> FirstStarted { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource<bool> ReleaseFirst { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal int RequestCount => Volatile.Read(ref _requestCount);
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            var requestNumber = Interlocked.Increment(ref _requestCount);
+            if (requestNumber == 1)
+            {
+                FirstStarted.TrySetResult(true);
+                await ReleaseFirst.Task.ConfigureAwait(false);
+                var response = new HttpResponseMessage((HttpStatusCode)429)
+                {
+                    Content = new StringContent(
+                        "{\"error\":{\"code\":\"RateLimitExceeded\",\"message\":\"slow down\"}}",
+                        Encoding.UTF8,
+                        "application/json")
+                };
+                response.Headers.Add("Retry-After", "0");
+                return response;
+            }
+
+            return FileResponse("abc");
+        }
+    }
+
+    private sealed class DelayedRateLimitHandler : HttpMessageHandler
+    {
+        private int _requestCount;
+        private long _firstRequest;
+        private long _successfulRequest;
+
+        internal TaskCompletionSource<bool> FirstStarted { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource<bool> ReleaseRateLimit { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TimeSpan FirstRequest => ToElapsed(_firstRequest);
+        internal TimeSpan SuccessfulRequest => ToElapsed(_successfulRequest);
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            var requestNumber = Interlocked.Increment(ref _requestCount);
+            if (requestNumber == 1)
+            {
+                _firstRequest = Stopwatch.GetTimestamp();
+                FirstStarted.TrySetResult(true);
+                await ReleaseRateLimit.Task.ConfigureAwait(false);
+                var response = new HttpResponseMessage((HttpStatusCode)429)
+                {
+                    Content = new StringContent(
+                        "{\"error\":{\"code\":\"RateLimitExceeded\",\"message\":\"slow down\"}}",
+                        Encoding.UTF8,
+                        "application/json")
+                };
+                response.Headers.Add("Retry-After", "1");
+                return response;
+            }
+
+            _successfulRequest = Stopwatch.GetTimestamp();
+            return FileResponse("second");
+        }
+
+        private static TimeSpan ToElapsed(long timestamp)
+            => TimeSpan.FromSeconds((double)timestamp / Stopwatch.Frequency);
+    }
+
+    private sealed class OutOfOrderHandler : HttpMessageHandler
+    {
+        private int _requestCount;
+
+        internal TaskCompletionSource<bool> FirstStarted { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource<bool> ReleaseFirst { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal int RequestCount => Volatile.Read(ref _requestCount);
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            var requestNumber = Interlocked.Increment(ref _requestCount);
+            if (requestNumber == 1)
+            {
+                FirstStarted.TrySetResult(true);
+                await ReleaseFirst.Task.ConfigureAwait(false);
+                return FileResponse("old");
+            }
+
+            return FileResponse("new");
+        }
     }
 }

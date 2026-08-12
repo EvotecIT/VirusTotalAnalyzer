@@ -491,8 +491,10 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
         }
 
         _batchRequestGate.Dispose();
-        _batchCache.Clear();
-        _batchInFlight.Clear();
+        lock (_batchCacheSync)
+            _batchCache.Clear();
+        lock (_batchInFlightSync)
+            _batchInFlight.Clear();
 
         _disposed = true;
         GC.SuppressFinalize(this);

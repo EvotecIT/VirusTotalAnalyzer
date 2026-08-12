@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Management.Automation;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using VirusTotalAnalyzer.Models;
 
@@ -171,39 +172,92 @@ public sealed class CmdletGetVirusReport : VirusTotalCmdlet
             switch (ParameterSetName)
             {
                 case "Analysis":
-                    WriteReports(await ActiveClient.GetAnalysesBatchAsync(_analysisIds, options, CancelToken).ConfigureAwait(false));
+                    await WriteReportBatchAsync(
+                        _analysisIds,
+                        (ids, token) => ActiveClient.GetAnalysesBatchAsync(ids, options, token),
+                        StringComparer.Ordinal).ConfigureAwait(false);
                     break;
                 case "Hash":
-                    WriteReports(await ActiveClient.GetFileReportsBatchAsync(_hashes, options, cancellationToken: CancelToken).ConfigureAwait(false));
+                    await WriteReportBatchAsync(
+                        _hashes,
+                        (ids, token) => ActiveClient.GetFileReportsBatchAsync(ids, options, cancellationToken: token),
+                        StringComparer.OrdinalIgnoreCase).ConfigureAwait(false);
                     break;
                 case "FileInformation":
                     var fileHashes = new List<string>(_files.Count);
                     foreach (var file in _files)
                         fileHashes.Add(await GetSha256Async(file).ConfigureAwait(false));
                     if (fileHashes.Count > 0)
-                        WriteReports(await ActiveClient.GetFileReportsBatchAsync(fileHashes, options, cancellationToken: CancelToken).ConfigureAwait(false));
+                        await WriteReportBatchAsync(
+                            fileHashes,
+                            (ids, token) => ActiveClient.GetFileReportsBatchAsync(ids, options, cancellationToken: token),
+                            StringComparer.OrdinalIgnoreCase).ConfigureAwait(false);
                     break;
                 case "Url":
                     var urlIds = new List<string>(_urls.Count);
                     foreach (var url in _urls)
                         urlIds.Add(VirusTotalClientExtensions.GetUrlId(url));
-                    WriteReports(await ActiveClient.GetUrlReportsBatchAsync(urlIds, options, cancellationToken: CancelToken).ConfigureAwait(false));
+                    await WriteReportBatchAsync(
+                        urlIds,
+                        (ids, token) => ActiveClient.GetUrlReportsBatchAsync(ids, options, cancellationToken: token),
+                        StringComparer.Ordinal).ConfigureAwait(false);
                     break;
                 case "IPAddress":
-                    WriteReports(await ActiveClient.GetIpAddressReportsBatchAsync(_ipAddresses, options, cancellationToken: CancelToken).ConfigureAwait(false));
+                    await WriteReportBatchAsync(
+                        _ipAddresses,
+                        (ids, token) => ActiveClient.GetIpAddressReportsBatchAsync(ids, options, cancellationToken: token),
+                        StringComparer.OrdinalIgnoreCase).ConfigureAwait(false);
                     break;
                 case "DomainName":
-                    WriteReports(await ActiveClient.GetDomainReportsBatchAsync(_domainNames, options, cancellationToken: CancelToken).ConfigureAwait(false));
+                    await WriteReportBatchAsync(
+                        _domainNames,
+                        (ids, token) => ActiveClient.GetDomainReportsBatchAsync(ids, options, cancellationToken: token),
+                        StringComparer.OrdinalIgnoreCase).ConfigureAwait(false);
                     break;
             }
-        }
-        catch (ApiException exception)
-        {
-            WriteApiError(exception, GetErrorTarget());
         }
         finally
         {
             await base.EndProcessingAsync().ConfigureAwait(false);
+        }
+    }
+
+    private async Task WriteReportBatchAsync<T>(
+        IReadOnlyList<string> ids,
+        Func<IEnumerable<string>, CancellationToken, Task<IReadOnlyList<T>>> fetch,
+        IEqualityComparer<string> comparer)
+        where T : class
+    {
+        var completed = new Dictionary<string, T?>(comparer);
+        var failures = new Dictionary<string, ApiException>(comparer);
+        foreach (var id in ids)
+        {
+            CancelToken.ThrowIfCancellationRequested();
+            if (completed.TryGetValue(id, out var duplicate))
+            {
+                if (duplicate is not null)
+                    WriteReport(duplicate);
+                continue;
+            }
+            if (failures.TryGetValue(id, out var repeatedFailure))
+            {
+                WriteApiError(repeatedFailure, id);
+                continue;
+            }
+
+            try
+            {
+                var reports = await fetch(new[] { id }, CancelToken).ConfigureAwait(false);
+                var report = reports.Count > 0 ? reports[0] : null;
+                completed.Add(id, report);
+                if (report is not null)
+                    WriteReport(report);
+            }
+            catch (ApiException exception)
+            {
+                failures.Add(id, exception);
+                WriteApiError(exception, id);
+            }
         }
     }
 
@@ -241,38 +295,23 @@ public sealed class CmdletGetVirusReport : VirusTotalCmdlet
         }
     }
 
-    private void WriteReports<T>(IReadOnlyList<T> reports) where T : class
+    private void WriteReport<T>(T report) where T : class
     {
-        foreach (var report in reports)
+        if (!Summary)
         {
-            if (!Summary)
-            {
-                WriteObject(report);
-                continue;
-            }
-
-            var verdict = report switch
-            {
-                FileReport value => value.ToVerdict(),
-                UrlReport value => value.ToVerdict(),
-                DomainReport value => value.ToVerdict(),
-                IpAddressReport value => value.ToVerdict(),
-                AnalysisReport value => value.ToVerdict(),
-                _ => throw new InvalidOperationException($"Unsupported report type {report.GetType().FullName}.")
-            };
-            WriteObject(verdict);
+            WriteObject(report);
+            return;
         }
-    }
 
-    private object? GetErrorTarget()
-        => ParameterSetName switch
+        var verdict = report switch
         {
-            "FileInformation" => _files.Count > 0 ? _files[0] : null,
-            "Hash" => _hashes.Count > 0 ? _hashes[0] : null,
-            "Url" => _urls.Count > 0 ? _urls[0] : null,
-            "IPAddress" => _ipAddresses.Count > 0 ? _ipAddresses[0] : null,
-            "DomainName" => _domainNames.Count > 0 ? _domainNames[0] : null,
-            "Analysis" => _analysisIds.Count > 0 ? _analysisIds[0] : null,
-            _ => null
+            FileReport value => value.ToVerdict(),
+            UrlReport value => value.ToVerdict(),
+            DomainReport value => value.ToVerdict(),
+            IpAddressReport value => value.ToVerdict(),
+            AnalysisReport value => value.ToVerdict(),
+            _ => throw new InvalidOperationException($"Unsupported report type {report.GetType().FullName}.")
         };
+        WriteObject(verdict);
+    }
 }

@@ -13,6 +13,7 @@ namespace VirusTotalAnalyzer;
 public sealed partial class VirusTotalClient
 {
     private readonly ConcurrentDictionary<string, BatchCacheEntry> _batchCache = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, Lazy<Task<object?>>> _batchInFlight = new(StringComparer.Ordinal);
     private readonly SemaphoreSlim _batchRequestGate = new(1, 1);
     private long _nextBatchRequestTimestamp;
 
@@ -193,9 +194,13 @@ public sealed partial class VirusTotalClient
             {
                 if (!TryGetCached(cacheKey, effectiveOptions.CacheDuration, out result))
                 {
-                    result = await FetchWithBatchPolicyAsync(fetch, id, effectiveOptions, cancellationToken)
+                    result = await GetOrFetchBatchResultAsync(
+                            cacheKey,
+                            fetch,
+                            id,
+                            effectiveOptions,
+                            cancellationToken)
                         .ConfigureAwait(false);
-                    SetCached(cacheKey, result, effectiveOptions.CacheDuration);
                 }
                 currentBatch.Add(cacheKey, result);
             }
@@ -205,6 +210,63 @@ public sealed partial class VirusTotalClient
         }
 
         return results;
+    }
+
+    private async Task<T?> GetOrFetchBatchResultAsync<T>(
+        string cacheKey,
+        Func<string, CancellationToken, Task<T?>> fetch,
+        string id,
+        VirusTotalBatchOptions options,
+        CancellationToken cancellationToken)
+        where T : class
+    {
+        var candidate = new Lazy<Task<object?>>(
+            async () =>
+            {
+                var result = await FetchWithBatchPolicyAsync(fetch, id, options, CancellationToken.None)
+                    .ConfigureAwait(false);
+                SetCached(cacheKey, result, options.CacheDuration);
+                return result;
+            },
+            LazyThreadSafetyMode.ExecutionAndPublication);
+        var shared = _batchInFlight.GetOrAdd(cacheKey, candidate);
+        var task = shared.Value;
+        if (ReferenceEquals(shared, candidate))
+        {
+            _ = task.ContinueWith(
+                _ => RemoveCompletedBatchFetch(cacheKey, shared),
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
+        }
+
+        var value = await AwaitSharedBatchFetchAsync(task, cancellationToken).ConfigureAwait(false);
+        return value as T;
+    }
+
+    private void RemoveCompletedBatchFetch(string cacheKey, Lazy<Task<object?>> completed)
+    {
+        if (_batchInFlight.TryGetValue(cacheKey, out var current) && ReferenceEquals(current, completed))
+            _batchInFlight.TryRemove(cacheKey, out _);
+    }
+
+    private static async Task<object?> AwaitSharedBatchFetchAsync(
+        Task<object?> task,
+        CancellationToken cancellationToken)
+    {
+        if (!cancellationToken.CanBeCanceled || task.IsCompleted)
+            return await task.ConfigureAwait(false);
+
+        var cancellation = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using (cancellationToken.Register(
+                   state => ((TaskCompletionSource<bool>)state!).TrySetResult(true),
+                   cancellation))
+        {
+            if (task != await Task.WhenAny(task, cancellation.Task).ConfigureAwait(false))
+                throw new OperationCanceledException(cancellationToken);
+        }
+
+        return await task.ConfigureAwait(false);
     }
 
     private async Task<T?> FetchWithBatchPolicyAsync<T>(
@@ -221,7 +283,7 @@ public sealed partial class VirusTotalClient
             {
                 return await fetch(id, cancellationToken).ConfigureAwait(false);
             }
-            catch (RateLimitExceededException exception) when (attempt < options.MaxRetries)
+            catch (RateLimitExceededException exception)
             {
                 var fallbackDelay = options.MinimumInterval > TimeSpan.Zero
                     ? options.MinimumInterval
@@ -229,8 +291,30 @@ public sealed partial class VirusTotalClient
                 var retryDelay = exception.RetryAfter.GetValueOrDefault(fallbackDelay);
                 if (retryDelay < TimeSpan.Zero)
                     retryDelay = TimeSpan.Zero;
-                await DelaySafelyAsync(retryDelay, cancellationToken).ConfigureAwait(false);
+                await ApplySharedRetryDelayAsync(retryDelay, cancellationToken).ConfigureAwait(false);
+                if (attempt >= options.MaxRetries)
+                    throw;
             }
+        }
+    }
+
+    private async Task ApplySharedRetryDelayAsync(TimeSpan retryDelay, CancellationToken cancellationToken)
+    {
+        await _batchRequestGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var now = Stopwatch.GetTimestamp();
+            var retryTicksDouble = retryDelay <= TimeSpan.Zero
+                ? 0d
+                : Math.Ceiling(retryDelay.TotalSeconds * Stopwatch.Frequency);
+            var retryTicks = retryTicksDouble >= long.MaxValue ? long.MaxValue : (long)retryTicksDouble;
+            var retryTimestamp = retryTicks >= long.MaxValue - now ? long.MaxValue : now + retryTicks;
+            if (retryTimestamp > _nextBatchRequestTimestamp)
+                _nextBatchRequestTimestamp = retryTimestamp;
+        }
+        finally
+        {
+            _batchRequestGate.Release();
         }
     }
 

@@ -80,6 +80,30 @@ public class QueueFakeHandler : HttpMessageHandler
         return Task.FromResult(message);
     }
 }
+
+public class StatusQueueFakeHandler : HttpMessageHandler
+{
+    private readonly System.Collections.Queue _responses;
+    private readonly System.Collections.Queue _statusCodes;
+    public System.Collections.ArrayList Requests { get; private set; }
+
+    public StatusQueueFakeHandler(string[] responses, int[] statusCodes)
+    {
+        _responses = new System.Collections.Queue(responses);
+        _statusCodes = new System.Collections.Queue(statusCodes);
+        Requests = new System.Collections.ArrayList();
+    }
+
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        Requests.Add(request);
+        var response = _responses.Count > 0 ? (string)_responses.Dequeue() : "{}";
+        var statusCode = _statusCodes.Count > 0 ? (int)_statusCodes.Dequeue() : 200;
+        var message = new HttpResponseMessage((HttpStatusCode)statusCode);
+        message.Content = new StringContent(response);
+        return Task.FromResult(message);
+    }
+}
 "@ | Out-Null
 
     function New-TestVirusTotalClient {
@@ -163,6 +187,27 @@ Describe 'Get-VirusReport cmdlet' {
         @($result).Count | Should -Be 2
         $handler.Requests.Count | Should -Be 1
         $handler.Requests[0].RequestUri.AbsolutePath | Should -Be '/api/v3/files/abc'
+    }
+
+    It 'preserves successful reports when another batch item fails' {
+        $handler = [StatusQueueFakeHandler]::new(
+            [string[]] @(
+                '{"data":{"id":"first","type":"file","attributes":{}}}',
+                '{"error":{"code":"NotFoundError","message":"missing"}}',
+                '{"data":{"id":"third","type":"file","attributes":{}}}'
+            ),
+            [int[]] @(200, 404, 200))
+        $downloadHandler = [FakeHandler]::new('{}')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new('test-api-key', $handler, $downloadHandler)
+        $errors = @()
+
+        $result = @(Get-VirusReport -Hash 'first','missing','third' -Client $client `
+            -MinimumIntervalSeconds 0 -MaxRetries 0 -ErrorAction SilentlyContinue -ErrorVariable +errors)
+
+        $result.Id | Should -Be @('first', 'third')
+        $errors.Count | Should -Be 1
+        $errors[0].TargetObject | Should -Be 'missing'
+        $handler.Requests.Count | Should -Be 3
     }
 }
 

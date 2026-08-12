@@ -17,6 +17,7 @@ public sealed partial class VirusTotalClient
     private readonly object _batchInFlightSync = new();
     private readonly SemaphoreSlim _batchRequestGate = new(1, 1);
     private long _batchFetchGeneration;
+    private long _lastBatchRequestTimestamp;
     private long _nextBatchRequestTimestamp;
 
     /// <summary>Retrieves file reports with quota-aware spacing, retry, cache, and duplicate suppression.</summary>
@@ -224,6 +225,7 @@ public sealed partial class VirusTotalClient
     {
         var inFlightKey = CreateInFlightKey(cacheKey, options);
         BatchInFlightEntry shared;
+        long waiterId;
         var created = false;
         lock (_batchInFlightSync)
         {
@@ -235,7 +237,7 @@ public sealed partial class VirusTotalClient
                 return cached;
 
             if (!_batchInFlight.TryGetValue(inFlightKey, out shared!) ||
-                !shared.TryAddWaiter(options.CacheDuration))
+                !shared.TryAddWaiter(options.CacheDuration, out waiterId))
             {
                 var generation = Interlocked.Increment(ref _batchFetchGeneration);
                 shared = new BatchInFlightEntry(
@@ -243,7 +245,7 @@ public sealed partial class VirusTotalClient
                         .ConfigureAwait(false),
                     (value, duration) => SetCached(cacheKey, value, duration, generation),
                     generation);
-                if (!shared.TryAddWaiter(options.CacheDuration))
+                if (!shared.TryAddWaiter(options.CacheDuration, out waiterId))
                     throw new InvalidOperationException("Unable to register a batch fetch waiter.");
                 _batchInFlight[inFlightKey] = shared;
                 created = true;
@@ -251,6 +253,8 @@ public sealed partial class VirusTotalClient
         }
 
         var task = shared.Task;
+        using var waiterCancellation = cancellationToken.Register(
+            () => shared.ReleaseWaiter(waiterId));
         if (created)
         {
             _ = task.ContinueWith(
@@ -269,7 +273,7 @@ public sealed partial class VirusTotalClient
         }
         finally
         {
-            if (shared.ReleaseWaiter())
+            if (shared.ReleaseWaiter(waiterId))
                 RemoveBatchFetch(inFlightKey, shared);
         }
     }
@@ -367,13 +371,19 @@ public sealed partial class VirusTotalClient
             try
             {
                 var now = Stopwatch.GetTimestamp();
-                var remainingTicks = _nextBatchRequestTimestamp - now;
+                var intervalTicks = minimumInterval <= TimeSpan.Zero
+                    ? 0L
+                    : checked((long)Math.Ceiling(minimumInterval.TotalSeconds * Stopwatch.Frequency));
+                var intervalTimestamp = intervalTicks >= long.MaxValue - _lastBatchRequestTimestamp
+                    ? long.MaxValue
+                    : _lastBatchRequestTimestamp + intervalTicks;
+                var requiredTimestamp = _nextBatchRequestTimestamp > intervalTimestamp
+                    ? _nextBatchRequestTimestamp
+                    : intervalTimestamp;
+                var remainingTicks = requiredTimestamp - now;
                 if (remainingTicks <= 0)
                 {
-                    var intervalTicks = minimumInterval <= TimeSpan.Zero
-                        ? 0L
-                        : checked((long)Math.Ceiling(minimumInterval.TotalSeconds * Stopwatch.Frequency));
-                    _nextBatchRequestTimestamp = checked(now + intervalTicks);
+                    _lastBatchRequestTimestamp = now;
                     return;
                 }
 
@@ -529,12 +539,12 @@ public sealed partial class VirusTotalClient
     {
         private readonly CancellationTokenSource _cancellation = new();
         private readonly Action<object?, TimeSpan> _cacheResult;
+        private readonly Dictionary<long, TimeSpan> _waiterCacheDurations = new();
         private readonly object _sync = new();
         private readonly Lazy<Task<object?>> _task;
         private bool _acceptingWaiters = true;
         private bool _completed;
-        private TimeSpan _maximumCacheDuration;
-        private int _waiters;
+        private long _nextWaiterId;
 
         internal BatchInFlightEntry(
             Func<CancellationToken, Task<object?>> fetch,
@@ -551,28 +561,29 @@ public sealed partial class VirusTotalClient
         internal Task<object?> Task => _task.Value;
         internal long Generation { get; }
 
-        internal bool TryAddWaiter(TimeSpan cacheDuration)
+        internal bool TryAddWaiter(TimeSpan cacheDuration, out long waiterId)
         {
             lock (_sync)
             {
                 if (!_acceptingWaiters)
+                {
+                    waiterId = 0;
                     return false;
-                _waiters++;
-                if (cacheDuration > _maximumCacheDuration)
-                    _maximumCacheDuration = cacheDuration;
+                }
+                waiterId = ++_nextWaiterId;
+                _waiterCacheDurations.Add(waiterId, cacheDuration);
                 return true;
             }
         }
 
-        internal bool ReleaseWaiter()
+        internal bool ReleaseWaiter(long waiterId)
         {
             var cancel = false;
             lock (_sync)
             {
-                if (_waiters <= 0)
-                    throw new InvalidOperationException("The batch fetch waiter count is invalid.");
-                _waiters--;
-                if (_waiters == 0 && !_completed)
+                if (!_waiterCacheDurations.Remove(waiterId))
+                    return false;
+                if (_waiterCacheDurations.Count == 0 && !_completed)
                 {
                     _acceptingWaiters = false;
                     cancel = true;
@@ -592,7 +603,13 @@ public sealed partial class VirusTotalClient
                 lock (_sync)
                 {
                     _completed = true;
-                    _cacheResult(result, _maximumCacheDuration);
+                    var maximumCacheDuration = TimeSpan.Zero;
+                    foreach (var cacheDuration in _waiterCacheDurations.Values)
+                    {
+                        if (cacheDuration > maximumCacheDuration)
+                            maximumCacheDuration = cacheDuration;
+                    }
+                    _cacheResult(result, maximumCacheDuration);
                 }
                 return result;
             }

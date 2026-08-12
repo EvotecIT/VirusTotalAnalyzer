@@ -184,14 +184,32 @@ public sealed class CmdletGetVirusReport : VirusTotalCmdlet
                         StringComparer.OrdinalIgnoreCase).ConfigureAwait(false);
                     break;
                 case "FileInformation":
-                    var fileHashes = new List<string>(_files.Count);
+                    var completedFileHashes = new Dictionary<string, FileReport?>(StringComparer.OrdinalIgnoreCase);
+                    var failedFileHashes = new Dictionary<string, ApiException>(StringComparer.OrdinalIgnoreCase);
                     foreach (var file in _files)
-                        fileHashes.Add(await GetSha256Async(file).ConfigureAwait(false));
-                    if (fileHashes.Count > 0)
-                        await WriteReportBatchAsync(
-                            fileHashes,
-                            (ids, token) => ActiveClient.GetFileReportsBatchAsync(ids, options, cancellationToken: token),
-                            StringComparer.OrdinalIgnoreCase).ConfigureAwait(false);
+                    {
+                        try
+                        {
+                            var hash = await GetSha256Async(file).ConfigureAwait(false);
+                            await WriteReportAsync(
+                                hash,
+                                (ids, token) => ActiveClient.GetFileReportsBatchAsync(ids, options, cancellationToken: token),
+                                completedFileHashes,
+                                failedFileHashes).ConfigureAwait(false);
+                        }
+                        catch (OperationCanceledException) when (CancelToken.IsCancellationRequested)
+                        {
+                            throw;
+                        }
+                        catch (Exception exception)
+                        {
+                            WriteError(new ErrorRecord(
+                                exception,
+                                "FileHashFailed",
+                                ErrorCategory.ReadError,
+                                file));
+                        }
+                    }
                     break;
                 case "Url":
                     var urlIds = new List<string>(_urls.Count);
@@ -232,32 +250,42 @@ public sealed class CmdletGetVirusReport : VirusTotalCmdlet
         var failures = new Dictionary<string, ApiException>(comparer);
         foreach (var id in ids)
         {
-            CancelToken.ThrowIfCancellationRequested();
-            if (completed.TryGetValue(id, out var duplicate))
-            {
-                if (duplicate is not null)
-                    WriteReport(duplicate);
-                continue;
-            }
-            if (failures.TryGetValue(id, out var repeatedFailure))
-            {
-                WriteApiError(repeatedFailure, id);
-                continue;
-            }
+            await WriteReportAsync(id, fetch, completed, failures).ConfigureAwait(false);
+        }
+    }
 
-            try
-            {
-                var reports = await fetch(new[] { id }, CancelToken).ConfigureAwait(false);
-                var report = reports.Count > 0 ? reports[0] : null;
-                completed.Add(id, report);
-                if (report is not null)
-                    WriteReport(report);
-            }
-            catch (ApiException exception)
-            {
-                failures.Add(id, exception);
-                WriteApiError(exception, id);
-            }
+    private async Task WriteReportAsync<T>(
+        string id,
+        Func<IEnumerable<string>, CancellationToken, Task<IReadOnlyList<T>>> fetch,
+        IDictionary<string, T?> completed,
+        IDictionary<string, ApiException> failures)
+        where T : class
+    {
+        CancelToken.ThrowIfCancellationRequested();
+        if (completed.TryGetValue(id, out var duplicate))
+        {
+            if (duplicate is not null)
+                WriteReport(duplicate);
+            return;
+        }
+        if (failures.TryGetValue(id, out var repeatedFailure))
+        {
+            WriteApiError(repeatedFailure, id);
+            return;
+        }
+
+        try
+        {
+            var reports = await fetch(new[] { id }, CancelToken).ConfigureAwait(false);
+            var report = reports.Count > 0 ? reports[0] : null;
+            completed.Add(id, report);
+            if (report is not null)
+                WriteReport(report);
+        }
+        catch (ApiException exception)
+        {
+            failures.Add(id, exception);
+            WriteApiError(exception, id);
         }
     }
 

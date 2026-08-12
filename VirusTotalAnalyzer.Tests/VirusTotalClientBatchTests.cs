@@ -100,6 +100,26 @@ public sealed class VirusTotalClientBatchTests
     }
 
     [Fact]
+    public async Task Batch_AppliesIncomingCallerIntervalAfterAnImmediateRequest()
+    {
+        var handler = new TimestampHandler();
+        using var client = CreateClient(handler);
+        var immediate = ImmediateOptions();
+        immediate.CacheDuration = TimeSpan.Zero;
+        var spaced = ImmediateOptions();
+        spaced.CacheDuration = TimeSpan.Zero;
+        spaced.MinimumInterval = TimeSpan.FromMilliseconds(150);
+
+        await client.GetFileReportsBatchAsync(new[] { "first" }, immediate);
+        await client.GetFileReportsBatchAsync(new[] { "second" }, spaced);
+
+        Assert.Equal(2, handler.RequestCount);
+        Assert.True(
+            handler.SecondRequest - handler.FirstRequest >= TimeSpan.FromMilliseconds(100),
+            $"Second caller started after {handler.SecondRequest - handler.FirstRequest}.");
+    }
+
+    [Fact]
     public async Task Batch_CoalescesConcurrentCacheMissesEvenWhenCachingIsDisabled()
     {
         var handler = new BlockingFileHandler();
@@ -210,6 +230,34 @@ public sealed class VirusTotalClientBatchTests
 
         Assert.Single(third);
         Assert.Equal(1, handler.RequestCount);
+    }
+
+    [Fact]
+    public async Task Batch_CancelledFollowerDoesNotContributeItsCacheDuration()
+    {
+        var handler = new BlockingFileHandler();
+        using var client = CreateClient(handler);
+        var noCache = ImmediateOptions();
+        noCache.CacheDuration = TimeSpan.Zero;
+        var cached = ImmediateOptions();
+        cached.CacheDuration = TimeSpan.FromMinutes(1);
+        using var cancellation = new CancellationTokenSource();
+
+        var leader = client.GetFileReportsBatchAsync(new[] { "abc" }, noCache);
+        await handler.Started.Task;
+        var follower = client.GetFileReportsBatchAsync(
+            new[] { "abc" },
+            cached,
+            cancellationToken: cancellation.Token);
+        cancellation.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => follower);
+        handler.Release.TrySetResult(true);
+        await leader;
+        var later = await client.GetFileReportsBatchAsync(new[] { "abc" }, cached);
+
+        Assert.Single(later);
+        Assert.Equal(2, handler.RequestCount);
     }
 
     [Fact]
@@ -484,6 +532,33 @@ public sealed class VirusTotalClientBatchTests
                 if (timestamp < _earliestSuccessfulRequest)
                     _earliestSuccessfulRequest = timestamp;
             }
+            return Task.FromResult(FileResponse(requestNumber.ToString()));
+        }
+
+        private static TimeSpan ToElapsed(long timestamp)
+            => TimeSpan.FromSeconds((double)timestamp / Stopwatch.Frequency);
+    }
+
+    private sealed class TimestampHandler : HttpMessageHandler
+    {
+        private int _requestCount;
+        private long _firstRequest;
+        private long _secondRequest;
+
+        internal int RequestCount => Volatile.Read(ref _requestCount);
+        internal TimeSpan FirstRequest => ToElapsed(_firstRequest);
+        internal TimeSpan SecondRequest => ToElapsed(_secondRequest);
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            var requestNumber = Interlocked.Increment(ref _requestCount);
+            var timestamp = Stopwatch.GetTimestamp();
+            if (requestNumber == 1)
+                _firstRequest = timestamp;
+            else if (requestNumber == 2)
+                _secondRequest = timestamp;
             return Task.FromResult(FileResponse(requestNumber.ToString()));
         }
 

@@ -209,6 +209,37 @@ Describe 'Get-VirusReport cmdlet' {
         $errors[0].TargetObject | Should -Be 'missing'
         $handler.Requests.Count | Should -Be 3
     }
+
+    It 'continues local file reports when a later file disappears before hashing' {
+        $handler = [QueueFakeHandler]::new([string[]] @(
+            '{"data":{"id":"first","type":"file","attributes":{}}}',
+            '{"data":{"id":"third","type":"file","attributes":{}}}'
+        ))
+        $downloadHandler = [FakeHandler]::new('{}')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new('test-api-key', $handler, $downloadHandler)
+        $first = New-TemporaryFile
+        $missing = New-TemporaryFile
+        $third = New-TemporaryFile
+        $errors = @()
+
+        try {
+            Set-Content -LiteralPath $first -Value 'first'
+            Set-Content -LiteralPath $missing -Value 'missing'
+            Set-Content -LiteralPath $third -Value 'third'
+            $result = @(& { $first; $missing; Remove-Item -LiteralPath $missing -Force; $third; $first } |
+                Get-VirusReport -Client $client -MinimumIntervalSeconds 0 `
+                    -ErrorAction SilentlyContinue -ErrorVariable +errors)
+
+            $result.Id | Should -Be @('first', 'third', 'first')
+            $errors.Count | Should -Be 1
+            $errors[0].FullyQualifiedErrorId | Should -Match '^FileHashFailed'
+            $errors[0].TargetObject | Should -Be $missing.FullName
+            $handler.Requests.Count | Should -Be 2
+        }
+        finally {
+            Remove-Item -LiteralPath $first,$missing,$third -Force -ErrorAction SilentlyContinue
+        }
+    }
 }
 
 Describe 'New-VirusScan cmdlet' {

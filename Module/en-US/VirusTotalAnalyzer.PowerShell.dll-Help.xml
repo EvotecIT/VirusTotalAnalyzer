@@ -278,7 +278,7 @@
           <maml:description>
             <maml:para>Path to a local file to compute its hash.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -293,7 +293,7 @@
           <maml:description>
             <maml:para>Analysis identifier returned from a previous scan.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -356,7 +356,7 @@
           <maml:description>
             <maml:para>SHA256 or other supported hash to look up.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -395,7 +395,7 @@
           <maml:description>
             <maml:para>URL to check against VirusTotal.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">Uri</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">Uri</command:parameterValue>
           <dev:type>
             <maml:name>Uri</maml:name>
             <maml:uri />
@@ -434,7 +434,7 @@
           <maml:description>
             <maml:para>IP address to inspect.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -473,7 +473,7 @@
           <maml:description>
             <maml:para>Domain name to inspect.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -512,7 +512,7 @@
           <maml:description>
             <maml:para>Free-form search expression.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -527,7 +527,7 @@
         <maml:description>
           <maml:para>Analysis identifier returned from a previous scan.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
@@ -563,7 +563,7 @@
         <maml:description>
           <maml:para>Domain name to inspect.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
@@ -575,7 +575,7 @@
         <maml:description>
           <maml:para>Path to a local file to compute its hash.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
@@ -587,7 +587,7 @@
         <maml:description>
           <maml:para>SHA256 or other supported hash to look up.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
@@ -599,7 +599,7 @@
         <maml:description>
           <maml:para>IP address to inspect.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
@@ -611,7 +611,7 @@
         <maml:description>
           <maml:para>Free-form search expression.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
@@ -623,7 +623,7 @@
         <maml:description>
           <maml:para>URL to check against VirusTotal.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">Uri</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">Uri</command:parameterValue>
         <dev:type>
           <maml:name>Uri</maml:name>
           <maml:uri />
@@ -1538,7 +1538,7 @@
           <maml:description>
             <maml:para>Hash of an already submitted file to reanalyse.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -1589,7 +1589,7 @@
           <maml:description>
             <maml:para>Path to a file whose hash should be recalculated and reanalysed.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -1640,7 +1640,7 @@
           <maml:description>
             <maml:para>Path to a local file to upload for scanning.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
           <dev:type>
             <maml:name>String</maml:name>
             <maml:uri />
@@ -1703,7 +1703,7 @@
           <maml:description>
             <maml:para>URL to submit for scanning.</maml:para>
           </maml:description>
-          <command:parameterValue required="false" variableLength="false">Uri</command:parameterValue>
+          <command:parameterValue required="true" variableLength="false">Uri</command:parameterValue>
           <dev:type>
             <maml:name>Uri</maml:name>
             <maml:uri />
@@ -1742,7 +1742,7 @@
         <maml:description>
           <maml:para>Path to a local file to upload for scanning.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
@@ -1754,7 +1754,7 @@
         <maml:description>
           <maml:para>Path to a file whose hash should be recalculated and reanalysed.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
@@ -1766,7 +1766,7 @@
         <maml:description>
           <maml:para>Hash of an already submitted file to reanalyse.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">String</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>String</maml:name>
           <maml:uri />
@@ -1790,7 +1790,7 @@
         <maml:description>
           <maml:para>URL to submit for scanning.</maml:para>
         </maml:description>
-        <command:parameterValue required="false" variableLength="false">Uri</command:parameterValue>
+        <command:parameterValue required="true" variableLength="false">Uri</command:parameterValue>
         <dev:type>
           <maml:name>Uri</maml:name>
           <maml:uri />

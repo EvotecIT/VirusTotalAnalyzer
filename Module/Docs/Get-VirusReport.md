@@ -11,37 +11,37 @@ Retrieves analysis reports from VirusTotal.
 ## SYNTAX
 ### FileInformation (Default)
 ```powershell
-Get-VirusReport [-File <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusReport -File <string> [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### Analysis
 ```powershell
-Get-VirusReport [-AnalysisId <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusReport -AnalysisId <string> [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### Hash
 ```powershell
-Get-VirusReport [-Hash <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusReport -Hash <string> [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### Url
 ```powershell
-Get-VirusReport [-Url <uri>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusReport -Url <uri> [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### IPAddress
 ```powershell
-Get-VirusReport [-IPAddress <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusReport -IPAddress <string> [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### DomainName
 ```powershell
-Get-VirusReport [-DomainName <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusReport -DomainName <string> [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### Search
 ```powershell
-Get-VirusReport [-Search <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+Get-VirusReport -Search <string> [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

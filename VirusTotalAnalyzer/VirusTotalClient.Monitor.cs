@@ -62,7 +62,9 @@ public sealed partial class VirusTotalClient
 
         ValidateMonitorUploadOptions(options);
 
-        using var prepared = await PreparedUpload.CreateAsync(stream, cancellationToken).ConfigureAwait(false);
+        using var prepared = await PreparedUpload.CreateAndHashAsync(stream, cancellationToken).ConfigureAwait(false);
+        var localSha256 = prepared.Sha256
+            ?? throw new InvalidOperationException("Monitor upload preparation did not produce a SHA-256 hash.");
         var useLargeUploadUrl = prepared.Length > MonitorDirectUploadLimit;
         var requestUrl = useLargeUploadUrl
             ? (await GetMonitorUploadUrlAsync(cancellationToken).ConfigureAwait(false)).ToString()
@@ -111,7 +113,7 @@ public sealed partial class VirusTotalClient
         var result = new MonitorUploadResult
         {
             Item = item,
-            LocalSha256 = prepared.Sha256,
+            LocalSha256 = localSha256,
             RemoteSha256 = item.Attributes.Sha256,
             DestinationPath = options.Path,
             UsedExistingItemId = !string.IsNullOrEmpty(options.ExistingItemId),

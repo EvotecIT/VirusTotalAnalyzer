@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using VirusTotalAnalyzer.Models;
 using Xunit;
@@ -256,6 +257,31 @@ public sealed class VirusTotalV3ContractTests
         Assert.Empty(handler.Requests);
     }
 
+    [Fact]
+    public async Task PreparedUpload_DoesNotPreReadSeekableStreamsWhenHashIsNotRequested()
+    {
+        using var source = new CountingSeekableStream(new byte[] { 1, 2, 3, 4 });
+
+        using var prepared = await PreparedUpload.CreateAsync(source, CancellationToken.None);
+
+        Assert.Equal(0, source.BytesRead);
+        Assert.Equal(4, prepared.Length);
+        Assert.Null(prepared.Sha256);
+        Assert.Same(source, prepared.Stream);
+    }
+
+    [Fact]
+    public async Task PreparedUpload_HashesSeekableStreamsForMonitorVerification()
+    {
+        using var source = new CountingSeekableStream(Encoding.UTF8.GetBytes("abc"));
+
+        using var prepared = await PreparedUpload.CreateAndHashAsync(source, CancellationToken.None);
+
+        Assert.Equal(3, source.BytesRead);
+        Assert.Equal(0, source.Position);
+        Assert.Equal("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", prepared.Sha256);
+    }
+
     private static VirusTotalClient CreateClient(HttpMessageHandler handler)
     {
         var httpClient = new HttpClient(handler)
@@ -271,4 +297,36 @@ public sealed class VirusTotalV3ContractTests
     {
         Content = new StringContent(json, Encoding.UTF8, "application/json")
     };
+
+    private sealed class CountingSeekableStream : Stream
+    {
+        private readonly MemoryStream _inner;
+
+        public CountingSeekableStream(byte[] data) => _inner = new MemoryStream(data);
+
+        public long BytesRead { get; private set; }
+        public override bool CanRead => true;
+        public override bool CanSeek => true;
+        public override bool CanWrite => false;
+        public override long Length => _inner.Length;
+        public override long Position { get => _inner.Position; set => _inner.Position = value; }
+        public override void Flush() => _inner.Flush();
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            var read = _inner.Read(buffer, offset, count);
+            BytesRead += read;
+            return read;
+        }
+        public override long Seek(long offset, SeekOrigin origin) => _inner.Seek(offset, origin);
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _inner.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
 }

@@ -12,7 +12,7 @@ internal sealed class PreparedUpload : IDisposable
     private readonly bool _ownsStream;
     private readonly string? _temporaryPath;
 
-    private PreparedUpload(Stream stream, long length, string sha256, bool ownsStream, string? temporaryPath)
+    private PreparedUpload(Stream stream, long length, string? sha256, bool ownsStream, string? temporaryPath)
     {
         Stream = stream;
         Length = length;
@@ -25,10 +25,21 @@ internal sealed class PreparedUpload : IDisposable
 
     public long Length { get; }
 
-    public string Sha256 { get; }
+    public string? Sha256 { get; }
 
-    public static async Task<PreparedUpload> CreateAsync(
+    public static Task<PreparedUpload> CreateAsync(
         Stream source,
+        CancellationToken cancellationToken)
+        => CreateCoreAsync(source, computeSha256: false, cancellationToken);
+
+    public static Task<PreparedUpload> CreateAndHashAsync(
+        Stream source,
+        CancellationToken cancellationToken)
+        => CreateCoreAsync(source, computeSha256: true, cancellationToken);
+
+    private static async Task<PreparedUpload> CreateCoreAsync(
+        Stream source,
+        bool computeSha256,
         CancellationToken cancellationToken)
     {
         if (source is null)
@@ -43,6 +54,11 @@ internal sealed class PreparedUpload : IDisposable
         if (source.CanSeek)
         {
             var position = source.Position;
+            if (!computeSha256)
+            {
+                return new PreparedUpload(source, source.Length - position, null, false, null);
+            }
+
             try
             {
                 var hash = await ComputeSha256Async(source, cancellationToken).ConfigureAwait(false);
@@ -57,7 +73,7 @@ internal sealed class PreparedUpload : IDisposable
         var temporaryPath = Path.GetTempFileName();
         try
         {
-            string hash;
+            string? hash = null;
             using (var destination = new FileStream(
                 temporaryPath,
                 FileMode.Create,
@@ -65,12 +81,19 @@ internal sealed class PreparedUpload : IDisposable
                 FileShare.None,
                 81920,
                 useAsync: true))
-            using (var algorithm = SHA256.Create())
-            using (var crypto = new CryptoStream(destination, algorithm, CryptoStreamMode.Write))
             {
-                await source.CopyToAsync(crypto, 81920, cancellationToken).ConfigureAwait(false);
-                crypto.FlushFinalBlock();
-                hash = ToLowerHex(algorithm.Hash!);
+                if (computeSha256)
+                {
+                    using var algorithm = SHA256.Create();
+                    using var crypto = new CryptoStream(destination, algorithm, CryptoStreamMode.Write);
+                    await source.CopyToAsync(crypto, 81920, cancellationToken).ConfigureAwait(false);
+                    crypto.FlushFinalBlock();
+                    hash = ToLowerHex(algorithm.Hash!);
+                }
+                else
+                {
+                    await source.CopyToAsync(destination, 81920, cancellationToken).ConfigureAwait(false);
+                }
             }
 
             var uploadStream = new FileStream(

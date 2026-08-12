@@ -11,22 +11,22 @@ Submits resources to VirusTotal for scanning.
 ## SYNTAX
 ### Hash
 ```powershell
-New-VirusScan [-Hash <string>] [-Password <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+New-VirusScan -Hash <string> [-Password <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### FileHash
 ```powershell
-New-VirusScan [-FileHash <string>] [-Password <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+New-VirusScan -FileHash <string> [-Password <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### FileInformation
 ```powershell
-New-VirusScan [-File <string>] [-Password <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+New-VirusScan -File <string> [-Password <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ### Url
 ```powershell
-New-VirusScan [-Url <uri>] [-Password <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
+New-VirusScan -Url <uri> [-Password <string>] [-ApiKey <string>] [-Client <IVirusTotalClient>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION

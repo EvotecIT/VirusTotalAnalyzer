@@ -65,8 +65,5 @@ public enum ResourceType
     IntelligenceHuntingRuleset = 19,
 
     [EnumMember(Value = "file_behaviour")]
-    FileBehaviour = 20,
-
-    [EnumMember(Value = "whois")]
-    Whois = 21
+    FileBehaviour = 20
 }

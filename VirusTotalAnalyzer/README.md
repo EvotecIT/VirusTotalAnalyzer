@@ -33,7 +33,7 @@ foreach (var report in reports)
 
 Pass `VirusTotalBatchOptions` to tune the interval, cache duration, and retries for the account's quota. Direct singular and plural report methods remain unthrottled.
 
-Typed network-object relationships include historical WHOIS, DNS records and resolutions, SSL certificate history, and communicating, referrer, or downloaded files:
+Typed network-object relationships include historical WHOIS, DNS resolutions, SSL certificate history, and communicating, referrer, or downloaded files:
 
 ```csharp
 var whois = await client.GetDomainHistoricalWhoisAsync("example.com", cancellationToken: cancellationToken);

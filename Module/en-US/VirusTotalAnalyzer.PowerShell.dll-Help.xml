@@ -102,7 +102,6 @@
             <command:parameterValue required="false" variableLength="false">RetrohuntJob</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">IntelligenceHuntingRuleset</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">FileBehaviour</command:parameterValue>
-            <command:parameterValue required="false" variableLength="false">Whois</command:parameterValue>
           </command:parameterValueGroup>
           <dev:type>
             <maml:name>ResourceType</maml:name>
@@ -200,7 +199,6 @@
           <command:parameterValue required="false" variableLength="false">RetrohuntJob</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">IntelligenceHuntingRuleset</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">FileBehaviour</command:parameterValue>
-          <command:parameterValue required="false" variableLength="false">Whois</command:parameterValue>
         </command:parameterValueGroup>
         <dev:type>
           <maml:name>ResourceType</maml:name>
@@ -3026,7 +3024,6 @@
             <command:parameterValue required="false" variableLength="false">RetrohuntJob</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">IntelligenceHuntingRuleset</command:parameterValue>
             <command:parameterValue required="false" variableLength="false">FileBehaviour</command:parameterValue>
-            <command:parameterValue required="false" variableLength="false">Whois</command:parameterValue>
           </command:parameterValueGroup>
           <dev:type>
             <maml:name>ResourceType</maml:name>
@@ -3116,7 +3113,6 @@
           <command:parameterValue required="false" variableLength="false">RetrohuntJob</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">IntelligenceHuntingRuleset</command:parameterValue>
           <command:parameterValue required="false" variableLength="false">FileBehaviour</command:parameterValue>
-          <command:parameterValue required="false" variableLength="false">Whois</command:parameterValue>
         </command:parameterValueGroup>
         <dev:type>
           <maml:name>ResourceType</maml:name>

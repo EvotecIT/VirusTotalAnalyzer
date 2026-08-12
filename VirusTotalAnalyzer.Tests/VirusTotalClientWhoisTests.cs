@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using VirusTotalAnalyzer.Models;
 using Xunit;
 
 namespace VirusTotalAnalyzer.Tests;
@@ -30,7 +31,7 @@ public sealed class VirusTotalClientWhoisTests
 
         Assert.Equal(expectedPath, handler.Request!.RequestUri!.AbsolutePath);
         var record = Assert.Single(records!);
-        Assert.Equal(ResourceType.Whois, record.Type);
+        Assert.Equal(WhoisRecordType.Whois, record.Type);
         Assert.Equal("Example Registrar", record.Attributes.RegistrarName);
         Assert.Equal("EXAMPLE.COM", record.Attributes.WhoisMap["Domain Name"]);
         Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(100), record.Attributes.FirstSeenDate);

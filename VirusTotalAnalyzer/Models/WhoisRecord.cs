@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace VirusTotalAnalyzer.Models;
 
@@ -7,9 +8,19 @@ namespace VirusTotalAnalyzer.Models;
 public sealed class WhoisRecord
 {
     public string Id { get; set; } = string.Empty;
-    public ResourceType Type { get; set; }
+    public WhoisRecordType Type { get; set; }
     public Links Links { get; set; } = new();
     public WhoisRecordAttributes Attributes { get; set; } = new();
+}
+
+/// <summary>Represents the discriminator used by historical WHOIS relationship objects.</summary>
+public enum WhoisRecordType
+{
+    /// <summary>An unrecognized or missing WHOIS relationship type.</summary>
+    Unknown = 0,
+
+    [EnumMember(Value = "whois")]
+    Whois = 1
 }
 
 /// <summary>Contains historical WHOIS metadata and normalized fields.</summary>

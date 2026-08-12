@@ -384,6 +384,11 @@ public sealed partial class VirusTotalClient
                 if (remainingTicks <= 0)
                 {
                     _lastBatchRequestTimestamp = now;
+                    var nextIntervalTimestamp = intervalTicks >= long.MaxValue - now
+                        ? long.MaxValue
+                        : now + intervalTicks;
+                    if (nextIntervalTimestamp > _nextBatchRequestTimestamp)
+                        _nextBatchRequestTimestamp = nextIntervalTimestamp;
                     return;
                 }
 

@@ -7,7 +7,8 @@ public sealed class VirusTotalBatchOptions
 {
     /// <summary>
     /// Gets or sets the minimum interval between request starts. The default of 20 seconds
-    /// stays within the public API's four-requests-per-minute guidance.
+    /// stays within the public API's four-requests-per-minute guidance. Each started request
+    /// reserves its interval on the shared client schedule so another caller cannot shorten it.
     /// </summary>
     public TimeSpan MinimumInterval { get; set; } = TimeSpan.FromSeconds(20);
 

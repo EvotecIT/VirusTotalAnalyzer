@@ -120,6 +120,36 @@ public sealed class VirusTotalClientBatchTests
     }
 
     [Fact]
+    public async Task Batch_PreservesStartedCallerIntervalForImmediateFollower()
+    {
+        var handler = new TimestampHandler(blockFirst: true);
+        using var client = CreateClient(handler);
+        var spaced = ImmediateOptions();
+        spaced.CacheDuration = TimeSpan.Zero;
+        spaced.MinimumInterval = TimeSpan.FromMilliseconds(150);
+        var immediate = ImmediateOptions();
+        immediate.CacheDuration = TimeSpan.Zero;
+
+        var first = client.GetFileReportsBatchAsync(new[] { "first" }, spaced);
+        await handler.FirstStarted.Task;
+        var second = client.GetFileReportsBatchAsync(new[] { "second" }, immediate);
+        try
+        {
+            await second;
+        }
+        finally
+        {
+            handler.ReleaseFirst.TrySetResult(true);
+        }
+        await first;
+
+        Assert.Equal(2, handler.RequestCount);
+        Assert.True(
+            handler.SecondRequest - handler.FirstRequest >= TimeSpan.FromMilliseconds(100),
+            $"Immediate follower started after {handler.SecondRequest - handler.FirstRequest}.");
+    }
+
+    [Fact]
     public async Task Batch_CoalescesConcurrentCacheMissesEvenWhenCachingIsDisabled()
     {
         var handler = new BlockingFileHandler();
@@ -541,25 +571,41 @@ public sealed class VirusTotalClientBatchTests
 
     private sealed class TimestampHandler : HttpMessageHandler
     {
+        private readonly bool _blockFirst;
         private int _requestCount;
         private long _firstRequest;
         private long _secondRequest;
 
+        internal TimestampHandler(bool blockFirst = false)
+        {
+            _blockFirst = blockFirst;
+        }
+
+        internal TaskCompletionSource<bool> FirstStarted { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource<bool> ReleaseFirst { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal int RequestCount => Volatile.Read(ref _requestCount);
         internal TimeSpan FirstRequest => ToElapsed(_firstRequest);
         internal TimeSpan SecondRequest => ToElapsed(_secondRequest);
 
-        protected override Task<HttpResponseMessage> SendAsync(
+        protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
             var requestNumber = Interlocked.Increment(ref _requestCount);
             var timestamp = Stopwatch.GetTimestamp();
             if (requestNumber == 1)
+            {
                 _firstRequest = timestamp;
+                FirstStarted.TrySetResult(true);
+                if (_blockFirst)
+                    await ReleaseFirst.Task.ConfigureAwait(false);
+            }
             else if (requestNumber == 2)
                 _secondRequest = timestamp;
-            return Task.FromResult(FileResponse(requestNumber.ToString()));
+
+            return FileResponse(requestNumber.ToString());
         }
 
         private static TimeSpan ToElapsed(long timestamp)

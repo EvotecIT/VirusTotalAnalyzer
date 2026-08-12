@@ -14,52 +14,6 @@ namespace VirusTotalAnalyzer.Tests;
 public partial class VirusTotalClientTests
 {
     [Fact]
-    public async Task ListRetrohuntNotificationsAsync_PagesThroughResults()
-    {
-        var first = "{\"data\":[{\"id\":\"n1\",\"type\":\"retrohunt_notification\",\"attributes\":{\"job_id\":\"j1\"}}],\"meta\":{\"cursor\":\"abc\"}}";
-        var second = "{\"data\":[{\"id\":\"n2\",\"type\":\"retrohunt_notification\",\"attributes\":{\"job_id\":\"j2\"}}]}";
-        var handler = new QueueHandler(
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(first, Encoding.UTF8, "application/json") },
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(second, Encoding.UTF8, "application/json") });
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        var notifications = await client.ListRetrohuntNotificationsAsync(limit: 1, fetchAll: true);
-
-        Assert.Equal(2, notifications.Data.Count);
-        Assert.Null(notifications.NextCursor);
-        Assert.Equal("n1", notifications.Data[0].Id);
-        Assert.Equal("n2", notifications.Data[1].Id);
-        Assert.Equal(2, handler.Requests.Count);
-        Assert.Contains("limit=1", handler.Requests[0].RequestUri!.Query);
-        Assert.Contains("cursor=abc", handler.Requests[1].RequestUri!.Query);
-    }
-
-    [Fact]
-    public async Task ListRetrohuntNotificationsAsync_SinglePage()
-    {
-        var first = "{\"data\":[{\"id\":\"n1\",\"type\":\"retrohunt_notification\",\"attributes\":{\"job_id\":\"j1\"}}],\"meta\":{\"cursor\":\"abc\"}}";
-        var handler = new QueueHandler(
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(first, Encoding.UTF8, "application/json") });
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        var page = await client.ListRetrohuntNotificationsAsync(limit: 1, fetchAll: false);
-
-        Assert.Single(page.Data);
-        Assert.Equal("n1", page.Data[0].Id);
-        Assert.Equal("abc", page.NextCursor);
-        Assert.Single(handler.Requests);
-        Assert.Contains("limit=1", handler.Requests[0].RequestUri!.Query);
-    }
-
-    [Fact]
     public async Task GetIpAddressReportAsync_DeserializesResponseAndUsesCorrectPath()
     {
         var json = "{\"data\":{\"id\":\"1.1.1.1\",\"type\":\"ip_address\",\"attributes\":{\"ip_address\":\"1.1.1.1\"}}}";
@@ -155,54 +109,6 @@ public partial class VirusTotalClientTests
         Assert.Equal(
             "fields=last_analysis_stats&relationships=siblings",
             handler.Request!.RequestUri!.Query.TrimStart('?'));
-    }
-
-    [Fact]
-    public async Task GetDomainWhoisAsync_DeserializesResponseAndUsesCorrectPath()
-    {
-        var json = "{\"data\":{\"id\":\"example.com\",\"type\":\"domain\",\"attributes\":{\"whois\":\"domain whois\"}}}";
-        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(json, Encoding.UTF8, "application/json")
-        });
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        var whois = await client.GetDomainWhoisAsync("example.com");
-
-        Assert.NotNull(whois);
-        Assert.Equal("example.com", whois!.Id);
-        Assert.Equal(ResourceType.Domain, whois.Type);
-        Assert.Equal("domain whois", whois.Attributes.Whois);
-        Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/domains/example.com/whois", handler.Request!.RequestUri!.AbsolutePath);
-    }
-
-    [Fact]
-    public async Task GetIpAddressWhoisAsync_DeserializesResponseAndUsesCorrectPath()
-    {
-        var json = "{\"data\":{\"id\":\"1.1.1.1\",\"type\":\"ip_address\",\"attributes\":{\"whois\":\"ip whois\"}}}";
-        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(json, Encoding.UTF8, "application/json")
-        });
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        var whois = await client.GetIpAddressWhoisAsync("1.1.1.1");
-
-        Assert.NotNull(whois);
-        Assert.Equal("1.1.1.1", whois!.Id);
-        Assert.Equal(ResourceType.IpAddress, whois.Type);
-        Assert.Equal("ip whois", whois.Attributes.Whois);
-        Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/ip_addresses/1.1.1.1/whois", handler.Request!.RequestUri!.AbsolutePath);
     }
 
     [Fact]

@@ -28,7 +28,7 @@ PS> Get-VirusTotalMonitorStatistics -ApiKey $ApiKey
 ## PARAMETERS
 
 ### -ApiKey
-VirusTotal API key used when Client is not supplied.
+VirusTotal API key used when Client is not supplied. Defaults to the VIRUSTOTAL_API_KEY environment variable.
 
 ```yaml
 Type: String

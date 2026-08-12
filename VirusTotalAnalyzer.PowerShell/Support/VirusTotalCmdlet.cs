@@ -10,7 +10,7 @@ public abstract class VirusTotalCmdlet : AsyncPSCmdlet
 {
     private IVirusTotalClient? _ownedClient;
 
-    /// <summary>VirusTotal API key used when <see cref="Client"/> is not supplied.</summary>
+    /// <summary>VirusTotal API key used when <see cref="Client"/> is not supplied. Defaults to the VIRUSTOTAL_API_KEY environment variable.</summary>
     [Parameter]
     public string? ApiKey { get; set; }
 
@@ -26,10 +26,10 @@ public abstract class VirusTotalCmdlet : AsyncPSCmdlet
     protected override Task BeginProcessingAsync()
     {
         var hasApiKey = !string.IsNullOrWhiteSpace(ApiKey);
-        if (hasApiKey == (Client is not null))
+        if (hasApiKey && Client is not null)
         {
             ThrowTerminatingError(new ErrorRecord(
-                new ArgumentException("Specify exactly one of ApiKey or Client."),
+                new ArgumentException("ApiKey and Client cannot be used together."),
                 "VirusTotalAuthenticationRequired",
                 ErrorCategory.AuthenticationError,
                 null));
@@ -37,7 +37,19 @@ public abstract class VirusTotalCmdlet : AsyncPSCmdlet
 
         if (Client is null)
         {
-            _ownedClient = VirusTotalClient.Create(ApiKey!);
+            var resolvedApiKey = hasApiKey
+                ? ApiKey
+                : Environment.GetEnvironmentVariable("VIRUSTOTAL_API_KEY");
+            if (string.IsNullOrWhiteSpace(resolvedApiKey))
+            {
+                ThrowTerminatingError(new ErrorRecord(
+                    new ArgumentException("Specify ApiKey or Client, or set the VIRUSTOTAL_API_KEY environment variable."),
+                    "VirusTotalAuthenticationRequired",
+                    ErrorCategory.AuthenticationError,
+                    null));
+            }
+
+            _ownedClient = VirusTotalClient.Create(resolvedApiKey!);
         }
 
         return Task.CompletedTask;

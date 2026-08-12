@@ -6,7 +6,7 @@ using VirusTotalAnalyzer.Models;
 namespace VirusTotalAnalyzer.PowerShell;
 
 /// <summary>Retrieves information about a VirusTotal user.</summary>
-/// <para>Fetches public profile data for the specified username.</para>
+/// <para>Fetches the documented user object. Quotas and privileges are populated when visible to the caller.</para>
 /// <example>
 ///   <code>
 ///     <para><prefix>PS&gt; </prefix>Get-VirusUser -ApiKey $ApiKey -Id 'user1'</para>

@@ -30,9 +30,17 @@ namespace VirusTotalAnalyzer.PowerShell;
 ///   </code>
 ///   <para>Queues the URL for analysis and returns its identifier.</para>
 /// </example>
+/// <example>
+///   <summary>Submit a file and wait for the completed analysis.</summary>
+///   <code>
+///     <para><prefix>PS&gt; </prefix>$env:VIRUSTOTAL_API_KEY = 'your-api-key'; New-VirusScan -File 'C:\samples\app.exe' -Wait</para>
+///   </code>
+///   <para>Uses the environment API key and polls at a free-API-friendly interval.</para>
+/// </example>
 /// <seealso href="https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/invoke-webrequest" />
 /// <seealso href="https://github.com/EvotecIT/VirusTotalAnalyzer" />
 [Cmdlet(VerbsCommon.New, "VirusScan")]
+[OutputType(typeof(AnalysisReport))]
 public sealed class CmdletNewVirusScan : VirusTotalCmdlet
 {
     /// <summary>Hash of an already submitted file to reanalyse.</summary>
@@ -56,6 +64,22 @@ public sealed class CmdletNewVirusScan : VirusTotalCmdlet
     [Parameter]
     public string? Password { get; set; }
 
+    /// <summary>Wait for VirusTotal to finish the submitted analysis.</summary>
+    [Parameter]
+    public SwitchParameter Wait { get; set; }
+
+    /// <summary>Maximum number of seconds to wait for analysis completion.</summary>
+    [Parameter]
+    [ValidateRange(1, int.MaxValue)]
+    [PSDefaultValue(Value = 300)]
+    public int TimeoutSeconds { get; set; } = 300;
+
+    /// <summary>Seconds between status requests. The default is suitable for the public API rate limit.</summary>
+    [Parameter]
+    [ValidateRange(1, int.MaxValue)]
+    [PSDefaultValue(Value = 20)]
+    public int PollingIntervalSeconds { get; set; } = 20;
+
     /// <inheritdoc/>
     protected override async Task ProcessRecordAsync()
     {
@@ -67,12 +91,12 @@ public sealed class CmdletNewVirusScan : VirusTotalCmdlet
                     if (!EnsureFileExists(File!, GetErrorActionPreference()))
                         return;
                     var fileAnalysis = await ActiveClient.ScanFileAsync(File!, Password, CancelToken).ConfigureAwait(false);
-                    WriteObject(fileAnalysis);
+                    WriteObject(await CompleteAnalysisAsync(fileAnalysis).ConfigureAwait(false));
                     break;
 
                 case "Hash":
                     var hashAnalysis = await ActiveClient.ReanalyzeFileAsync(Hash!, CancelToken).ConfigureAwait(false);
-                    WriteObject(hashAnalysis);
+                    WriteObject(await CompleteAnalysisAsync(hashAnalysis).ConfigureAwait(false));
                     break;
 
                 case "FileHash":
@@ -110,12 +134,12 @@ public sealed class CmdletNewVirusScan : VirusTotalCmdlet
                         WriteProgress(progress);
                     }
                     var fhAnalysis = await ActiveClient.ReanalyzeFileAsync(hash, CancelToken).ConfigureAwait(false);
-                    WriteObject(fhAnalysis);
+                    WriteObject(await CompleteAnalysisAsync(fhAnalysis).ConfigureAwait(false));
                     break;
 
                 case "Url":
                     var urlAnalysis = await ActiveClient.ScanUrlAsync(Url!.ToString(), CancelToken).ConfigureAwait(false);
-                    WriteObject(urlAnalysis);
+                    WriteObject(await CompleteAnalysisAsync(urlAnalysis).ConfigureAwait(false));
                     break;
             }
         }
@@ -131,5 +155,23 @@ public sealed class CmdletNewVirusScan : VirusTotalCmdlet
             };
             WriteApiError(ex, target);
         }
+        catch (TimeoutException ex)
+        {
+            WriteError(new ErrorRecord(ex, "VirusTotalAnalysisTimeout", ErrorCategory.OperationTimeout, null));
+        }
+    }
+
+    private async Task<AnalysisReport?> CompleteAnalysisAsync(AnalysisReport? analysis)
+    {
+        if (!Wait || analysis is null || string.IsNullOrWhiteSpace(analysis.Id))
+        {
+            return analysis;
+        }
+
+        return await ActiveClient.WaitForAnalysisCompletionAsync(
+            analysis.Id,
+            TimeSpan.FromSeconds(TimeoutSeconds),
+            TimeSpan.FromSeconds(PollingIntervalSeconds),
+            CancelToken).ConfigureAwait(false);
     }
 }

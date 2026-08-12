@@ -3,7 +3,7 @@ param(
     [string] $ConfigurationGateMode = 'Build'
 )
 
-Import-Module PSPublishModule -Force -ErrorAction Stop
+Import-Module PSPublishModule -RequiredVersion 3.0.88 -Force -ErrorAction Stop
 
 Build-Module -ModuleName 'VirusTotalAnalyzer' {
     # Usual defaults as per standard module

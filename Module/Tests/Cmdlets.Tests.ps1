@@ -35,7 +35,7 @@ BeforeAll {
     [Reflection.Assembly]::LoadFrom($script:assemblyPath) | Out-Null
     Import-Module $script:modulePath -Force
 
-    Add-Type -ReferencedAssemblies 'System.Net.Http','System.Net.Primitives' @"
+    Add-Type -ReferencedAssemblies 'System.Net.Http','System.Net.Primitives','System.Collections','System.Collections.NonGeneric' @"
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -56,6 +56,27 @@ public class FakeHandler : HttpMessageHandler
         LastRequest = request;
         var message = new HttpResponseMessage(HttpStatusCode.OK);
         message.Content = new StringContent(_response);
+        return Task.FromResult(message);
+    }
+}
+
+public class QueueFakeHandler : HttpMessageHandler
+{
+    private readonly System.Collections.Queue _responses;
+    public System.Collections.ArrayList Requests { get; private set; }
+
+    public QueueFakeHandler(params string[] responses)
+    {
+        _responses = new System.Collections.Queue(responses);
+        Requests = new System.Collections.ArrayList();
+    }
+
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        Requests.Add(request);
+        var response = _responses.Count > 0 ? (string)_responses.Dequeue() : "{}";
+        var message = new HttpResponseMessage(HttpStatusCode.OK);
+        message.Content = new StringContent(response);
         return Task.FromResult(message);
     }
 }
@@ -162,6 +183,22 @@ Describe 'New-VirusScan cmdlet' {
             $ps.Dispose()
         }
     }
+
+    It 'can submit and return the completed analysis in one command' {
+        $handler = [QueueFakeHandler]::new([string[]] @(
+            '{"data":{"id":"analysis4","type":"analysis","attributes":{"status":"queued"}}}',
+            '{"data":{"id":"analysis4","type":"analysis","attributes":{"status":"completed"}}}'
+        ))
+        $downloadHandler = [FakeHandler]::new('{}')
+        $client = [VirusTotalAnalyzer.VirusTotalClient]::new('test-api-key', $handler, $downloadHandler)
+
+        $result = New-VirusScan -Url 'https://example.com' -Client $client -Wait -TimeoutSeconds 5 -PollingIntervalSeconds 1
+
+        $result.Id | Should -Be 'analysis4'
+        $result.Attributes.Status.ToString() | Should -Be 'Completed'
+        $handler.Requests.Count | Should -Be 2
+        $handler.Requests[1].RequestUri.AbsolutePath | Should -Be '/api/v3/analyses/analysis4'
+    }
 }
 
 Describe 'Get-VirusComment cmdlet' {
@@ -238,6 +275,12 @@ Describe 'Cmdlet parameter contracts' {
             $mandatory = @($command.Parameters[$selector].Attributes | Where-Object Mandatory)
             $mandatory.Count | Should -BeGreaterThan 0
         }
+    }
+
+    It 'keeps authentication optional for environment-key discovery' {
+        $command = Get-Command Get-VirusReport
+        @($command.Parameters.ApiKey.Attributes | Where-Object Mandatory).Count | Should -Be 0
+        @($command.Parameters.Client.Attributes | Where-Object Mandatory).Count | Should -Be 0
     }
 }
 

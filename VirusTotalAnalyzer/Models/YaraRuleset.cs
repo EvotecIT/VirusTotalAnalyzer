@@ -14,8 +14,6 @@ public sealed class YaraRulesetAttributes
     public string Name { get; set; } = string.Empty;
 
     public string Rules { get; set; } = string.Empty;
-
-    public List<YaraWatcher>? Watchers { get; set; }
 }
 
 public sealed class YaraRulesetResponse

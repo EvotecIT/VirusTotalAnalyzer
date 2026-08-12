@@ -29,7 +29,7 @@ Displays community feedback for the file with the given hash.
 ## PARAMETERS
 
 ### -ApiKey
-VirusTotal API key used when Client is not supplied.
+VirusTotal API key used when Client is not supplied. Defaults to the VIRUSTOTAL_API_KEY environment variable.
 
 ```yaml
 Type: String
@@ -115,7 +115,7 @@ Resource type to retrieve comments for.
 Type: ResourceType
 Parameter Sets: __AllParameterSets
 Aliases: None
-Possible values: Unknown, File, Url, IpAddress, Domain, Analysis, PrivateAnalysis, Comment, Vote, Relationship, Graph, SslCertificate, User, Group, Collection, ZipFile, LivehuntNotification, RetrohuntJob, RetrohuntNotification, IntelligenceHuntingRuleset, FileBehaviour
+Possible values: Unknown, File, Url, IpAddress, Domain, Analysis, PrivateAnalysis, Comment, Vote, Relationship, Graph, SslCertificate, User, Group, Collection, ZipFile, LivehuntNotification, RetrohuntJob, IntelligenceHuntingRuleset, FileBehaviour
 
 Required: True
 Position: named

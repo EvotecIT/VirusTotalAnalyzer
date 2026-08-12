@@ -197,7 +197,6 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
             ResourceType.ZipFile => "intelligence/zip_files",
             ResourceType.LivehuntNotification => "intelligence/hunting_notifications",
             ResourceType.RetrohuntJob => "intelligence/retrohunt_jobs",
-            ResourceType.RetrohuntNotification => "intelligence/retrohunt_notifications",
             ResourceType.IntelligenceHuntingRuleset => "intelligence/hunting_rulesets",
             ResourceType.FileBehaviour => "file_behaviours",
             _ => throw new ArgumentOutOfRangeException(nameof(type))
@@ -449,14 +448,6 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
         ValidateId(id, nameof(id));
         return DownloadFromAuthenticatedEndpointAsync(
             $"intelligence/hunting_notification_files/{Uri.EscapeDataString(id)}",
-            cancellationToken);
-    }
-
-    public Task<Stream> DownloadRetrohuntNotificationFileAsync(string id, CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        return DownloadFromAuthenticatedEndpointAsync(
-            $"intelligence/retrohunt_notification_files/{Uri.EscapeDataString(id)}",
             cancellationToken);
     }
 

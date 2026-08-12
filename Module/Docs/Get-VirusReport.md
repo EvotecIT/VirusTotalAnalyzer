@@ -47,7 +47,7 @@ Get-VirusReport -Search <string> [-ApiKey <string>] [-Client <IVirusTotalClient>
 ## DESCRIPTION
 Queries the VirusTotal API for information about files, hashes, URLs, IP addresses, domains, or existing analyses.
 
-Provide an API key or an existing IVirusTotalClient to authenticate requests.
+Provide an API key or an existing IVirusTotalClient to authenticate requests, or set VIRUSTOTAL_API_KEY.
 
 ## EXAMPLES
 
@@ -84,7 +84,7 @@ Accept wildcard characters: False
 ```
 
 ### -ApiKey
-VirusTotal API key used when Client is not supplied.
+VirusTotal API key used when Client is not supplied. Defaults to the VIRUSTOTAL_API_KEY environment variable.
 
 ```yaml
 Type: String
@@ -180,7 +180,7 @@ Accept wildcard characters: False
 ```
 
 ### -Search
-Free-form search expression.
+Public search query for an exact IOC or a comment tag.
 
 ```yaml
 Type: String

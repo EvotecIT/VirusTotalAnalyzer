@@ -47,3 +47,22 @@ Comments are deleted through the global comment id with `DeleteCommentAsync(comm
 ## Resource types
 
 `ResourceType.Search`, `ResourceType.Feed`, and `ResourceType.Bundle` were removed because they are not V3 object types. `Group` and `ZipFile` were added, and file behavior serializes as `file_behaviour`.
+
+## Current documented surface
+
+The final cleanup removes additional methods that pointed at routes absent from the current V3 reference:
+
+- Retrohunt notification objects and notification-file downloads. Use Retrohunt jobs and their `matching_files` relationship; use IoC Stream for hunting-origin results.
+- Livehunt notification acknowledgement. The documented API supports retrieving and deleting notifications, including bulk deletion.
+- Livehunt ruleset `watchers`. Current permissions are represented by the documented `editors` and `viewers` relationships.
+- Livehunt ruleset download. The rules text is returned in the ruleset object's `rules` attribute.
+- Separate user `privileges` and `quotas` routes. Both dictionaries are attributes of `GetUserAsync` results.
+- Domain and IP `whois` routes. Current WHOIS text is returned by the domain or IP report; history is available through the `historical_whois` relationship.
+
+`ResourceType.RetrohuntNotification`, the corresponding stale models, and examples were removed with those methods.
+
+## Public API and PowerShell
+
+PowerShell cmdlets now use `VIRUSTOTAL_API_KEY` when neither `-ApiKey` nor `-Client` is supplied. `New-VirusScan -Wait` submits or reanalyses an item and returns the completed analysis. Its default polling interval is 20 seconds, matching the Public API's four-request-per-minute constraint conservatively when combined with the submission request.
+
+`WaitForAnalysisCompletionAsync` uses the same 20-second default, honors server rate-limit delays while waiting, and rejects non-positive timeout or polling values. The general rate-limit retry helpers now also use 20 seconds when the service does not supply `Retry-After`.

@@ -106,7 +106,7 @@ public static class VirusTotalClientExtensions
     /// <summary>
     /// Executes an operation and automatically retries when a <see cref="RateLimitExceededException"/> is thrown.
     /// Retries up to <paramref name="maxRetries"/> times, waiting for the server-supplied delay when available,
-    /// otherwise using <paramref name="defaultRetryDelay"/> (one second if not specified).
+    /// otherwise using <paramref name="defaultRetryDelay"/> (20 seconds if not specified).
     /// </summary>
     public static async Task<T?> ExecuteWithRateLimitRetryAsync<T>(this IVirusTotalClient client, Func<IVirusTotalClient, Task<T?>> operation, int maxRetries = 3, TimeSpan? defaultRetryDelay = null, CancellationToken cancellationToken = default)
     {
@@ -123,7 +123,7 @@ public static class VirusTotalClientExtensions
             catch (RateLimitExceededException ex) when (attempts < maxRetries)
             {
                 attempts++;
-                var delay = ex.RetryAfter ?? defaultRetryDelay ?? TimeSpan.FromSeconds(1);
+                var delay = ex.RetryAfter ?? defaultRetryDelay ?? TimeSpan.FromSeconds(20);
                 if (delay < TimeSpan.Zero)
                 {
                     delay = TimeSpan.Zero;
@@ -136,7 +136,7 @@ public static class VirusTotalClientExtensions
     /// <summary>
     /// Executes an operation and automatically retries when a <see cref="RateLimitExceededException"/> is thrown.
     /// Retries up to <paramref name="maxRetries"/> times, waiting for the server-supplied delay when available,
-    /// otherwise using <paramref name="defaultRetryDelay"/> (one second if not specified).
+    /// otherwise using <paramref name="defaultRetryDelay"/> (20 seconds if not specified).
     /// </summary>
     public static async Task ExecuteWithRateLimitRetryAsync(this IVirusTotalClient client, Func<IVirusTotalClient, Task> operation, int maxRetries = 3, TimeSpan? defaultRetryDelay = null, CancellationToken cancellationToken = default)
     {
@@ -154,7 +154,7 @@ public static class VirusTotalClientExtensions
             catch (RateLimitExceededException ex) when (attempts < maxRetries)
             {
                 attempts++;
-                var delay = ex.RetryAfter ?? defaultRetryDelay ?? TimeSpan.FromSeconds(1);
+                var delay = ex.RetryAfter ?? defaultRetryDelay ?? TimeSpan.FromSeconds(20);
                 if (delay < TimeSpan.Zero)
                 {
                     delay = TimeSpan.Zero;

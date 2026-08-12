@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -13,6 +14,8 @@ namespace VirusTotalAnalyzer;
 
 public sealed partial class VirusTotalClient
 {
+    private static readonly TimeSpan MaxAnalysisStatusRequestDuration = TimeSpan.FromMinutes(10);
+
     /// <summary>
     /// Retrieves reports for multiple files.
     /// </summary>
@@ -602,14 +605,64 @@ public sealed partial class VirusTotalClient
         CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        var interval = pollingInterval ?? TimeSpan.FromSeconds(1);
-        var start = DateTimeOffset.UtcNow;
+        if (timeout <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(timeout), "Timeout must be greater than zero.");
+        }
+
+        var interval = pollingInterval ?? TimeSpan.FromSeconds(20);
+        if (interval <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(pollingInterval), "Polling interval must be greater than zero.");
+        }
+        var stopwatch = Stopwatch.StartNew();
 
         while (true)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var report = await GetAnalysisAsync(id, cancellationToken).ConfigureAwait(false);
+            var remainingBeforeRequest = timeout - stopwatch.Elapsed;
+            if (remainingBeforeRequest <= TimeSpan.Zero)
+            {
+                throw new TimeoutException("The analysis did not complete within the specified timeout.");
+            }
+
+            AnalysisReport? report;
+            using var requestCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var requestDuration = remainingBeforeRequest < MaxAnalysisStatusRequestDuration
+                ? remainingBeforeRequest
+                : MaxAnalysisStatusRequestDuration;
+            requestCancellation.CancelAfter(requestDuration);
+            try
+            {
+                report = await GetAnalysisAsync(id, requestCancellation.Token).ConfigureAwait(false);
+            }
+            catch (RateLimitExceededException ex)
+            {
+                var remainingAfterLimit = timeout - stopwatch.Elapsed;
+                if (remainingAfterLimit <= TimeSpan.Zero)
+                {
+                    throw new TimeoutException("The analysis did not complete within the specified timeout.", ex);
+                }
+
+                var retryDelay = ex.RetryAfter is { } serverDelay && serverDelay > TimeSpan.Zero
+                    ? serverDelay
+                    : interval;
+                await Task.Delay(
+                    retryDelay < remainingAfterLimit ? retryDelay : remainingAfterLimit,
+                    cancellationToken).ConfigureAwait(false);
+                continue;
+            }
+            catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                throw new TimeoutException("The analysis did not complete within the specified timeout.", ex);
+            }
+
+            if (stopwatch.Elapsed >= timeout)
+            {
+                throw new TimeoutException("The analysis did not complete within the specified timeout.");
+            }
+
             var status = report?.Attributes.Status;
             if (status == AnalysisStatus.Completed)
             {
@@ -628,12 +681,7 @@ public sealed partial class VirusTotalClient
                 throw new TimeoutException(error ?? "The analysis request timed out.");
             }
 
-            if (DateTimeOffset.UtcNow - start >= timeout)
-            {
-                throw new TimeoutException("The analysis did not complete within the specified timeout.");
-            }
-
-            var remaining = timeout - (DateTimeOffset.UtcNow - start);
+            var remaining = timeout - stopwatch.Elapsed;
             var delay = remaining < interval ? remaining : interval;
             if (delay > TimeSpan.Zero)
             {

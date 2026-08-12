@@ -44,4 +44,8 @@ public sealed class IpAddressAttributes : ExtensibleAttributes
     public Dictionary<string, Verdict> Categories { get; set; } = new();
 
     public DateTimeOffset? LastAnalysisDate { get; set; }
+
+    public string? Whois { get; set; }
+
+    public DateTimeOffset? WhoisDate { get; set; }
 }

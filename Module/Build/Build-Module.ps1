@@ -11,7 +11,7 @@ param(
     [string] $GitHubApiKeyPath = 'C:\Support\Important\GitHubAPI.txt'
 )
 
-Import-Module PSPublishModule -MinimumVersion 3.0.106 -Force -ErrorAction Stop
+Import-Module PSPublishModule -Force -ErrorAction Stop
 
 Build-Module -ModuleName 'VirusTotalAnalyzer' {
     $Manifest = @{

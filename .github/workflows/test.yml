@@ -42,7 +42,7 @@ jobs:
       - name: Install PSPublishModule
         shell: pwsh
         run: |
-          Install-Module PSPublishModule -MinimumVersion 3.0.106 -Force -Scope CurrentUser -AllowClobber
+          Install-Module PSPublishModule -Force -Scope CurrentUser -AllowClobber
           Install-Module PSSharedGoods -MinimumVersion 0.0.312 -Force -Scope CurrentUser -AllowClobber
 
       - name: Verify generated module help
@@ -52,7 +52,7 @@ jobs:
           RefreshPSD1Only: 'false'
           POWERFORGE_FULL_MODULE_BUILD: '1'
         run: |
-          Import-Module PSPublishModule -MinimumVersion 3.0.106 -Force -ErrorAction Stop
+          Import-Module PSPublishModule -Force -ErrorAction Stop
           ./Build/Build-Module.ps1 -ConfigurationGateMode Documentation -SignModule:$false
 
           git diff --ignore-space-at-eol --exit-code -- Module/Docs Module/en-US

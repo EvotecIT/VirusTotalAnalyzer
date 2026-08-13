@@ -10,7 +10,7 @@
 
 VirusTotalAnalyzer is a typed .NET client and compiled PowerShell module for the VirusTotal API v3. It supports everyday Community API workflows such as looking up reports and submitting files or URLs, as well as licensed features including private analysis, Intelligence, hunting, feeds, ZIP jobs, and VirusTotal Monitor publisher workflows.
 
-The .NET library targets .NET Framework 4.7.2, .NET 8, and .NET 10. The PowerShell module supports Windows PowerShell 5.1 and PowerShell 7+ on Windows, Linux, and macOS.
+The .NET library targets .NET Framework 4.7.2, .NET 8, and .NET 10. The PowerShell module supports Windows PowerShell 5.1 and PowerShell 7.4 or later on Windows, Linux, and macOS.
 
 ## Packages
 
@@ -24,7 +24,8 @@ The .NET library targets .NET Framework 4.7.2, .NET 8, and .NET 10. The PowerShe
 | Capability | .NET | PowerShell | Access |
 | --- | :---: | :---: | --- |
 | File, URL, domain, IP address, and analysis reports | Yes | Yes | Community API |
-| File and URL submission, reanalysis, and completion polling | Yes | Yes | Community API and account quota |
+| File and URL submission with completion polling | Yes | Yes | Community API and account quota |
+| Reanalysis | Files, URLs, domains, and IP addresses | Files | Endpoint and account dependent |
 | Quota-aware batches with spacing, retry, caching, and duplicate-request suppression | Yes | Yes | Community API friendly |
 | Domain and IP relationships, including resolutions, historical WHOIS, certificates, and related files | Yes | Yes | Relationship and account dependent |
 | Comments, votes, users, privileges, and quotas | Yes | Selected cmdlets | Endpoint and account dependent |
@@ -95,7 +96,7 @@ Submit content and optionally wait for the completed analysis:
 $fileAnalysis = New-VirusScan -File '.\sample.exe' -Wait
 $urlAnalysis = New-VirusScan -Url 'https://example.com' -Wait
 
-# Reanalyse an existing object.
+# Reanalyse an existing file by its hash.
 $analysis = New-VirusScan -Hash $sha256 -Wait
 ```
 
@@ -165,7 +166,7 @@ Remove-VirusTotalMonitorItem -ApiKey $monitorKey -Id $itemId -Confirm
 | Cmdlet | Purpose |
 | --- | --- |
 | `Get-VirusReport` | Retrieve reports for files, URLs, domains, IP addresses, or analyses |
-| `New-VirusScan` | Submit or reanalyse a file or URL and optionally wait for completion |
+| `New-VirusScan` | Submit a file or URL, reanalyse a file by hash or local path, and optionally wait for completion |
 | `Get-VirusRelationship` | Retrieve typed domain and IP relationship data |
 | `Get-VirusComment` | Read comments attached to a VirusTotal object |
 | `New-VirusVote` | Add a harmless or malicious community vote |
@@ -342,7 +343,7 @@ Automatic redirects must be disabled on both handler chains. This lets the libra
 | Component | Supported runtimes |
 | --- | --- |
 | .NET library | .NET Framework 4.7.2, .NET 8, .NET 10 |
-| PowerShell module | Windows PowerShell 5.1, PowerShell 7+ |
+| PowerShell module | Windows PowerShell 5.1, PowerShell 7.4 or later |
 | Operating systems | Windows, Linux, macOS; .NET Framework is Windows-only |
 
 Review the [API v3 migration guide](https://github.com/EvotecIT/VirusTotalAnalyzer/blob/master/MIGRATION.md) when upgrading code written against an earlier prerelease surface.

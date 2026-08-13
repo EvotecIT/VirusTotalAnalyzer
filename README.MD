@@ -25,14 +25,15 @@ The .NET library targets .NET Framework 4.7.2, .NET 8, and .NET 10. The PowerShe
 | --- | :---: | :---: | --- |
 | File, URL, domain, IP address, and analysis reports | Yes | Yes | Community API |
 | File and URL submission, reanalysis, and completion polling | Yes | Yes | Community API and account quota |
-| Quota-aware batches with spacing, retry, caching, and duplicate suppression | Yes | Yes | Community API friendly |
+| Quota-aware batches with spacing, retry, caching, and duplicate-request suppression | Yes | Yes | Community API friendly |
 | Domain and IP relationships, including resolutions, historical WHOIS, certificates, and related files | Yes | Yes | Relationship and account dependent |
 | Comments, votes, users, privileges, and quotas | Yes | Selected cmdlets | Endpoint and account dependent |
 | File behavior, sandbox summaries, artifacts, and signed downloads | Yes | - | Usually licensed |
 | Graphs, graph permissions, and collections | Yes | - | Usually licensed |
-| Public IOC search | Yes | - | Community API |
+| Public IOC search | Yes | Yes | Community API |
 | Intelligence search, Livehunt, Retrohunt, YARA rulesets, IoC Stream, private analysis, feeds, and ZIP jobs | Yes | - | Licensed services |
-| VirusTotal Monitor uploads, folders, items, events, statistics, configuration, and downloads | Yes | Yes | Monitor publisher entitlement |
+| VirusTotal Monitor uploads, folders, items, events, statistics, and configuration | Yes | Yes | Monitor publisher entitlement |
+| VirusTotal Monitor downloads | Yes | - | Monitor publisher entitlement |
 
 The library exposes a larger API than the compiled PowerShell module. PowerShell focuses on common reporting, submission, community, relationship, account, and Monitor workflows; use the .NET client for the complete typed surface.
 
@@ -63,7 +64,7 @@ The VirusTotal Public API currently allows 500 requests per day and four request
 
 ### Look up reports and verdicts
 
-`Get-VirusReport` accepts hashes, files, URLs, domains, IP addresses, and analysis IDs:
+`Get-VirusReport` accepts hashes, files, URLs, domains, IP addresses, analysis IDs, and public IOC or comment-tag searches:
 
 ```powershell
 Get-VirusReport -Hash 'BFF77EECBB2F7DA25ECBC9D9673E5DC1DB68DCC68FD76D006E836F9AC61C547E'
@@ -72,6 +73,7 @@ Get-VirusReport -Url 'https://example.com'
 Get-VirusReport -DomainName 'example.com'
 Get-VirusReport -IPAddress '1.1.1.1'
 Get-VirusReport -AnalysisId $analysisId
+Get-VirusReport -Search 'example.com'
 ```
 
 Pass arrays or pipeline input for batches. `-Summary` returns a concise verdict while retaining the complete report in its `Report` property:
@@ -83,7 +85,7 @@ $verdicts | Select-Object Id, Verdict, Malicious, Suspicious, Reputation, LastAn
 $fullReport = $verdicts[0].Report
 ```
 
-Batch requests preserve input order, suppress duplicates, cache successful reports for five minutes, retry `429` responses using `Retry-After`, and start requests 20 seconds apart by default. Change `-MinimumIntervalSeconds`, `-CacheSeconds`, or `-MaxRetries` only to match the quota of the account being used.
+Batch requests preserve input order and duplicate output entries while avoiding duplicate API requests. They cache successful reports for five minutes, retry `429` responses using `Retry-After`, and start requests 20 seconds apart by default. Change `-MinimumIntervalSeconds`, `-CacheSeconds`, or `-MaxRetries` only to match the quota of the account being used.
 
 ### Submit files and URLs
 

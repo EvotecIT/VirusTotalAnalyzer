@@ -15,7 +15,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task SubmitFileAsync_NonSeekableStream_DoesNotAllocateExcessiveMemory()
     {
-        var analysisJson = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var analysisJson = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"queued\"}}}";
         var handler = new NullContentHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(analysisJson, Encoding.UTF8, "application/json")

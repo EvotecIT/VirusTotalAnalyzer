@@ -9,11 +9,6 @@ public sealed class Comment
     public ResourceType Type { get; set; }
 
     public Links Links { get; set; } = new();
-    public CommentData Data { get; set; } = new();
-}
-
-public sealed class CommentData
-{
     public CommentAttributes Attributes { get; set; } = new();
 }
 

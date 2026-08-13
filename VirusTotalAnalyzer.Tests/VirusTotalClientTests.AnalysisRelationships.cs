@@ -14,7 +14,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetFileContactedUrlsAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"u1\",\"type\":\"url\",\"data\":{\"attributes\":{\"url\":\"https://example.com\"}}}],\"meta\":{\"cursor\":\"c1\"}}";
+        var json = "{\"data\":[{\"id\":\"u1\",\"type\":\"url\",\"attributes\":{\"url\":\"https://example.com\"}}],\"meta\":{\"cursor\":\"c1\"}}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -32,7 +32,7 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/files/abc/contacted_urls", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(urls);
         Assert.Single(urls!.Data);
-        Assert.Equal("https://example.com", urls.Data[0].Data.Attributes.Url);
+        Assert.Equal("https://example.com", urls.Data[0].Attributes.Url);
         Assert.Equal("c1", urls.NextCursor);
     }
 
@@ -83,7 +83,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetFileContactedDomainsAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"d1\",\"type\":\"domain\",\"data\":{\"attributes\":{\"domain\":\"example.com\"}}}]}";
+        var json = "{\"data\":[{\"id\":\"d1\",\"type\":\"domain\",\"attributes\":{\"domain\":\"example.com\"}}]}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -101,7 +101,7 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/files/abc/contacted_domains", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(domains);
         Assert.Single(domains!.Data);
-        Assert.Equal("example.com", domains.Data[0].Data.Attributes.Domain);
+        Assert.Equal("example.com", domains.Data[0].Attributes.Domain);
     }
 
     [Fact]
@@ -151,7 +151,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetFileContactedIpsAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"i1\",\"type\":\"ip_address\",\"data\":{\"attributes\":{\"ip_address\":\"1.2.3.4\"}}}]}";
+        var json = "{\"data\":[{\"id\":\"i1\",\"type\":\"ip_address\",\"attributes\":{\"ip_address\":\"1.2.3.4\"}}]}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -169,7 +169,7 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/files/abc/contacted_ips", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(ips);
         Assert.Single(ips!.Data);
-        Assert.Equal("1.2.3.4", ips.Data[0].Data.Attributes.IpAddress);
+        Assert.Equal("1.2.3.4", ips.Data[0].Attributes.IpAddress);
     }
 
     [Fact]
@@ -649,7 +649,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetUrlRedirectingUrlsAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"u1\",\"type\":\"url\",\"data\":{\"attributes\":{\"url\":\"https://example.com\"}}}]}"; 
+        var json = "{\"data\":[{\"id\":\"u1\",\"type\":\"url\",\"attributes\":{\"url\":\"https://example.com\"}}]}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -667,7 +667,7 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/urls/abc/redirecting_urls", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(urls);
         Assert.Single(urls!);
-        Assert.Equal("https://example.com", urls[0].Data.Attributes.Url);
+        Assert.Equal("https://example.com", urls[0].Attributes.Url);
     }
 
     [Fact]
@@ -693,7 +693,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetUrlContactedIpsAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"i1\",\"type\":\"ip_address\",\"data\":{\"attributes\":{\"ip_address\":\"1.2.3.4\"}}}]}";
+        var json = "{\"data\":[{\"id\":\"i1\",\"type\":\"ip_address\",\"attributes\":{\"ip_address\":\"1.2.3.4\"}}]}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -711,7 +711,7 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/urls/abc/contacted_ips", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(ips);
         Assert.Single(ips!);
-        Assert.Equal("1.2.3.4", ips[0].Data.Attributes.IpAddress);
+        Assert.Equal("1.2.3.4", ips[0].Attributes.IpAddress);
     }
 
     [Fact]
@@ -737,7 +737,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetUrlLastServingIpAddressAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":{\"id\":\"i1\",\"type\":\"ip_address\",\"data\":{\"attributes\":{\"ip_address\":\"1.2.3.4\"}}}}";
+        var json = "{\"data\":{\"id\":\"i1\",\"type\":\"ip_address\",\"attributes\":{\"ip_address\":\"1.2.3.4\"}}}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -754,13 +754,13 @@ public partial class VirusTotalClientTests
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/urls/abc/last_serving_ip_address", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(ip);
-        Assert.Equal("1.2.3.4", ip!.Data.Attributes.IpAddress);
+        Assert.Equal("1.2.3.4", ip!.Attributes.IpAddress);
     }
 
     [Fact]
     public async Task GetUrlAnalysesAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"an1\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"completed\"}}}]}";
+        var json = "{\"data\":[{\"id\":\"an1\",\"type\":\"analysis\",\"attributes\":{\"status\":\"completed\"}}]}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -778,7 +778,7 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/urls/abc/analyses", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(analyses);
         Assert.Single(analyses);
-        Assert.Equal(AnalysisStatus.Completed, analyses[0].Data.Attributes.Status);
+        Assert.Equal(AnalysisStatus.Completed, analyses[0].Attributes.Status);
         Assert.Null(cursor);
     }
 
@@ -803,8 +803,8 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetUrlAnalysesAsync_PagesThroughResults()
     {
-        var first = "{\"data\":[{\"id\":\"an1\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"completed\"}}}],\"meta\":{\"cursor\":\"c1\"}}";
-        var second = "{\"data\":[{\"id\":\"an2\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"completed\"}}}]}";
+        var first = "{\"data\":[{\"id\":\"an1\",\"type\":\"analysis\",\"attributes\":{\"status\":\"completed\"}}],\"meta\":{\"cursor\":\"c1\"}}";
+        var second = "{\"data\":[{\"id\":\"an2\",\"type\":\"analysis\",\"attributes\":{\"status\":\"completed\"}}]}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(first, Encoding.UTF8, "application/json") },
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(second, Encoding.UTF8, "application/json") });
@@ -828,8 +828,8 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetUrlAnalysesAsync_RespectsLimit()
     {
-        var first = "{\"data\":[{\"id\":\"an1\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"completed\"}}}],\"meta\":{\"cursor\":\"c1\"}}";
-        var second = "{\"data\":[{\"id\":\"an2\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"completed\"}}}]}";
+        var first = "{\"data\":[{\"id\":\"an1\",\"type\":\"analysis\",\"attributes\":{\"status\":\"completed\"}}],\"meta\":{\"cursor\":\"c1\"}}";
+        var second = "{\"data\":[{\"id\":\"an2\",\"type\":\"analysis\",\"attributes\":{\"status\":\"completed\"}}]}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(first, Encoding.UTF8, "application/json") },
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(second, Encoding.UTF8, "application/json") });
@@ -851,7 +851,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task WaitForAnalysisCompletionAsync_HandlesNullData_ThrowsTimeout()
     {
-        var json = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":null}";
+        var json = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"data\":null}}";
         var handler = new StubHandler(json);
         var httpClient = new HttpClient(handler)
         {
@@ -863,4 +863,3 @@ public partial class VirusTotalClientTests
             client.WaitForAnalysisCompletionAsync("an", TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(10)));
     }
 }
-

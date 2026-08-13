@@ -11,14 +11,15 @@ public static class CreateMonitorItemExample
         IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var request = new CreateMonitorItemRequest
+            var options = new MonitorUploadOptions
             {
-                Data = { Attributes = { Path = "/path/to/file" } }
+                Path = "/releases/1.0.0/app.exe",
+                Details = "Signed release binary"
             };
-            var item = await client.CreateMonitorItemAsync(request);
-            Console.WriteLine(item?.Id);
+            var upload = await client.UploadMonitorFileAsync("app.exe", options);
+            Console.WriteLine($"{upload.Item.Id}: {upload.VerificationStatus}");
 
-            var items = await client.ListMonitorItemsAsync(fetchAll: true);
+            var items = await client.ListMonitorItemsAsync("path:/releases/1.0.0/");
             if (items != null)
             {
                 foreach (var i in items.Data)
@@ -27,9 +28,9 @@ public static class CreateMonitorItemExample
                 }
             }
 
-            if (item != null)
+            if (!string.IsNullOrEmpty(upload.Item.Id))
             {
-                await client.DeleteMonitorItemAsync(item.Id);
+                await client.DeleteMonitorItemAsync(upload.Item.Id);
                 Console.WriteLine("Monitor item deleted");
             }
         }

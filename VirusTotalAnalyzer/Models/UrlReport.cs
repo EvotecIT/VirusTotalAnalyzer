@@ -25,23 +25,23 @@ public sealed class UrlReportsResponse
     public PaginationMetadata? Meta { get; set; }
 }
 
-public sealed class UrlAttributes
+public sealed class UrlAttributes : ExtensibleAttributes
 {
     public string Url { get; set; } = string.Empty;
 
-    public int Reputation { get; set; }
+    public int? Reputation { get; set; }
 
-    public DateTimeOffset CreationDate { get; set; }
+    public DateTimeOffset? CreationDate { get; set; }
 
     public List<string> Tags { get; set; } = new();
 
-    public DateTimeOffset FirstSubmissionDate { get; set; }
+    public DateTimeOffset? FirstSubmissionDate { get; set; }
 
-    public DateTimeOffset LastSubmissionDate { get; set; }
+    public DateTimeOffset? LastSubmissionDate { get; set; }
 
-    public DateTimeOffset LastModificationDate { get; set; }
+    public DateTimeOffset? LastModificationDate { get; set; }
 
-    public int TimesSubmitted { get; set; }
+    public int? TimesSubmitted { get; set; }
 
     public AnalysisStats LastAnalysisStats { get; set; } = new();
 
@@ -51,7 +51,7 @@ public sealed class UrlAttributes
 
     public Dictionary<string, Verdict> Categories { get; set; } = new();
 
-    public DateTimeOffset LastAnalysisDate { get; set; }
+    public DateTimeOffset? LastAnalysisDate { get; set; }
 
     public List<CrowdsourcedVerdict> CrowdsourcedVerdicts { get; set; } = new();
 }

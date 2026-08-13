@@ -15,9 +15,17 @@ namespace VirusTotalAnalyzer;
 
 public sealed partial class VirusTotalClient
 {
-    public async Task<Uri?> GetUploadUrlAsync(CancellationToken cancellationToken = default)
+    public Task<Uri?> GetUploadUrlAsync(CancellationToken cancellationToken = default)
+        => GetUploadUrlCoreAsync("files/upload_url", cancellationToken);
+
+    /// <summary>Gets a single-use large-file upload URL for VirusTotal Private Scanning.</summary>
+    public Task<Uri?> GetPrivateUploadUrlAsync(CancellationToken cancellationToken = default)
+        => GetUploadUrlCoreAsync("private/files/upload_url", cancellationToken);
+
+    private async Task<Uri?> GetUploadUrlCoreAsync(string path, CancellationToken cancellationToken)
     {
-        using var response = await _httpClient.GetAsync("files/upload_url", cancellationToken).ConfigureAwait(false);
+        ThrowIfDisposed();
+        using var response = await _httpClient.GetAsync(path, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         var result = await JsonSerializer.DeserializeAsync<UploadUrlResponse>(stream, _jsonOptions, cancellationToken)
@@ -27,7 +35,7 @@ public sealed partial class VirusTotalClient
             return null;
         }
 
-        return Uri.TryCreate(result.Data, UriKind.Absolute, out var uri) ? uri : null;
+        return TryNormalizeVirusTotalUploadUri(result.Data, out var uri) ? uri : null;
     }
 
     /// <summary>
@@ -53,82 +61,33 @@ public sealed partial class VirusTotalClient
             throw new ArgumentException("File name must not be empty.", nameof(fileName));
         }
 
-        Stream uploadStream = stream;
-        bool disposeUploadStream = false;
-        string? tempFilePath = null;
-        if (!stream.CanSeek)
-        {
-            tempFilePath = Path.GetTempFileName();
-            using (var file = File.Create(tempFilePath))
-            {
-                await stream.CopyToAsync(file, 81920, cancellationToken).ConfigureAwait(false);
-            }
-            uploadStream = File.OpenRead(tempFilePath);
-            disposeUploadStream = true;
-        }
-
+        ThrowIfDisposed();
+        using var prepared = await PreparedUpload.CreateAsync(stream, cancellationToken).ConfigureAwait(false);
         string requestUrl = "files";
-        if (uploadStream.CanSeek && uploadStream.Length > 33554432)
+        if (prepared.Length > 33554432)
         {
             var uploadUrl = await GetUploadUrlAsync(cancellationToken).ConfigureAwait(false);
             if (uploadUrl is null)
             {
-                if (disposeUploadStream)
-                {
-                    uploadStream.Dispose();
-                    if (tempFilePath is not null)
-                    {
-                        try
-                        {
-                            File.Delete(tempFilePath);
-                        }
-                        catch
-                        {
-                            // ignore
-                        }
-                    }
-                }
                 throw new InvalidOperationException("Upload URL was not provided by the API.");
             }
             requestUrl = uploadUrl.ToString();
         }
 
-        var builder = new MultipartFormDataBuilder(uploadStream, fileName);
+        var builder = new MultipartFormDataBuilder(prepared.Stream, fileName);
         using var content = builder.Build();
-        using var request = new HttpRequestMessage(HttpMethod.Post, requestUrl)
-        {
-            Content = content
-        };
+        using var request = new HttpRequestMessage(HttpMethod.Post, requestUrl) { Content = content };
         if (!string.IsNullOrEmpty(password))
         {
             request.Headers.Add("x-virustotal-password", password);
         }
-        using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.SendAsync(
+            request,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var respStream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            return await JsonSerializer.DeserializeAsync<AnalysisReport>(respStream, _jsonOptions, cancellationToken)
-                .ConfigureAwait(false);
-        }
-        finally
-        {
-            if (disposeUploadStream)
-            {
-                uploadStream.Dispose();
-                if (tempFilePath is not null)
-                {
-                    try
-                    {
-                        File.Delete(tempFilePath);
-                    }
-                    catch
-                    {
-                        // ignore
-                    }
-                }
-            }
-        }
+        return await DeserializeDataAsync<AnalysisReport>(respStream, cancellationToken).ConfigureAwait(false);
     }
 
     public Task<AnalysisReport?> SubmitFileAsync(Stream stream, string fileName, CancellationToken cancellationToken)
@@ -153,13 +112,13 @@ public sealed partial class VirusTotalClient
     /// </summary>
     /// <param name="stream">The file stream to upload.</param>
     /// <param name="fileName">The name of the file.</param>
-    /// <param name="password">Optional password for the file; sent via the <c>x-virustotal-password</c> header.</param>
+    /// <param name="options">Private Scanning sandbox, retention, storage, locale, and archive options.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
     /// <returns>A <see cref="PrivateAnalysis"/> describing the analysis.</returns>
     public async Task<PrivateAnalysis?> SubmitPrivateFileAsync(
         Stream stream,
         string fileName,
-        string? password = null,
+        PrivateFileUploadOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         if (stream is null)
@@ -174,21 +133,35 @@ public sealed partial class VirusTotalClient
         {
             throw new ArgumentException("File name must not be empty.", nameof(fileName));
         }
-        var builder = new MultipartFormDataBuilder(stream, fileName);
+        options ??= new PrivateFileUploadOptions();
+        options.Validate();
+        ThrowIfDisposed();
+        using var prepared = await PreparedUpload.CreateAsync(stream, cancellationToken).ConfigureAwait(false);
+        string requestUrl = "private/files";
+        if (prepared.Length > 33554432)
+        {
+            var uploadUrl = await GetPrivateUploadUrlAsync(cancellationToken).ConfigureAwait(false);
+            if (uploadUrl is null)
+            {
+                throw new InvalidOperationException("Private upload URL was not provided by the API.");
+            }
+            requestUrl = uploadUrl.ToString();
+        }
+
+        var builder = new MultipartFormDataBuilder(prepared.Stream, fileName);
+        options.AddFormFields(builder);
         using var content = builder.Build();
-        using var request = new HttpRequestMessage(HttpMethod.Post, "private/analyses")
+        using var request = new HttpRequestMessage(HttpMethod.Post, requestUrl)
         {
             Content = content
         };
-        if (!string.IsNullOrEmpty(password))
-        {
-            request.Headers.Add("x-virustotal-password", password);
-        }
-        using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        using var response = await _httpClient.SendAsync(
+            request,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var respStream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<PrivateAnalysis>(respStream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
+        return await DeserializeDataAsync<PrivateAnalysis>(respStream, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -206,8 +179,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.PostAsync(path, content: null, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<AnalysisReport>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
+        return await DeserializeDataAsync<AnalysisReport>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public Task<AnalysisReport?> ReanalyzeFileAsync(string hash, CancellationToken cancellationToken = default)
@@ -221,6 +193,33 @@ public sealed partial class VirusTotalClient
             throw new ArgumentException("Hash must not be empty.", nameof(hash));
         }
         return ReanalyzeHashAsync(hash, AnalysisType.File, cancellationToken);
+    }
+
+    /// <summary>Requests a new analysis for an existing IP address object.</summary>
+    public Task<AnalysisReport?> ReanalyzeIpAddressAsync(
+        string ipAddress,
+        CancellationToken cancellationToken = default)
+        => ReanalyzeResourceAsync("ip_addresses", ipAddress, cancellationToken);
+
+    /// <summary>Requests a new analysis for an existing domain object.</summary>
+    public Task<AnalysisReport?> ReanalyzeDomainAsync(
+        string domain,
+        CancellationToken cancellationToken = default)
+        => ReanalyzeResourceAsync("domains", domain, cancellationToken);
+
+    private async Task<AnalysisReport?> ReanalyzeResourceAsync(
+        string resourcePath,
+        string id,
+        CancellationToken cancellationToken)
+    {
+        ValidateId(id, nameof(id));
+        ThrowIfDisposed();
+        using var response = await _httpClient
+            .PostAsync($"{resourcePath}/{Uri.EscapeDataString(id)}/analyse", content: null, cancellationToken)
+            .ConfigureAwait(false);
+        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<AnalysisReport>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public Task<AnalysisReport?> ReanalyzeUrlAsync(string id, CancellationToken cancellationToken = default)
@@ -296,7 +295,6 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.PostAsync(path.ToString(), content, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<AnalysisReport>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
+        return await DeserializeDataAsync<AnalysisReport>(stream, cancellationToken).ConfigureAwait(false);
     }
 }

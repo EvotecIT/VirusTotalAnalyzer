@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -16,7 +17,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetUserAsync_DeserializesResponse()
     {
-        var json = @"{""id"":""user1"",""type"":""user"",""links"":{""self"":""https://www.virustotal.com/api/v3/users/user1""},""data"":{""attributes"":{""username"":""demo"",""role"":""admin""}}}";
+        var json = @"{""data"":{""id"":""user1"",""type"":""user"",""links"":{""self"":""https://www.virustotal.com/api/v3/users/user1""},""attributes"":{""first_name"":""Demo"",""last_name"":""User"",""has_2fa"":true,""user_since"":42,""privileges"":{""allinfo"":{""granted"":false}},""quotas"":{""api_requests_daily"":{""allowed"":500,""used"":10}}}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -30,60 +31,21 @@ public partial class VirusTotalClientTests
         var user = await client.GetUserAsync("user1");
 
         Assert.NotNull(user);
-        Assert.Equal("demo", user!.Data.Attributes.Username);
-        Assert.Equal(UserRole.Admin, user.Data.Attributes.Role);
+        Assert.Equal("Demo", user!.Attributes.FirstName);
+        Assert.Equal("User", user.Attributes.LastName);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(42), user.Attributes.UserSince);
+        Assert.True(user.Attributes.Has2Fa);
+        Assert.False(user.Attributes.Privileges["allinfo"].Granted);
+        Assert.Equal(500, user.Attributes.Quotas["api_requests_daily"].Allowed);
+        Assert.Equal(10, user.Attributes.Quotas["api_requests_daily"].Used);
         Assert.Equal("https://www.virustotal.com/api/v3/users/user1", user.Links.Self);
         Assert.Equal("/api/v3/users/user1", handler.Request!.RequestUri!.AbsolutePath);
     }
 
     [Fact]
-    public async Task GetUserPrivilegesAsync_DeserializesResponse()
-    {
-        var json = @"{""data"":{""can_download_file"":{""allowed"":true},""can_view_graph"":{""allowed"":false}}}";
-        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(json, Encoding.UTF8, "application/json")
-        });
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        var privileges = await client.GetUserPrivilegesAsync("user1");
-
-        Assert.NotNull(privileges);
-        Assert.True(privileges!.Data["can_download_file"].Allowed);
-        Assert.False(privileges.Data["can_view_graph"].Allowed);
-        Assert.Equal("/api/v3/users/user1/privileges", handler.Request!.RequestUri!.AbsolutePath);
-    }
-
-    [Fact]
-    public async Task GetUserQuotaAsync_DeserializesResponse()
-    {
-        var json = @"{""data"":{""api_requests_daily"":{""allowed"":100,""used"":10}}}";
-        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(json, Encoding.UTF8, "application/json")
-        });
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        var quota = await client.GetUserQuotaAsync("user1");
-
-        Assert.NotNull(quota);
-        Assert.Equal(100, quota!.Data["api_requests_daily"].Allowed);
-        Assert.Equal(10, quota.Data["api_requests_daily"].Used);
-        Assert.Equal("/api/v3/users/user1/quotas", handler.Request!.RequestUri!.AbsolutePath);
-    }
-
-    [Fact]
     public async Task GetUploadUrlAsync_ReturnsUri()
     {
-        var json = "{\"data\":\"https://upload.example/upload\"}";
+        var json = "{\"data\":\"http://www.virustotal.com/_ah/upload/token\"}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -97,7 +59,7 @@ public partial class VirusTotalClientTests
         var uri = await client.GetUploadUrlAsync();
 
         Assert.NotNull(uri);
-        Assert.Equal("https://upload.example/upload", uri!.ToString());
+        Assert.Equal("https://www.virustotal.com/_ah/upload/token", uri!.ToString());
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/files/upload_url", handler.Request!.RequestUri!.AbsolutePath);
     }
@@ -169,7 +131,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task SubmitFileAsync_PostsDirectlyToFiles_ForSmallFiles()
     {
-        var analysisJson = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var analysisJson = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"queued\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(analysisJson, Encoding.UTF8, "application/json")
@@ -211,8 +173,8 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task SubmitFileAsync_UsesUploadUrlForLargeFiles()
     {
-        var uploadJson = "{\"data\":\"https://upload.example/upload\"}";
-        var analysisJson = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var uploadJson = "{\"data\":\"https://uploads.virustotal.com/upload\"}";
+        var analysisJson = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"queued\"}}}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -234,14 +196,14 @@ public partial class VirusTotalClientTests
         Assert.NotNull(report);
         Assert.Equal(2, handler.Requests.Count);
         Assert.Equal("/api/v3/files/upload_url", handler.Requests[0].RequestUri!.AbsolutePath);
-        Assert.Equal("https://upload.example/upload", handler.Requests[1].RequestUri!.ToString());
+        Assert.Equal("https://uploads.virustotal.com/upload", handler.Requests[1].RequestUri!.ToString());
         Assert.True(handler.Requests[1].Headers.Contains("x-virustotal-password"));
     }
 
     [Fact]
     public async Task ReanalyzeHashAsync_UsesCorrectPath()
     {
-        var json = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var json = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"queued\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -262,7 +224,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task SubmitUrlAsync_PostsFormEncodedContent()
     {
-        var json = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var json = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"queued\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -288,7 +250,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task ScanUrlAsync_PostsToUrlsAndReturnsReport()
     {
-        var json = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}"; 
+        var json = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"queued\"}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -312,8 +274,8 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task WaitForAnalysisCompletionAsync_PollsUntilCompleted()
     {
-        var queued = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
-        var completed = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"completed\"}}}";
+        var queued = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"queued\"}}}";
+        var completed = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"completed\"}}}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -332,14 +294,14 @@ public partial class VirusTotalClientTests
         var report = await client.WaitForAnalysisCompletionAsync("an", TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(1));
 
         Assert.NotNull(report);
-        Assert.Equal(AnalysisStatus.Completed, report!.Data.Attributes.Status);
+        Assert.Equal(AnalysisStatus.Completed, report!.Attributes.Status);
         Assert.Equal(2, handler.Requests.Count);
     }
 
     [Fact]
     public async Task WaitForAnalysisCompletionAsync_ThrowsTimeout()
     {
-        var queued = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var queued = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"queued\"}}}";
         var handler = new StubHandler(queued);
         var httpClient = new HttpClient(handler)
         {
@@ -351,10 +313,32 @@ public partial class VirusTotalClientTests
             client.WaitForAnalysisCompletionAsync("an", TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(10)));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task WaitForAnalysisCompletionAsync_RejectsNonPositiveDurations(bool invalidTimeout)
+    {
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK));
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            client.WaitForAnalysisCompletionAsync(
+                "an",
+                invalidTimeout ? TimeSpan.Zero : TimeSpan.FromSeconds(1),
+                invalidTimeout ? TimeSpan.FromSeconds(1) : TimeSpan.Zero));
+
+        Assert.Equal(invalidTimeout ? "timeout" : "pollingInterval", exception.ParamName);
+        Assert.Null(handler.Request);
+    }
+
     [Fact]
     public async Task WaitForAnalysisCompletionAsync_ReturnsImmediately_WhenCompleted()
     {
-        var completed = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"completed\"}}}";
+        var completed = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"completed\"}}}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -369,14 +353,96 @@ public partial class VirusTotalClientTests
         var report = await client.WaitForAnalysisCompletionAsync("an", TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(1));
 
         Assert.NotNull(report);
-        Assert.Equal(AnalysisStatus.Completed, report!.Data.Attributes.Status);
+        Assert.Equal(AnalysisStatus.Completed, report!.Attributes.Status);
         Assert.Single(handler.Requests);
+    }
+
+    [Fact]
+    public async Task WaitForAnalysisCompletionAsync_AcceptsTimeoutBeyondCancellationTimerRange()
+    {
+        var completed = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"completed\"}}}";
+        var handler = new QueueHandler(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(completed, Encoding.UTF8, "application/json")
+            });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        var report = await client.WaitForAnalysisCompletionAsync(
+            "an",
+            TimeSpan.FromSeconds(int.MaxValue),
+            TimeSpan.FromSeconds(20));
+
+        Assert.NotNull(report);
+        Assert.Equal(AnalysisStatus.Completed, report!.Attributes.Status);
+        Assert.Single(handler.Requests);
+    }
+
+    [Fact]
+    public async Task WaitForAnalysisCompletionAsync_RetriesRateLimitWithinTimeout()
+    {
+        var error = new HttpResponseMessage((HttpStatusCode)429)
+        {
+            Content = new StringContent("{\"error\":{\"code\":\"RateLimitExceeded\",\"message\":\"slow down\"}}", Encoding.UTF8, "application/json")
+        };
+        error.Headers.Add("Retry-After", "0");
+        var completed = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"completed\"}}}";
+        var handler = new QueueHandler(
+            error,
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(completed, Encoding.UTF8, "application/json")
+            });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        var report = await client.WaitForAnalysisCompletionAsync(
+            "an",
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromMilliseconds(1));
+
+        Assert.NotNull(report);
+        Assert.Equal(AnalysisStatus.Completed, report!.Attributes.Status);
+        Assert.Equal(2, handler.Requests.Count);
+    }
+
+    [Fact]
+    public async Task WaitForAnalysisCompletionAsync_CancelsPollAtDeadline()
+    {
+        var handler = new StubHandler(async (_, cancellationToken) =>
+        {
+            await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"completed\"}}}")
+            };
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+        var stopwatch = Stopwatch.StartNew();
+
+        await Assert.ThrowsAsync<TimeoutException>(() => client.WaitForAnalysisCompletionAsync(
+            "an",
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromMilliseconds(10)));
+
+        Assert.True(stopwatch.Elapsed < TimeSpan.FromSeconds(2));
     }
 
     [Fact]
     public async Task WaitForAnalysisCompletionAsync_ThrowsOnCancellation()
     {
-        var queued = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"queued\"}}}";
+        var queued = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"queued\"}}}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -399,7 +465,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task WaitForAnalysisCompletionAsync_ThrowsApiException_OnError()
     {
-        var error = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"error\",\"error\":\"bad\"}}}";
+        var error = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"error\",\"error\":\"bad\"}}}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -422,7 +488,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task WaitForAnalysisCompletionAsync_ThrowsApiException_OnCancelled()
     {
-        var cancelled = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"cancelled\",\"error\":\"user cancelled\"}}}";
+        var cancelled = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"cancelled\",\"error\":\"user cancelled\"}}}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -445,7 +511,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task WaitForAnalysisCompletionAsync_ThrowsTimeout_OnStatusTimeout()
     {
-        var timeout = "{\"id\":\"an\",\"type\":\"analysis\",\"data\":{\"attributes\":{\"status\":\"timeout\"}}}";
+        var timeout = "{\"data\":{\"id\":\"an\",\"type\":\"analysis\",\"attributes\":{\"status\":\"timeout\"}}}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -466,7 +532,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetCommentsAsync_DeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"c1\",\"type\":\"comment\",\"data\":{\"attributes\":{\"date\":1,\"text\":\"hi\"}}}],\"meta\":{}}";
+        var json = "{\"data\":[{\"id\":\"c1\",\"type\":\"comment\",\"attributes\":{\"date\":1,\"text\":\"hi\"}}],\"meta\":{}}";
         var handler = new StubHandler(json);
         var httpClient = new HttpClient(handler)
         {
@@ -479,14 +545,14 @@ public partial class VirusTotalClientTests
         Assert.NotNull(page);
         Assert.Single(page!.Data);
         Assert.Equal("c1", page.Data[0].Id);
-        Assert.Equal("hi", page.Data[0].Data.Attributes.Text);
+        Assert.Equal("hi", page.Data[0].Attributes.Text);
     }
 
     [Fact]
     public async Task GetCommentsAsync_PaginatesThroughResults()
     {
-        var first = "{\"data\":[{\"id\":\"c1\",\"type\":\"comment\",\"data\":{\"attributes\":{\"date\":1,\"text\":\"hi\"}}}],\"meta\":{\"cursor\":\"abc\"}}";
-        var second = "{\"data\":[{\"id\":\"c2\",\"type\":\"comment\",\"data\":{\"attributes\":{\"date\":2,\"text\":\"bye\"}}}]}";
+        var first = "{\"data\":[{\"id\":\"c1\",\"type\":\"comment\",\"attributes\":{\"date\":1,\"text\":\"hi\"}}],\"meta\":{\"cursor\":\"abc\"}}";
+        var second = "{\"data\":[{\"id\":\"c2\",\"type\":\"comment\",\"attributes\":{\"date\":2,\"text\":\"bye\"}}]}";
         var handler = new QueueHandler(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -515,7 +581,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetCommentAsync_DeserializesResponseAndUsesCorrectPath()
     {
-        var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""data"":{""attributes"":{""date"":1,""text"":""hello""}}}}";
+        var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""attributes"":{""date"":1,""text"":""hello""}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -570,7 +636,7 @@ public partial class VirusTotalClientTests
         await client.SearchAsync("demo query");
 
         Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/intelligence/search", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("/api/v3/search", handler.Request!.RequestUri!.AbsolutePath);
         Assert.Equal("query=demo%20query", handler.Request!.RequestUri!.Query.TrimStart('?'));
     }
 
@@ -590,12 +656,12 @@ public partial class VirusTotalClientTests
         await client.SearchAsync("demo query", limit: 10, cursor: "abc");
 
         Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/intelligence/search", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("/api/v3/search", handler.Request!.RequestUri!.AbsolutePath);
         Assert.Equal("query=demo%20query&limit=10&cursor=abc", handler.Request!.RequestUri!.Query.TrimStart('?'));
     }
 
     [Fact]
-    public async Task SearchAsync_BuildsQueryWithOrderAndDescriptor()
+    public async Task SearchIntelligenceAsync_BuildsQueryWithOrderAndDescriptor()
     {
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -607,7 +673,7 @@ public partial class VirusTotalClientTests
         };
         IVirusTotalClient client = new VirusTotalClient(httpClient);
 
-        await client.SearchAsync("demo query", order: "last_analysis_date", descriptor: "asc");
+        await client.SearchIntelligenceAsync("demo query", order: "last_analysis_date", descriptor: "asc");
 
         Assert.NotNull(handler.Request);
         Assert.Equal("/api/v3/intelligence/search", handler.Request!.RequestUri!.AbsolutePath);
@@ -631,145 +697,6 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
-    public async Task GetFeedAsync_BuildsQueryWithLimitAndCursor()
-    {
-        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent("{\"data\":[]}", Encoding.UTF8, "application/json")
-        });
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        await client.GetFeedAsync(ResourceType.File, limit: 20, cursor: "xyz");
-
-        Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/feeds/files", handler.Request!.RequestUri!.AbsolutePath);
-        Assert.Equal("limit=20&cursor=xyz", handler.Request!.RequestUri!.Query.TrimStart('?'));
-    }
-
-    [Fact]
-    public async Task GetFeedAsync_FileBehaviour_BuildsPathWithLimitAndCursor()
-    {
-        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent("{\"data\":[]}", Encoding.UTF8, "application/json")
-        });
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        await client.GetFeedAsync(ResourceType.FileBehaviour, limit: 5, cursor: "abc");
-
-        Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/feeds/file-behaviours", handler.Request!.RequestUri!.AbsolutePath);
-        Assert.Equal("limit=5&cursor=abc", handler.Request!.RequestUri!.Query.TrimStart('?'));
-    }
-
-    [Fact]
-    public async Task GetFeedAsync_DeserializesCursor()
-    {
-        var json = "{\"data\":[],\"meta\":{\"cursor\":\"next\"}}";
-        var handler = new StubHandler(json);
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        var feed = await client.GetFeedAsync(ResourceType.File);
-
-        Assert.Equal("next", feed?.Meta?.Cursor);
-    }
-
-    [Fact]
-    public async Task GetFeedAsync_ThrowsForUnsupportedResourceType()
-    {
-        var handler = new StubHandler("{\"data\":[]}");
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => client.GetFeedAsync(ResourceType.Analysis));
-    }
-
-    [Fact]
-    public async Task GetFeedAsync_ByTime_DailyBuildsPath()
-    {
-        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent("{\"data\":[]}", Encoding.UTF8, "application/json")
-        });
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        await client.GetFeedAsync(ResourceType.File, new DateTime(2024, 1, 2, 0, 0, 0, DateTimeKind.Utc), FeedGranularity.Daily);
-
-        Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/feeds/files/20240102", handler.Request!.RequestUri!.AbsolutePath);
-    }
-
-    [Fact]
-    public async Task GetFeedAsync_ByTime_HourlyBuildsPath()
-    {
-        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent("{\"data\":[]}", Encoding.UTF8, "application/json")
-        });
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        await client.GetFeedAsync(ResourceType.Url, new DateTime(2024, 1, 2, 3, 0, 0, DateTimeKind.Utc), FeedGranularity.Hourly);
-
-        Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/feeds/urls/2024010203", handler.Request!.RequestUri!.AbsolutePath);
-    }
-
-    [Fact]
-    public async Task GetFeedAsync_ByTime_FileBehaviourBuildsPath()
-    {
-        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent("{\"data\":[]}", Encoding.UTF8, "application/json")
-        });
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        await client.GetFeedAsync(ResourceType.FileBehaviour, new DateTime(2024, 1, 2, 3, 0, 0, DateTimeKind.Utc), FeedGranularity.Hourly);
-
-        Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/feeds/file-behaviours/2024010203", handler.Request!.RequestUri!.AbsolutePath);
-    }
-
-    [Fact]
-    public async Task GetFeedAsync_ByTime_ThrowsForUnsupportedResourceType()
-    {
-        var handler = new StubHandler("{\"data\":[]}");
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => client.GetFeedAsync(ResourceType.Analysis, DateTime.UtcNow, FeedGranularity.Daily));
-    }
-
-    [Fact]
     public async Task GetIocStreamAsync_BuildsQuery()
     {
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
@@ -782,11 +709,31 @@ public partial class VirusTotalClientTests
         };
         IVirusTotalClient client = new VirusTotalClient(httpClient);
 
-        await client.GetIocStreamAsync("type:file", limit: 40, descriptorsOnly: true, cursor: "abc");
+        await client.GetIocStreamAsync("type:file", limit: 40, descriptorsOnly: true, cursor: "abc", order: "date+");
 
         Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/intelligence/ioc_stream", handler.Request!.RequestUri!.AbsolutePath);
-        Assert.Equal("filter=type%3Afile&limit=40&descriptors_only=true&cursor=abc", handler.Request!.RequestUri!.Query.TrimStart('?'));
+        Assert.Equal("/api/v3/ioc_stream", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("filter=type%3Afile&limit=40&descriptors_only=true&cursor=abc&order=date%2B", handler.Request!.RequestUri!.Query.TrimStart('?'));
+    }
+
+    [Fact]
+    public async Task GetIocStreamAsync_AllowsUnfilteredStream()
+    {
+        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"data\":[]}", Encoding.UTF8, "application/json")
+        });
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        IVirusTotalClient client = new VirusTotalClient(httpClient);
+
+        await client.GetIocStreamAsync(limit: 1);
+
+        Assert.NotNull(handler.Request);
+        Assert.Equal("/api/v3/ioc_stream", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("?limit=1", handler.Request.RequestUri.Query);
     }
 
     [Fact]
@@ -804,15 +751,15 @@ public partial class VirusTotalClientTests
 
         var item = Assert.Single(stream!.Data);
         Assert.Equal("abc", item.Id);
-       Assert.Equal("file", item.Type);
-       Assert.Equal("demo", item.Attributes!["md5"].GetString());
-       Assert.Equal("next", stream.Meta?.Cursor);
+        Assert.Equal("file", item.Type);
+        Assert.Equal("demo", item.Attributes!["md5"].GetString());
+        Assert.Equal("next", stream.Meta?.Cursor);
     }
 
     [Fact]
     public async Task GetPopularThreatCategoriesAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"malware\",\"type\":\"popular_threat_category\",\"attributes\":{\"count\":1234}}]}";
+        var json = "{\"data\":[\"adware\",\"ransomware\",\"virus\"]}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -826,10 +773,8 @@ public partial class VirusTotalClientTests
         var categories = await client.GetPopularThreatCategoriesAsync();
 
         Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/intelligence/popular_threat_categories", handler.Request!.RequestUri!.AbsolutePath);
-        var category = Assert.Single(categories);
-        Assert.Equal("malware", category.Id);
-        Assert.Equal(1234, category.Attributes.Count);
+        Assert.Equal("/api/v3/popular_threat_categories", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal(new[] { "adware", "ransomware", "virus" }, categories);
     }
 
 }

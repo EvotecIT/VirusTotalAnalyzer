@@ -13,7 +13,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetFileSubmissionsAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"s1\",\"type\":\"submission\",\"data\":{\"attributes\":{\"date\":1}}}]}";
+        var json = "{\"data\":[{\"id\":\"s1\",\"type\":\"submission\",\"attributes\":{\"date\":1}}]}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -31,13 +31,13 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/files/abc/submissions", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(submissions);
         Assert.Single(submissions!);
-        Assert.Equal(1, submissions[0].Data.Attributes.Date.ToUnixTimeSeconds());
+        Assert.Equal(1, submissions[0].Attributes.Date.ToUnixTimeSeconds());
     }
 
     [Fact]
     public async Task GetUrlSubmissionsAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"s1\",\"type\":\"submission\",\"data\":{\"attributes\":{\"date\":1}}}]}";
+        var json = "{\"data\":[{\"id\":\"s1\",\"type\":\"submission\",\"attributes\":{\"date\":1}}]}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -55,7 +55,7 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/urls/url-id/submissions", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(submissions);
         Assert.Single(submissions!);
-        Assert.Equal(1, submissions[0].Data.Attributes.Date.ToUnixTimeSeconds());
+        Assert.Equal(1, submissions[0].Attributes.Date.ToUnixTimeSeconds());
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetDomainResolutionsAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"r1\",\"type\":\"resolution\",\"data\":{\"attributes\":{\"host_name\":\"example.com\",\"ip_address\":\"1.2.3.4\",\"date\":1}}}]}";
+        var json = "{\"data\":[{\"id\":\"r1\",\"type\":\"resolution\",\"attributes\":{\"host_name\":\"example.com\",\"ip_address\":\"1.2.3.4\",\"date\":1}}]}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -99,7 +99,7 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/domains/example.com/resolutions", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(resolutions);
         Assert.Single(resolutions!);
-        Assert.Equal("1.2.3.4", resolutions[0].Data.Attributes.IpAddress);
+        Assert.Equal("1.2.3.4", resolutions[0].Attributes.IpAddress);
     }
 
     [Fact]
@@ -125,7 +125,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetDomainSubmissionsAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"s1\",\"type\":\"submission\",\"data\":{\"attributes\":{\"date\":1}}}]}";
+        var json = "{\"data\":[{\"id\":\"s1\",\"type\":\"submission\",\"attributes\":{\"date\":1}}]}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -143,13 +143,13 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/domains/example.com/submissions", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(submissions);
         Assert.Single(submissions!);
-        Assert.Equal(1, submissions[0].Data.Attributes.Date.ToUnixTimeSeconds());
+        Assert.Equal(1, submissions[0].Attributes.Date.ToUnixTimeSeconds());
     }
 
     [Fact]
     public async Task GetIpAddressResolutionsAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"r1\",\"type\":\"resolution\",\"data\":{\"attributes\":{\"host_name\":\"example.com\",\"ip_address\":\"1.2.3.4\",\"date\":1}}}]}";
+        var json = "{\"data\":[{\"id\":\"r1\",\"type\":\"resolution\",\"attributes\":{\"host_name\":\"example.com\",\"ip_address\":\"1.2.3.4\",\"date\":1}}]}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -167,13 +167,13 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/ip_addresses/1.2.3.4/resolutions", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(resolutions);
         Assert.Single(resolutions!);
-        Assert.Equal("example.com", resolutions[0].Data.Attributes.HostName);
+        Assert.Equal("example.com", resolutions[0].Attributes.HostName);
     }
 
     [Fact]
     public async Task GetIpAddressSubmissionsAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"s1\",\"type\":\"submission\",\"data\":{\"attributes\":{\"date\":1}}}]}";
+        var json = "{\"data\":[{\"id\":\"s1\",\"type\":\"submission\",\"attributes\":{\"date\":1}}]}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -191,7 +191,7 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/ip_addresses/1.2.3.4/submissions", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(submissions);
         Assert.Single(submissions!);
-        Assert.Equal(1, submissions[0].Data.Attributes.Date.ToUnixTimeSeconds());
+        Assert.Equal(1, submissions[0].Attributes.Date.ToUnixTimeSeconds());
     }
 
     [Fact]
@@ -349,7 +349,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task GetIpAddressUrlsAsync_UsesCorrectPathAndDeserializesResponse()
     {
-        var json = "{\"data\":[{\"id\":\"u1\",\"type\":\"url\",\"data\":{\"attributes\":{\"url\":\"http://example.com/\"}}}]}";
+        var json = "{\"data\":[{\"id\":\"u1\",\"type\":\"url\",\"attributes\":{\"url\":\"http://example.com/\"}}]}";
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -367,7 +367,7 @@ public partial class VirusTotalClientTests
         Assert.Equal("/api/v3/ip_addresses/1.2.3.4/urls", handler.Request!.RequestUri!.AbsolutePath);
         Assert.NotNull(urls);
         Assert.Single(urls!);
-        Assert.Equal("http://example.com/", urls[0].Data.Attributes.Url);
+        Assert.Equal("http://example.com/", urls[0].Attributes.Url);
     }
 
     [Fact]

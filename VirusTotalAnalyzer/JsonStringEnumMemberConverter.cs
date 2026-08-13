@@ -40,6 +40,12 @@ internal sealed class JsonStringEnumMemberConverter : JsonConverterFactory
             {
                 return value;
             }
+
+            if (_fromString.TryGetValue("Unknown", out var unknown))
+            {
+                return unknown;
+            }
+
             throw new JsonException($"Unknown value '{str}' for enum '{typeof(T)}'.");
         }
 

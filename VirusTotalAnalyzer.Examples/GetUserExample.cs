@@ -12,7 +12,9 @@ public static class GetUserExample
         try
         {
             var user = await client.GetUserAsync("user-id");
-            Console.WriteLine(user?.Id);
+            Console.WriteLine($"User: {user?.Id}");
+            Console.WriteLine($"Privileges: {user?.Attributes.Privileges.Count}");
+            Console.WriteLine($"Quota items: {user?.Attributes.Quotas.Count}");
         }
         catch (RateLimitExceededException ex)
         {

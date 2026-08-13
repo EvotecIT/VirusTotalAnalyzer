@@ -16,7 +16,7 @@ on:
 env:
   DOTNET_VERSIONS: |
     8.0.x
-    9.0.x
+    10.0.x
   BUILD_CONFIGURATION: 'Release'
 
 jobs:
@@ -26,10 +26,10 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: ${{ env.DOTNET_VERSIONS }}
 
@@ -38,6 +38,33 @@ jobs:
 
       - name: Build solution
         run: dotnet build VirusTotalAnalyzer.sln --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+
+      - name: Install PSPublishModule
+        shell: pwsh
+        run: |
+          Install-Module PSPublishModule -MinimumVersion 3.0.106 -Force -Scope CurrentUser -AllowClobber
+          Install-Module PSSharedGoods -MinimumVersion 0.0.312 -Force -Scope CurrentUser -AllowClobber
+
+      - name: Verify generated module help
+        shell: pwsh
+        env:
+          SignModule: 'false'
+          RefreshPSD1Only: 'false'
+          POWERFORGE_FULL_MODULE_BUILD: '1'
+        run: |
+          Import-Module PSPublishModule -MinimumVersion 3.0.106 -Force -ErrorAction Stop
+          ./Build/Build-Module.ps1 -ConfigurationGateMode Documentation -SignModule:$false
+
+          git diff --ignore-space-at-eol --exit-code -- Module/Docs Module/en-US
+          if ($LASTEXITCODE -ne 0) {
+            throw 'PowerForge-generated module help is not current.'
+          }
+
+          $untrackedGenerated = git ls-files --others --exclude-standard -- Module/Docs Module/en-US
+          if ($untrackedGenerated) {
+            $untrackedGenerated | Write-Host
+            throw 'PowerForge generated untracked module help.'
+          }
 
       - name: Run tests
         run: dotnet test VirusTotalAnalyzer.Tests/VirusTotalAnalyzer.Tests.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --no-build --verbosity normal --logger trx --collect:"XPlat Code Coverage"
@@ -60,21 +87,21 @@ jobs:
         run: Invoke-Pester -Path 'Module/Tests' -Output Detailed -CI
 
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: test-results-windows
           path: '**/*.trx'
 
       - name: Upload coverage reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: coverage-reports-windows
           path: '**/coverage.cobertura.xml'
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: '**/coverage.cobertura.xml'
 
@@ -84,10 +111,10 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: ${{ env.DOTNET_VERSIONS }}
 
@@ -107,21 +134,21 @@ jobs:
         run: pwsh -NoLogo -NoProfile -Command "Invoke-Pester -Path 'Module/Tests' -Output Detailed -CI"
 
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: test-results-ubuntu
           path: '**/*.trx'
 
       - name: Upload coverage reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: coverage-reports-ubuntu
           path: '**/coverage.cobertura.xml'
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: '**/coverage.cobertura.xml'
 
@@ -131,10 +158,10 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: ${{ env.DOTNET_VERSIONS }}
 
@@ -154,20 +181,20 @@ jobs:
         run: pwsh -NoLogo -NoProfile -Command "Invoke-Pester -Path 'Module/Tests' -Output Detailed -CI"
 
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: test-results-macos
           path: '**/*.trx'
 
       - name: Upload coverage reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: coverage-reports-macos
           path: '**/coverage.cobertura.xml'
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: '**/coverage.cobertura.xml'

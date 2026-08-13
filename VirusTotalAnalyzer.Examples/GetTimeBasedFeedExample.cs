@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using VirusTotalAnalyzer.Models;
 
@@ -11,8 +12,14 @@ public static class GetTimeBasedFeedExample
         IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var feed = await client.GetFeedAsync(ResourceType.FileBehaviour, DateTime.UtcNow.AddHours(-1), FeedGranularity.Hourly);
-            Console.WriteLine(feed?.Data.Count);
+            using var feed = await client.DownloadFeedBatchAsync(
+                FeedType.FileBehaviors,
+                DateTimeOffset.UtcNow.AddHours(-2),
+                FeedGranularity.Hour);
+            const string outputPath = "file-behaviours-hour.tar.bz2";
+            using var output = File.Create(outputPath);
+            await feed.CopyToAsync(output);
+            Console.WriteLine($"Saved {output.Position} bytes to {outputPath}.");
         }
         catch (RateLimitExceededException ex)
         {

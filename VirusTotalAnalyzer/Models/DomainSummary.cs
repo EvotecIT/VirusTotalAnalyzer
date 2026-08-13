@@ -8,11 +8,6 @@ public sealed class DomainSummary
     public ResourceType Type { get; set; }
 
     public Links Links { get; set; } = new();
-    public DomainSummaryData Data { get; set; } = new();
-}
-
-public sealed class DomainSummaryData
-{
     public DomainSummaryAttributes Attributes { get; set; } = new();
 }
 
@@ -31,4 +26,3 @@ public sealed class DomainSummariesResponse
 
     public PaginationMetadata? Meta { get; set; }
 }
-

@@ -12,7 +12,7 @@ public static class GetSslCertificateExample
         try
         {
             var certificate = await client.GetSslCertificateAsync("CERTIFICATE_ID");
-            Console.WriteLine(certificate?.Data.Attributes.Subject);
+            Console.WriteLine(certificate?.Attributes.Subject);
         }
         catch (RateLimitExceededException ex)
         {
@@ -24,4 +24,3 @@ public static class GetSslCertificateExample
         }
     }
 }
-

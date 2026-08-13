@@ -54,7 +54,7 @@ public class PathEncodingTests
     }
 
     [Fact]
-    public async Task DeleteGraphCommentAsync_EncodesIdsInPath()
+    public async Task DeleteCommentAsync_EncodesIdInPath()
     {
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK));
         var httpClient = new HttpClient(handler)
@@ -63,16 +63,15 @@ public class PathEncodingTests
         };
         IVirusTotalClient client = new VirusTotalClient(httpClient);
 
-        var graphId = "graph/id#1";
         var commentId = "comment/id?2";
-        await client.DeleteGraphCommentAsync(graphId, commentId);
+        await client.DeleteCommentAsync(commentId);
 
         Assert.NotNull(handler.Request);
-        Assert.Equal($"/api/v3/graphs/{Uri.EscapeDataString(graphId)}/comments/{Uri.EscapeDataString(commentId)}", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal($"/api/v3/comments/{Uri.EscapeDataString(commentId)}", handler.Request!.RequestUri!.AbsolutePath);
     }
 
     [Fact]
-    public async Task DeleteGraphCollaboratorAsync_EncodesIdsInPath()
+    public async Task RevokeGraphPermissionAsync_EncodesIdsInPath()
     {
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK));
         var httpClient = new HttpClient(handler)
@@ -83,10 +82,9 @@ public class PathEncodingTests
 
         var graphId = "graph/id#1";
         var username = "user/name?2";
-        await client.DeleteGraphCollaboratorAsync(graphId, username);
+        await client.RevokeGraphPermissionAsync(graphId, GraphPermission.Viewer, username);
 
         Assert.NotNull(handler.Request);
-        Assert.Equal($"/api/v3/graphs/{Uri.EscapeDataString(graphId)}/collaborators/{Uri.EscapeDataString(username)}", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal($"/api/v3/graphs/{Uri.EscapeDataString(graphId)}/relationships/viewers/{Uri.EscapeDataString(username)}", handler.Request!.RequestUri!.AbsolutePath);
     }
 }
-

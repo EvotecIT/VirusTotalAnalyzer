@@ -24,14 +24,13 @@ public static class StartRetrohuntJobExample
                 await Task.Delay(TimeSpan.FromSeconds(30));
                 current = await client.GetRetrohuntJobAsync(job.Id);
             }
-            while (current != null && current.Data.Attributes.Status != "done");
+            while (current != null && current.Attributes.Status != "done");
 
-            var page = await client.ListRetrohuntNotificationsAsync(fetchAll: false);
-            foreach (var n in page.Data)
+            var matches = await client.GetRelationshipsAsync(ResourceType.RetrohuntJob, job.Id, "matching_files");
+            foreach (var match in matches?.Data ?? new())
             {
-                Console.WriteLine($"Notification {n.Id} from job {n.Data.Attributes.JobId}");
+                Console.WriteLine($"Matching file: {match.Id}");
             }
-            Console.WriteLine($"Next cursor: {page.NextCursor}");
         }
         catch (RateLimitExceededException ex)
         {

@@ -11,13 +11,9 @@ public static class ListMonitorEventsExample
         IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var events = await client.ListMonitorEventsAsync(fetchAll: true);
-            if (events != null)
+            await foreach (var monitorEvent in client.EnumerateMonitorEventsAsync())
             {
-                foreach (var e in events.Data)
-                {
-                    Console.WriteLine(e.Id);
-                }
+                Console.WriteLine($"{monitorEvent.Timestamp:u} {monitorEvent.Action} {monitorEvent.Subject}");
             }
         }
         catch (RateLimitExceededException ex)
@@ -30,4 +26,3 @@ public static class ListMonitorEventsExample
         }
     }
 }
-

@@ -13,7 +13,7 @@ public static class CreateGraphExample
         {
             var request = new CreateGraphRequest
             {
-                Data = { Attributes = { Name = "My Graph" } }
+                Data = { Attributes = { GraphData = new GraphData { Description = "My Graph" } } }
             };
             var graph = await client.CreateGraphAsync(request);
             Console.WriteLine(graph?.Id);

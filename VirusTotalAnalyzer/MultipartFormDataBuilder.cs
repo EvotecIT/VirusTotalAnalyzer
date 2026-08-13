@@ -23,6 +23,10 @@ public sealed class MultipartFormDataBuilder
     {
         _stream = stream ?? throw new ArgumentNullException(nameof(stream));
         _fileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
+        if (fileName.Length == 0)
+            throw new ArgumentException("File name must not be empty.", nameof(fileName));
+        if (fileName.IndexOf('\r') >= 0 || fileName.IndexOf('\n') >= 0)
+            throw new ArgumentException("File name must not contain CR or LF characters.", nameof(fileName));
         Boundary = "---------------------------" + Guid.NewGuid().ToString("N");
     }
 
@@ -40,6 +44,8 @@ public sealed class MultipartFormDataBuilder
             throw new ArgumentNullException(nameof(name));
         if (value is null)
             throw new ArgumentNullException(nameof(value));
+        if (name.Length == 0 || name.IndexOf('\r') >= 0 || name.IndexOf('\n') >= 0 || name.IndexOf('"') >= 0)
+            throw new ArgumentException("Form field name contains invalid characters.", nameof(name));
         _fields.Add(new KeyValuePair<string, string>(name, value));
         return this;
     }
@@ -58,12 +64,15 @@ public sealed class MultipartFormDataBuilder
             builder.Append("\r\n");
         }
         builder.Append($"--{Boundary}\r\n");
-        builder.Append($"Content-Disposition: form-data; name=\"file\"; filename=\"{_fileName}\"\r\n");
+        builder.Append($"Content-Disposition: form-data; name=\"file\"; filename=\"{EscapeQuotedString(_fileName)}\"\r\n");
         builder.Append("Content-Type: application/octet-stream\r\n\r\n");
         var start = Encoding.UTF8.GetBytes(builder.ToString());
         var end = Encoding.UTF8.GetBytes($"\r\n--{Boundary}--\r\n");
         return new MultipartStreamContent(_stream, start, end, Boundary);
     }
+
+    private static string EscapeQuotedString(string value)
+        => value.Replace("\\", "\\\\").Replace("\"", "\\\"");
 
     private sealed class MultipartStreamContent : HttpContent
     {
@@ -110,4 +119,3 @@ public sealed class MultipartFormDataBuilder
         }
     }
 }
-

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -81,37 +82,57 @@ public partial class VirusTotalClientTests
     public async Task DownloadFileAsync_UsesCorrectPathAndReturnsStream()
     {
         var trackingStream = new TrackingStream(new byte[] { 1, 2, 3 });
-        var response = new TrackingResponseMessage
+        var downloadResponse = new TrackingResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StreamContent(trackingStream)
         };
-        var handler = new SingleResponseHandler(response);
-        var httpClient = new HttpClient(handler)
+        var apiHandler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                "{\"data\":\"https://storage.example/files/abc\"}",
+                Encoding.UTF8,
+                "application/json")
+        });
+        var httpClient = new HttpClient(apiHandler)
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
+        httpClient.DefaultRequestHeaders.Add("x-apikey", "secret");
+
+        var redirectResponse = new HttpResponseMessage(HttpStatusCode.Redirect);
+        redirectResponse.Headers.Location = new Uri("https://cdn.example/files/abc");
+        var downloadHandler = new QueueHandler(redirectResponse, downloadResponse);
+        var downloadClient = new HttpClient(downloadHandler);
+        IVirusTotalClient client = new VirusTotalClient(httpClient, downloadClient);
 
 #if NETFRAMEWORK
         using (var stream = await client.DownloadFileAsync("abc"))
         {
-            Assert.NotNull(handler.Request);
-            Assert.Equal("/api/v3/files/abc/download", handler.Request!.RequestUri!.AbsolutePath);
+            Assert.NotNull(apiHandler.Request);
+            Assert.Equal("/api/v3/files/abc/download_url", apiHandler.Request!.RequestUri!.AbsolutePath);
             Assert.False(trackingStream.Disposed);
-            Assert.False(response.Disposed);
+            Assert.False(downloadResponse.Disposed);
         }
 #else
         await using (var stream = await client.DownloadFileAsync("abc"))
         {
-            Assert.NotNull(handler.Request);
-            Assert.Equal("/api/v3/files/abc/download", handler.Request!.RequestUri!.AbsolutePath);
+            Assert.NotNull(apiHandler.Request);
+            Assert.Equal("/api/v3/files/abc/download_url", apiHandler.Request!.RequestUri!.AbsolutePath);
             Assert.False(trackingStream.Disposed);
-            Assert.False(response.Disposed);
+            Assert.False(downloadResponse.Disposed);
         }
 #endif
         Assert.True(trackingStream.Disposed);
-        Assert.True(response.Disposed);
+        Assert.True(downloadResponse.Disposed);
+        Assert.Equal(2, downloadHandler.Requests.Count);
+        Assert.Equal("storage.example", downloadHandler.Requests[0].RequestUri!.Host);
+        Assert.Equal("cdn.example", downloadHandler.Requests[1].RequestUri!.Host);
+        Assert.All(downloadHandler.Requests, request =>
+        {
+            Assert.False(request.Headers.Contains("x-apikey"));
+            Assert.Null(request.Headers.Authorization);
+        });
     }
 
     [Fact]
@@ -122,23 +143,116 @@ public partial class VirusTotalClientTests
         {
             Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
         };
-        var handler = new SingleResponseHandler(response);
-        var httpClient = new HttpClient(handler)
+        var apiHandler = new SingleResponseHandler(response);
+        var httpClient = new HttpClient(apiHandler)
         {
             BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
         };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
+        var downloadClient = new HttpClient(new QueueHandler());
+        IVirusTotalClient client = new VirusTotalClient(httpClient, downloadClient);
 
         var ex = await Assert.ThrowsAsync<ApiException>(async () => await client.DownloadFileAsync("abc"));
 
-        Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/files/abc/download", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.NotNull(apiHandler.Request);
+        Assert.Equal("/api/v3/files/abc/download_url", apiHandler.Request!.RequestUri!.AbsolutePath);
         Assert.Equal("NotFoundError", ex.Error?.Code);
         Assert.Equal("not found", ex.Message);
     }
 
     [Fact]
-    public async Task DownloadPcapAsync_UsesCorrectPathAndReturnsStream()
+    public async Task DownloadFileAsync_RejectsHttpsToHttpRedirectWithoutSendingApiKey()
+    {
+        var apiHandler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                "{\"data\":\"https://storage.example/files/abc\"}",
+                Encoding.UTF8,
+                "application/json")
+        });
+        var httpClient = new HttpClient(apiHandler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        httpClient.DefaultRequestHeaders.Add("x-apikey", "secret");
+
+        var redirectResponse = new HttpResponseMessage(HttpStatusCode.Redirect);
+        redirectResponse.Headers.Location = new Uri("http://storage.example/insecure");
+        var downloadHandler = new QueueHandler(redirectResponse);
+        var downloadClient = new HttpClient(downloadHandler);
+        using var client = new VirusTotalClient(httpClient, downloadClient);
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => client.DownloadFileAsync("abc"));
+
+        var request = Assert.Single(downloadHandler.Requests);
+        Assert.False(request.Headers.Contains("x-apikey"));
+        Assert.Null(request.Headers.Authorization);
+    }
+
+    [Theory]
+    [InlineData("pcap", "/api/v3/file_behaviours/abc/pcap")]
+    [InlineData("livehunt", "/api/v3/intelligence/hunting_notification_files/abc")]
+    public async Task RedirectingAuthenticatedDownloads_FollowSignedUrlWithoutApiKey(
+        string downloadKind,
+        string expectedApiPath)
+    {
+        var apiRedirect = new HttpResponseMessage(HttpStatusCode.Redirect);
+        apiRedirect.Headers.Location = new Uri("https://storage.example/downloads/abc");
+        var apiHandler = new QueueHandler(apiRedirect);
+        var apiClient = new HttpClient(apiHandler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        apiClient.DefaultRequestHeaders.Add("x-apikey", "secret");
+
+        var downloadHandler = new QueueHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new ByteArrayContent(new byte[] { 1, 2, 3 })
+        });
+        var downloadClient = new HttpClient(downloadHandler);
+        using var client = new VirusTotalClient(apiClient, downloadClient);
+
+        var downloadTask = downloadKind switch
+        {
+            "pcap" => client.DownloadFileBehaviorArtifactAsync("abc", BehaviorArtifact.Pcap),
+            "livehunt" => client.DownloadLivehuntNotificationFileAsync("abc"),
+            _ => throw new InvalidOperationException($"Unknown download kind: {downloadKind}")
+        };
+
+        using var stream = await downloadTask;
+        Assert.Equal(1, stream.ReadByte());
+
+        var apiRequest = Assert.Single(apiHandler.Requests);
+        Assert.Equal(expectedApiPath, apiRequest.RequestUri!.AbsolutePath);
+        Assert.True(apiRequest.Headers.Contains("x-apikey"));
+
+        var downloadRequest = Assert.Single(downloadHandler.Requests);
+        Assert.Equal("storage.example", downloadRequest.RequestUri!.Host);
+        Assert.False(downloadRequest.Headers.Contains("x-apikey"));
+        Assert.Null(downloadRequest.Headers.Authorization);
+    }
+
+    [Fact]
+    public async Task DownloadFileBehaviorArtifactAsync_RejectsInsecureRedirectBeforeUnauthenticatedRequest()
+    {
+        var apiRedirect = new HttpResponseMessage(HttpStatusCode.Redirect);
+        apiRedirect.Headers.Location = new Uri("http://storage.example/downloads/abc");
+        var apiHandler = new QueueHandler(apiRedirect);
+        var apiClient = new HttpClient(apiHandler)
+        {
+            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+        };
+        apiClient.DefaultRequestHeaders.Add("x-apikey", "secret");
+        var downloadHandler = new QueueHandler();
+        using var client = new VirusTotalClient(apiClient, new HttpClient(downloadHandler));
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => client.DownloadFileBehaviorArtifactAsync("abc", BehaviorArtifact.Pcap));
+
+        Assert.Single(apiHandler.Requests);
+        Assert.Empty(downloadHandler.Requests);
+    }
+
+    [Fact]
+    public async Task DownloadFileBehaviorArtifactAsync_UsesCorrectPathAndReturnsStream()
     {
         var trackingStream = new TrackingStream(new byte[] { 1, 2, 3 });
         var response = new TrackingResponseMessage
@@ -154,18 +268,18 @@ public partial class VirusTotalClientTests
         IVirusTotalClient client = new VirusTotalClient(httpClient);
 
 #if NETFRAMEWORK
-        using (var stream = await client.DownloadPcapAsync("abc"))
+        using (var stream = await client.DownloadFileBehaviorArtifactAsync("abc", BehaviorArtifact.Pcap))
         {
             Assert.NotNull(handler.Request);
-            Assert.Equal("/api/v3/analyses/abc/pcap", handler.Request!.RequestUri!.AbsolutePath);
+            Assert.Equal("/api/v3/file_behaviours/abc/pcap", handler.Request!.RequestUri!.AbsolutePath);
             Assert.False(trackingStream.Disposed);
             Assert.False(response.Disposed);
         }
 #else
-        await using (var stream = await client.DownloadPcapAsync("abc"))
+        await using (var stream = await client.DownloadFileBehaviorArtifactAsync("abc", BehaviorArtifact.Pcap))
         {
             Assert.NotNull(handler.Request);
-            Assert.Equal("/api/v3/analyses/abc/pcap", handler.Request!.RequestUri!.AbsolutePath);
+            Assert.Equal("/api/v3/file_behaviours/abc/pcap", handler.Request!.RequestUri!.AbsolutePath);
             Assert.False(trackingStream.Disposed);
             Assert.False(response.Disposed);
         }
@@ -175,7 +289,7 @@ public partial class VirusTotalClientTests
     }
 
     [Fact]
-    public async Task DownloadPcapAsync_ThrowsApiException()
+    public async Task DownloadFileBehaviorArtifactAsync_ThrowsApiException()
     {
         var errorJson = @"{""error"":{""code"":""NotFoundError"",""message"":""not found""}}";
         var response = new HttpResponseMessage(HttpStatusCode.NotFound)
@@ -189,70 +303,10 @@ public partial class VirusTotalClientTests
         };
         IVirusTotalClient client = new VirusTotalClient(httpClient);
 
-        var ex = await Assert.ThrowsAsync<ApiException>(async () => await client.DownloadPcapAsync("abc"));
+        var ex = await Assert.ThrowsAsync<ApiException>(async () => await client.DownloadFileBehaviorArtifactAsync("abc", BehaviorArtifact.Pcap));
 
         Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/analyses/abc/pcap", handler.Request!.RequestUri!.AbsolutePath);
-        Assert.Equal("NotFoundError", ex.Error?.Code);
-        Assert.Equal("not found", ex.Message);
-    }
-
-    [Fact]
-    public async Task DownloadRetrohuntNotificationFileAsync_UsesCorrectPathAndReturnsStream()
-    {
-        var trackingStream = new TrackingStream(new byte[] { 1, 2, 3 });
-        var response = new TrackingResponseMessage
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new StreamContent(trackingStream)
-        };
-        var handler = new SingleResponseHandler(response);
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-#if NETFRAMEWORK
-        using (var stream = await client.DownloadRetrohuntNotificationFileAsync("abc"))
-        {
-            Assert.NotNull(handler.Request);
-            Assert.Equal("/api/v3/intelligence/retrohunt_notification_files/abc", handler.Request!.RequestUri!.AbsolutePath);
-            Assert.False(trackingStream.Disposed);
-            Assert.False(response.Disposed);
-        }
-#else
-        await using (var stream = await client.DownloadRetrohuntNotificationFileAsync("abc"))
-        {
-            Assert.NotNull(handler.Request);
-            Assert.Equal("/api/v3/intelligence/retrohunt_notification_files/abc", handler.Request!.RequestUri!.AbsolutePath);
-            Assert.False(trackingStream.Disposed);
-            Assert.False(response.Disposed);
-        }
-#endif
-        Assert.True(trackingStream.Disposed);
-        Assert.True(response.Disposed);
-    }
-
-    [Fact]
-    public async Task DownloadRetrohuntNotificationFileAsync_ThrowsApiException()
-    {
-        var errorJson = "{\"error\":{\"code\":\"NotFoundError\",\"message\":\"not found\"}}";
-        var response = new HttpResponseMessage(HttpStatusCode.NotFound)
-        {
-            Content = new StringContent(errorJson, Encoding.UTF8, "application/json")
-        };
-        var handler = new SingleResponseHandler(response);
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        var ex = await Assert.ThrowsAsync<ApiException>(async () => await client.DownloadRetrohuntNotificationFileAsync("abc"));
-
-        Assert.NotNull(handler.Request);
-        Assert.Equal("/api/v3/intelligence/retrohunt_notification_files/abc", handler.Request!.RequestUri!.AbsolutePath);
+        Assert.Equal("/api/v3/file_behaviours/abc/pcap", handler.Request!.RequestUri!.AbsolutePath);
         Assert.Equal("NotFoundError", ex.Error?.Code);
         Assert.Equal("not found", ex.Message);
     }
@@ -411,7 +465,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task CreateCommentAsync_PostsComment()
     {
-        var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""data"":{""attributes"":{""date"":1,""text"":""hello""}}}}";
+        var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""attributes"":{""date"":1,""text"":""hello""}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -433,7 +487,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task AddCommentAsync_TextForwardsToCreateCommentAsync()
     {
-        var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""data"":{""attributes"":{""date"":1,""text"":""hello""}}}}";
+        var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""attributes"":{""date"":1,""text"":""hello""}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -455,7 +509,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task AddCommentAsync_RequestForwardsToCreateCommentAsync()
     {
-        var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""data"":{""attributes"":{""date"":1,""text"":""hello""}}}}";
+        var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""attributes"":{""date"":1,""text"":""hello""}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -496,7 +550,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task CreateVoteAsync_PostsVerdict()
     {
-        var json = @"{""data"":{""id"":""v1"",""type"":""vote"",""data"":{""attributes"":{""date"":1,""verdict"":""malicious""}}}}";
+        var json = @"{""data"":{""id"":""v1"",""type"":""vote"",""attributes"":{""date"":1,""verdict"":""malicious""}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -518,7 +572,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task VoteAsync_VerdictForwardsToCreateVoteAsync()
     {
-        var json = @"{""data"":{""id"":""v1"",""type"":""vote"",""data"":{""attributes"":{""date"":1,""verdict"":""malicious""}}}}";
+        var json = @"{""data"":{""id"":""v1"",""type"":""vote"",""attributes"":{""date"":1,""verdict"":""malicious""}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -540,7 +594,7 @@ public partial class VirusTotalClientTests
     [Fact]
     public async Task VoteAsync_RequestForwardsToCreateVoteAsync()
     {
-        var json = @"{""data"":{""id"":""v1"",""type"":""vote"",""data"":{""attributes"":{""date"":1,""verdict"":""malicious""}}}}";
+        var json = @"{""data"":{""id"":""v1"",""type"":""vote"",""attributes"":{""date"":1,""verdict"":""malicious""}}}";
         var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")

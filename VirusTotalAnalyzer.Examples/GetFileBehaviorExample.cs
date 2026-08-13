@@ -11,8 +11,8 @@ public static class GetFileBehaviorExample
         IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
         try
         {
-            var behavior = await client.GetFileBehaviorAsync("44d88612fea8a8f36de82e1278abb02f");
-            Console.WriteLine(behavior?.Data.Count);
+            var behaviors = await client.GetFileBehaviorsAsync("44d88612fea8a8f36de82e1278abb02f", limit: 10);
+            Console.WriteLine(behaviors?.Data.Count);
 
             var summary = await client.GetFileBehaviorSummaryAsync("44d88612fea8a8f36de82e1278abb02f");
             Console.WriteLine(summary?.Data.Tags.Count);

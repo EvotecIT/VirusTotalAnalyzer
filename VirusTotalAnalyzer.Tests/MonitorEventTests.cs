@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -11,154 +12,67 @@ namespace VirusTotalAnalyzer.Tests;
 public class MonitorEventTests
 {
     [Fact]
-    public async Task ListMonitorEventsAsync_GetsEvents()
+    public async Task ListMonitorEventsAsync_DeserializesPlainEventDictionaries()
     {
-        var json = "{\"data\":[{\"id\":\"e1\",\"type\":\"monitor_event\",\"data\":{\"attributes\":{\"path\":\"/foo\",\"event_type\":\"created\"}}}]}";
-        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(json, Encoding.UTF8, "application/json")
-        });
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
+        const string json = """
+            {
+              "data": [{
+                "action": "DETECTED",
+                "creator_id": "publisher",
+                "details": [{ "v": "engine" }],
+                "level": "1",
+                "monitor_key": "key",
+                "owner_id": "owner",
+                "plaintext_description": "Detected by engine",
+                "source": "ANALYSIS",
+                "subject": "sample.exe",
+                "timestamp": "2024-07-01T12:34:56Z"
+              }],
+              "meta": { "cursor": "next", "job_id": "job-1" }
+            }
+            """;
+        var handler = new SingleResponseHandler(JsonResponse(json));
+        using var httpClient = CreateHttpClient(handler);
+        using var client = new VirusTotalClient(httpClient);
 
-        var response = await client.ListMonitorEventsAsync();
+        var response = await client.ListMonitorEventsAsync("action:DETECTED", "start", "job-0");
 
-        Assert.NotNull(response);
-        Assert.Single(response.Data);
-        Assert.Equal(HttpMethod.Get, handler.Request!.Method);
-        Assert.Equal("/api/v3/monitor/events", handler.Request.RequestUri!.AbsolutePath);
+        var monitorEvent = Assert.Single(response!.Data);
+        Assert.Equal(MonitorEventAction.Detected, monitorEvent.Action);
+        Assert.Equal(MonitorEventSource.Analysis, monitorEvent.Source);
+        Assert.Equal(1, monitorEvent.Level);
+        Assert.Equal("engine", Assert.Single(monitorEvent.Details).V);
+        Assert.Equal(DateTimeOffset.Parse("2024-07-01T12:34:56Z"), monitorEvent.Timestamp);
+        Assert.Equal("?filter=action%3ADETECTED&cursor=start&job_id=job-0", handler.Request!.RequestUri!.Query);
     }
 
     [Fact]
-    public async Task ListMonitorEventsAsync_WithParameters_AppendsToUrlAndReturnsCursor()
+    public async Task EnumerateMonitorEventsAsync_PropagatesCursorAndJobId()
     {
-        var json = "{\"data\":[],\"meta\":{\"cursor\":\"next_cursor\"}}";
-        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(json, Encoding.UTF8, "application/json")
-        });
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        var response = await client.ListMonitorEventsAsync(filter: "type:foo", limit: 10, cursor: "abc");
-
-        Assert.NotNull(response);
-        Assert.Equal("next_cursor", response.NextCursor);
-        Assert.Equal(HttpMethod.Get, handler.Request!.Method);
-        Assert.Equal("/api/v3/monitor/events", handler.Request.RequestUri!.AbsolutePath);
-        Assert.Equal("?filter=type%3Afoo&limit=10&cursor=abc", handler.Request.RequestUri.Query);
-    }
-
-    [Fact]
-    public async Task ListMonitorEventsAsync_FetchAll_RetrievesAllPages()
-    {
-        var first = "{\"data\":[{\"id\":\"e1\",\"type\":\"monitor_event\"}],\"meta\":{\"cursor\":\"next\"}}";
-        var second = "{\"data\":[{\"id\":\"e2\",\"type\":\"monitor_event\"}]}";
         var handler = new QueueHandler(
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(first, Encoding.UTF8, "application/json") },
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(second, Encoding.UTF8, "application/json") }
-        );
-        var httpClient = new HttpClient(handler)
+            JsonResponse("{\"data\":[{\"action\":\"UPLOAD\",\"source\":\"FILE\"}],\"meta\":{\"cursor\":\"next\",\"job_id\":\"job-1\"}}"),
+            JsonResponse("{\"data\":[{\"action\":\"CLEAN\",\"source\":\"ANALYSIS\"}]}"));
+        using var httpClient = CreateHttpClient(handler);
+        using var client = new VirusTotalClient(httpClient);
+        var actions = new List<MonitorEventAction>();
+
+        await foreach (var monitorEvent in client.EnumerateMonitorEventsAsync())
         {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
+            actions.Add(monitorEvent.Action);
+        }
 
-        var response = await client.ListMonitorEventsAsync(fetchAll: true);
-
-        Assert.NotNull(response);
-        Assert.Equal(2, response.Data.Count);
-        Assert.Equal(2, handler.Requests.Count);
+        Assert.Equal(new[] { MonitorEventAction.Upload, MonitorEventAction.Clean }, actions);
         Assert.Equal(string.Empty, handler.Requests[0].RequestUri!.Query);
-        Assert.Equal("?cursor=next", handler.Requests[1].RequestUri!.Query);
+        Assert.Equal("?cursor=next&job_id=job-1", handler.Requests[1].RequestUri!.Query);
     }
 
-    [Fact]
-    public async Task GetCommentsAsync_OnMonitorEvent_UsesMonitorEventsPath()
+    private static HttpClient CreateHttpClient(HttpMessageHandler handler) => new(handler)
     {
-        var json = "{\"data\":[]}";
-        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(json, Encoding.UTF8, "application/json")
-        });
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
+        BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
+    };
 
-        var comments = await client.GetCommentsAsync(ResourceType.MonitorEvent, "e1");
-
-        Assert.NotNull(comments);
-        Assert.Equal("/api/v3/monitor/events/e1/comments", handler.Request!.RequestUri!.AbsolutePath);
-    }
-
-    [Fact]
-    public async Task CreateCommentAsync_OnMonitorEvent_UsesMonitorEventsPath()
+    private static HttpResponseMessage JsonResponse(string json) => new(HttpStatusCode.OK)
     {
-        var json = @"{""data"":{""id"":""c1"",""type"":""comment"",""data"":{""attributes"":{""date"":1,""text"":""hi""}}}}";
-        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(json, Encoding.UTF8, "application/json")
-        });
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        var comment = await client.CreateCommentAsync(ResourceType.MonitorEvent, "e1", "hi");
-
-        Assert.NotNull(comment);
-        Assert.Equal("/api/v3/monitor/events/e1/comments", handler.Request!.RequestUri!.AbsolutePath);
-        Assert.Contains("\"text\":\"hi\"", handler.Content);
-    }
-
-    [Fact]
-    public async Task GetVotesAsync_OnMonitorEvent_UsesMonitorEventsPath()
-    {
-        var json = "{\"data\":[]}";
-        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(json, Encoding.UTF8, "application/json")
-        });
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        var votes = await client.GetVotesAsync(ResourceType.MonitorEvent, "e1");
-
-        Assert.NotNull(votes);
-        Assert.Equal("/api/v3/monitor/events/e1/votes", handler.Request!.RequestUri!.AbsolutePath);
-    }
-
-    [Fact]
-    public async Task CreateVoteAsync_OnMonitorEvent_UsesMonitorEventsPath()
-    {
-        var json = @"{""data"":{""id"":""v1"",""type"":""vote"",""data"":{""attributes"":{""date"":1,""verdict"":""malicious""}}}}";
-        var handler = new SingleResponseHandler(new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(json, Encoding.UTF8, "application/json")
-        });
-        var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://www.virustotal.com/api/v3/")
-        };
-        IVirusTotalClient client = new VirusTotalClient(httpClient);
-
-        var vote = await client.CreateVoteAsync(ResourceType.MonitorEvent, "e1", VoteVerdict.Malicious);
-
-        Assert.NotNull(vote);
-        Assert.Equal("/api/v3/monitor/events/e1/votes", handler.Request!.RequestUri!.AbsolutePath);
-        Assert.Contains("\"verdict\":\"malicious\"", handler.Content);
-    }
+        Content = new StringContent(json, Encoding.UTF8, "application/json")
+    };
 }
-

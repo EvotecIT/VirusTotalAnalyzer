@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace VirusTotalAnalyzer.Models;
 
 public sealed class YaraRulesetRequest
@@ -19,7 +17,4 @@ public sealed class YaraRulesetRequestAttributes
     public string Name { get; set; } = string.Empty;
 
     public string Rules { get; set; } = string.Empty;
-
-    public List<YaraWatcher>? Watchers { get; set; }
 }
-

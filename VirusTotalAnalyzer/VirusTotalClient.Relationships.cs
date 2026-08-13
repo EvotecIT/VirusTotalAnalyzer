@@ -40,7 +40,12 @@ public sealed partial class VirusTotalClient
         var graphs = new List<Graph>(relationships.Data.Count);
         foreach (var relationship in relationships.Data)
         {
-            var graph = await GetGraphAsync(relationship.Id, cancellationToken).ConfigureAwait(false);
+            var graphId = relationship.Id;
+            if (string.IsNullOrEmpty(graphId))
+            {
+                continue;
+            }
+            var graph = await GetGraphAsync(graphId!, cancellationToken).ConfigureAwait(false);
             if (graph != null)
             {
                 graphs.Add(graph);
@@ -50,12 +55,36 @@ public sealed partial class VirusTotalClient
         return graphs;
     }
 
-    public Task<IReadOnlyList<Resolution>?> GetDomainResolutionsAsync(
+    public async Task<IReadOnlyList<Resolution>?> GetDomainResolutionsAsync(
         string id,
         int? limit = null,
         string? cursor = null,
         CancellationToken cancellationToken = default)
-        => GetResolutionsAsync(ResourceType.Domain, id, limit, cursor, cancellationToken);
+        => (await GetDomainResolutionsPageAsync(id, limit, cursor, cancellationToken).ConfigureAwait(false))?.Data;
+
+    /// <summary>Gets one page of domain resolutions together with its continuation cursor.</summary>
+    public Task<PagedResponse<Resolution>?> GetDomainResolutionsPageAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetTypedRelationshipPageAsync<Resolution>(ResourceType.Domain, id, "resolutions", limit, cursor, cancellationToken);
+
+    /// <summary>Gets historical WHOIS snapshots for a domain.</summary>
+    public async Task<IReadOnlyList<WhoisRecord>?> GetDomainHistoricalWhoisAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => (await GetDomainHistoricalWhoisPageAsync(id, limit, cursor, cancellationToken).ConfigureAwait(false))?.Data;
+
+    /// <summary>Gets one page of historical WHOIS snapshots for a domain together with its continuation cursor.</summary>
+    public Task<PagedResponse<WhoisRecord>?> GetDomainHistoricalWhoisPageAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetTypedRelationshipPageAsync<WhoisRecord>(ResourceType.Domain, id, "historical_whois", limit, cursor, cancellationToken);
 
     public Task<IReadOnlyList<Submission>?> GetDomainSubmissionsAsync(
         string id,
@@ -85,19 +114,35 @@ public sealed partial class VirusTotalClient
         CancellationToken cancellationToken = default)
         => GetDomainRelationshipsAsync<DomainUrlsResponse, UrlSummary>(id, "urls", r => r.Data, limit, cursor, cancellationToken);
 
-    public Task<IReadOnlyList<DnsRecord>?> GetDomainDnsRecordsAsync(
+    public async Task<IReadOnlyList<FileReport>?> GetDomainReferrerFilesAsync(
         string id,
         int? limit = null,
         string? cursor = null,
         CancellationToken cancellationToken = default)
-        => GetDomainRelationshipsAsync<DnsRecordsResponse, DnsRecord>(id, "dns_records", r => r.Data, limit, cursor, cancellationToken);
+        => (await GetDomainReferrerFilesPageAsync(id, limit, cursor, cancellationToken).ConfigureAwait(false))?.Data;
 
-    public Task<IReadOnlyList<FileReport>?> GetDomainReferrerFilesAsync(
+    /// <summary>Gets one page of files referring to a domain together with its continuation cursor.</summary>
+    public Task<PagedResponse<FileReport>?> GetDomainReferrerFilesPageAsync(
         string id,
         int? limit = null,
         string? cursor = null,
         CancellationToken cancellationToken = default)
-        => GetDomainRelationshipsAsync<FileReportsResponse, FileReport>(id, "referrer_files", r => r.Data, limit, cursor, cancellationToken);
+        => GetTypedRelationshipPageAsync<FileReport>(ResourceType.Domain, id, "referrer_files", limit, cursor, cancellationToken);
+
+    public async Task<IReadOnlyList<FileReport>?> GetDomainCommunicatingFilesAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => (await GetDomainCommunicatingFilesPageAsync(id, limit, cursor, cancellationToken).ConfigureAwait(false))?.Data;
+
+    /// <summary>Gets one page of files communicating with a domain together with its continuation cursor.</summary>
+    public Task<PagedResponse<FileReport>?> GetDomainCommunicatingFilesPageAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetTypedRelationshipPageAsync<FileReport>(ResourceType.Domain, id, "communicating_files", limit, cursor, cancellationToken);
 
     public Task<IReadOnlyList<FileReport>?> GetDomainDownloadedFilesAsync(
         string id,
@@ -106,19 +151,51 @@ public sealed partial class VirusTotalClient
         CancellationToken cancellationToken = default)
         => GetDomainRelationshipsAsync<FileReportsResponse, FileReport>(id, "downloaded_files", r => r.Data, limit, cursor, cancellationToken);
 
-    public Task<IReadOnlyList<SslCertificate>?> GetDomainSslCertificatesAsync(
+    public async Task<IReadOnlyList<SslCertificate>?> GetDomainHistoricalSslCertificatesAsync(
         string id,
         int? limit = null,
         string? cursor = null,
         CancellationToken cancellationToken = default)
-        => GetDomainRelationshipsAsync<SslCertificatesResponse, SslCertificate>(id, "ssl_certificates", r => r.Data, limit, cursor, cancellationToken);
+        => (await GetDomainHistoricalSslCertificatesPageAsync(id, limit, cursor, cancellationToken).ConfigureAwait(false))?.Data;
 
-    public Task<IReadOnlyList<Resolution>?> GetIpAddressResolutionsAsync(
+    /// <summary>Gets one page of historical SSL certificates for a domain together with its continuation cursor.</summary>
+    public Task<PagedResponse<SslCertificate>?> GetDomainHistoricalSslCertificatesPageAsync(
         string id,
         int? limit = null,
         string? cursor = null,
         CancellationToken cancellationToken = default)
-        => GetResolutionsAsync(ResourceType.IpAddress, id, limit, cursor, cancellationToken);
+        => GetTypedRelationshipPageAsync<SslCertificate>(ResourceType.Domain, id, "historical_ssl_certificates", limit, cursor, cancellationToken);
+
+    public async Task<IReadOnlyList<Resolution>?> GetIpAddressResolutionsAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => (await GetIpAddressResolutionsPageAsync(id, limit, cursor, cancellationToken).ConfigureAwait(false))?.Data;
+
+    /// <summary>Gets one page of IP address resolutions together with its continuation cursor.</summary>
+    public Task<PagedResponse<Resolution>?> GetIpAddressResolutionsPageAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetTypedRelationshipPageAsync<Resolution>(ResourceType.IpAddress, id, "resolutions", limit, cursor, cancellationToken);
+
+    /// <summary>Gets historical WHOIS snapshots for an IP address.</summary>
+    public async Task<IReadOnlyList<WhoisRecord>?> GetIpAddressHistoricalWhoisAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => (await GetIpAddressHistoricalWhoisPageAsync(id, limit, cursor, cancellationToken).ConfigureAwait(false))?.Data;
+
+    /// <summary>Gets one page of historical WHOIS snapshots for an IP address together with its continuation cursor.</summary>
+    public Task<PagedResponse<WhoisRecord>?> GetIpAddressHistoricalWhoisPageAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetTypedRelationshipPageAsync<WhoisRecord>(ResourceType.IpAddress, id, "historical_whois", limit, cursor, cancellationToken);
 
     public Task<IReadOnlyList<Submission>?> GetIpAddressSubmissionsAsync(
         string id,
@@ -132,25 +209,15 @@ public sealed partial class VirusTotalClient
         int? limit = null,
         string? cursor = null,
         CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        var path = new System.Text.StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}/communicating_files");
-        var hasQuery = false;
-        if (limit.HasValue)
-        {
-            path.Append("?limit=").Append(limit.Value);
-            hasQuery = true;
-        }
-        if (!string.IsNullOrEmpty(cursor))
-        {
-            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
-        }
-        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        var result = await JsonSerializer.DeserializeAsync<FileReportsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-        return result?.Data;
-    }
+        => (await GetIpAddressCommunicatingFilesPageAsync(id, limit, cursor, cancellationToken).ConfigureAwait(false))?.Data;
+
+    /// <summary>Gets one page of files communicating with an IP address together with its continuation cursor.</summary>
+    public Task<PagedResponse<FileReport>?> GetIpAddressCommunicatingFilesPageAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetTypedRelationshipPageAsync<FileReport>(ResourceType.IpAddress, id, "communicating_files", limit, cursor, cancellationToken);
 
     public async Task<IReadOnlyList<FileReport>?> GetIpAddressDownloadedFilesAsync(
         string id,
@@ -182,25 +249,15 @@ public sealed partial class VirusTotalClient
         int? limit = null,
         string? cursor = null,
         CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        var path = new System.Text.StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}/referrer_files");
-        var hasQuery = false;
-        if (limit.HasValue)
-        {
-            path.Append("?limit=").Append(limit.Value);
-            hasQuery = true;
-        }
-        if (!string.IsNullOrEmpty(cursor))
-        {
-            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
-        }
-        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        var result = await JsonSerializer.DeserializeAsync<FileReportsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-        return result?.Data;
-    }
+        => (await GetIpAddressReferrerFilesPageAsync(id, limit, cursor, cancellationToken).ConfigureAwait(false))?.Data;
+
+    /// <summary>Gets one page of files referring to an IP address together with its continuation cursor.</summary>
+    public Task<PagedResponse<FileReport>?> GetIpAddressReferrerFilesPageAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetTypedRelationshipPageAsync<FileReport>(ResourceType.IpAddress, id, "referrer_files", limit, cursor, cancellationToken);
 
     public async Task<IReadOnlyList<UrlSummary>?> GetIpAddressUrlsAsync(
         string id,
@@ -227,14 +284,33 @@ public sealed partial class VirusTotalClient
         return result?.Data;
     }
 
-    public async Task<IReadOnlyList<SslCertificate>?> GetIpAddressSslCertificatesAsync(
+    public async Task<IReadOnlyList<SslCertificate>?> GetIpAddressHistoricalSslCertificatesAsync(
         string id,
         int? limit = null,
         string? cursor = null,
         CancellationToken cancellationToken = default)
+        => (await GetIpAddressHistoricalSslCertificatesPageAsync(id, limit, cursor, cancellationToken).ConfigureAwait(false))?.Data;
+
+    /// <summary>Gets one page of historical SSL certificates for an IP address together with its continuation cursor.</summary>
+    public Task<PagedResponse<SslCertificate>?> GetIpAddressHistoricalSslCertificatesPageAsync(
+        string id,
+        int? limit = null,
+        string? cursor = null,
+        CancellationToken cancellationToken = default)
+        => GetTypedRelationshipPageAsync<SslCertificate>(ResourceType.IpAddress, id, "historical_ssl_certificates", limit, cursor, cancellationToken);
+
+    private async Task<PagedResponse<T>?> GetTypedRelationshipPageAsync<T>(
+        ResourceType resourceType,
+        string id,
+        string relationship,
+        int? limit,
+        string? cursor,
+        CancellationToken cancellationToken)
     {
         ValidateId(id, nameof(id));
-        var path = new System.Text.StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}/ssl_certificates");
+        ValidateLimit(limit, nameof(limit));
+        var path = new System.Text.StringBuilder(
+            $"{GetPath(resourceType)}/{Uri.EscapeDataString(id)}/{Uri.EscapeDataString(relationship)}");
         var hasQuery = false;
         if (limit.HasValue)
         {
@@ -242,14 +318,13 @@ public sealed partial class VirusTotalClient
             hasQuery = true;
         }
         if (!string.IsNullOrEmpty(cursor))
-        {
             path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
-        }
+
         using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        var result = await JsonSerializer.DeserializeAsync<SslCertificatesResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-        return result?.Data;
+        return await JsonSerializer.DeserializeAsync<PagedResponse<T>>(stream, _jsonOptions, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private async Task<IReadOnlyList<T>?> GetDomainRelationshipsAsync<TResponse, T>(
@@ -261,6 +336,7 @@ public sealed partial class VirusTotalClient
         CancellationToken cancellationToken)
     {
         ValidateId(id, nameof(id));
+        ValidateLimit(limit, nameof(limit));
         var path = new System.Text.StringBuilder($"domains/{Uri.EscapeDataString(id)}/{Uri.EscapeDataString(relationship)}");
         var hasQuery = false;
         if (limit.HasValue)
@@ -280,32 +356,6 @@ public sealed partial class VirusTotalClient
         return result == null ? null : selector(result);
     }
 
-    private async Task<IReadOnlyList<Resolution>?> GetResolutionsAsync(
-        ResourceType resourceType,
-        string id,
-        int? limit,
-        string? cursor,
-        CancellationToken cancellationToken)
-    {
-        ValidateId(id, nameof(id));
-        var path = new System.Text.StringBuilder($"{GetPath(resourceType)}/{Uri.EscapeDataString(id)}/resolutions");
-        var hasQuery = false;
-        if (limit.HasValue)
-        {
-            path.Append("?limit=").Append(limit.Value);
-            hasQuery = true;
-        }
-        if (!string.IsNullOrEmpty(cursor))
-        {
-            path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(cursor));
-        }
-        using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        var result = await JsonSerializer.DeserializeAsync<ResolutionsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-        return result?.Data;
-    }
-
     private async Task<IReadOnlyList<Submission>?> GetSubmissionsAsync(
         ResourceType resourceType,
         string id,
@@ -314,6 +364,7 @@ public sealed partial class VirusTotalClient
         CancellationToken cancellationToken)
     {
         ValidateId(id, nameof(id));
+        ValidateLimit(limit, nameof(limit));
         var path = new System.Text.StringBuilder($"{GetPath(resourceType)}/{Uri.EscapeDataString(id)}/submissions");
         var hasQuery = false;
         if (limit.HasValue)

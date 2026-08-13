@@ -19,7 +19,7 @@ public static class GraphCommentsExample
 
             if (comment != null)
             {
-                await client.DeleteGraphCommentAsync("graph-id", comment.Id);
+                await client.DeleteCommentAsync(comment.Id);
                 Console.WriteLine("Comment deleted");
             }
         }

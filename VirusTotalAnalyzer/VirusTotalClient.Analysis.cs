@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using VirusTotalAnalyzer.Models;
@@ -15,40 +13,28 @@ namespace VirusTotalAnalyzer;
 
 public sealed partial class VirusTotalClient
 {
+    private static readonly TimeSpan MaxAnalysisStatusRequestDuration = TimeSpan.FromMinutes(10);
+
     /// <summary>
     /// Retrieves reports for multiple files.
     /// </summary>
-    /// <param name="ids">Identifiers of the files to retrieve. Must contain between 1 and 4 items.</param>
-    /// <param name="fields">Optional fields to include in the response.</param>
-    /// <param name="relationships">Optional relationships to include in the response.</param>
+    /// <param name="ids">Identifiers of the files to retrieve. Each object is requested individually.</param>
+    /// <param name="fields">Optional fields to include in each response.</param>
+    /// <param name="relationships">Optional relationships to include in each response.</param>
     /// <param name="cancellationToken">Token that can be used to cancel the operation.</param>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="ids"/> is empty or contains more than four items.</exception>
-    public async Task<IReadOnlyList<FileReport>?> GetFileReportsAsync(
+    /// <exception cref="ArgumentException">Thrown when <paramref name="ids"/> is empty or contains an invalid identifier.</exception>
+    public async Task<IReadOnlyList<FileReport>> GetFileReportsAsync(
         IEnumerable<string> ids,
         IEnumerable<string>? fields = null,
         IEnumerable<string>? relationships = null,
         CancellationToken cancellationToken = default)
     {
-        var idArray = ValidateIds(ids, nameof(ids));
-        var url = new StringBuilder("files?ids=")
-            .Append(string.Join(",", idArray.Select(Uri.EscapeDataString)));
-
-        if (fields != null && fields.Any())
-        {
-            url.Append("&fields=").Append(string.Join(",", fields.Select(Uri.EscapeDataString)));
-        }
-
-        if (relationships != null && relationships.Any())
-        {
-            url.Append("&relationships=").Append(string.Join(",", relationships.Select(Uri.EscapeDataString)));
-        }
-
-        using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        var result = await JsonSerializer.DeserializeAsync<FileReportsResponse>(stream, _jsonOptions, cancellationToken)
+        return await GetManyAsync(
+                ids,
+                (id, token) => GetFileReportAsync(id, fields, relationships, token),
+                nameof(ids),
+                cancellationToken)
             .ConfigureAwait(false);
-        return result?.Data;
     }
 
     public async Task<FileReport?> GetFileReportAsync(
@@ -58,38 +44,44 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        var url = new StringBuilder($"files/{Uri.EscapeDataString(id)}");
-        var hasQuery = false;
-
-        if (fields != null && fields.Any())
-        {
-            url.Append("?fields=").Append(string.Join(",", fields.Select(Uri.EscapeDataString)));
-            hasQuery = true;
-        }
-
-        if (relationships != null && relationships.Any())
-        {
-            url.Append(hasQuery ? '&' : '?')
-                .Append("relationships=")
-                .Append(string.Join(",", relationships.Select(Uri.EscapeDataString)));
-        }
-
-        using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
+        var url = BuildObjectUrl("files", id, fields, relationships);
+        using var response = await _httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         var result = await JsonSerializer.DeserializeAsync<FileReportResponse>(stream, _jsonOptions, cancellationToken)
             .ConfigureAwait(false);
         return result?.Data;
     }
 
-    public async Task<FileBehavior?> GetFileBehaviorAsync(string id, CancellationToken cancellationToken = default)
+    /// <summary>Gets sandbox behavior reports for a file hash.</summary>
+    public Task<PagedResponse<BehaviorEntry>?> GetFileBehaviorsAsync(
+        string fileId,
+        int? limit = null,
+        string? cursor = null,
+        bool fetchAll = false,
+        CancellationToken cancellationToken = default)
     {
-        ValidateId(id, nameof(id));
-        using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/behaviour", cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<FileBehavior>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
+        ValidateId(fileId, nameof(fileId));
+        return GetPagedAsync<BehaviorEntry>(
+            (nextCursor, token) => GetPageAsync<BehaviorEntry>(
+                $"files/{Uri.EscapeDataString(fileId)}/behaviours",
+                limit,
+                nextCursor,
+                token),
+            cursor,
+            fetchAll,
+            cancellationToken);
+    }
+
+    /// <summary>Gets one sandbox behavior report by its behavior identifier.</summary>
+    public Task<BehaviorEntry?> GetFileBehaviorAsync(
+        string behaviorId,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateId(behaviorId, nameof(behaviorId));
+        return GetDataAsync<BehaviorEntry>(
+            $"file_behaviours/{Uri.EscapeDataString(behaviorId)}",
+            cancellationToken);
     }
 
     public async Task<FileBehaviorSummary?> GetFileBehaviorSummaryAsync(string id, CancellationToken cancellationToken = default)
@@ -97,70 +89,9 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/behaviour_summary", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         return await JsonSerializer.DeserializeAsync<FileBehaviorSummary>(stream, _jsonOptions, cancellationToken)
             .ConfigureAwait(false);
-    }
-
-    public async Task<FileNetworkTraffic?> GetFileNetworkTrafficAsync(string id, CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/network-traffic", cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<FileNetworkTraffic>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
-    }
-
-    public async Task<FilePeInfo?> GetFilePeInfoAsync(string id, CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/pe_info", cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<FilePeInfo>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
-    }
-
-    public async Task<FileClassification?> GetFileClassificationAsync(string id, CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/classification", cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<FileClassification>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
-    }
-
-    public async Task<IReadOnlyList<string>?> GetFileStringsAsync(string id, CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/strings", cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        var result = await JsonSerializer.DeserializeAsync<FileStringsResponse>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
-        return result?.Data;
-    }
-
-    public async Task<IReadOnlyList<CrowdsourcedYaraResult>?> GetCrowdsourcedYaraResultsAsync(string id, CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/crowdsourced_yara_results", cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        var result = await JsonSerializer.DeserializeAsync<CrowdsourcedYaraResultsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-        return result?.Data;
-    }
-
-    public async Task<IReadOnlyList<CrowdsourcedIdsResult>?> GetCrowdsourcedIdsResultsAsync(string id, CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/crowdsourced_ids_results", cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        var result = await JsonSerializer.DeserializeAsync<CrowdsourcedIdsResultsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-        return result?.Data;
     }
 
     public Task<PagedResponse<UrlSummary>?> GetFileContactedUrlsAsync(
@@ -392,7 +323,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"files/{Uri.EscapeDataString(id)}/download_url", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         var result = await JsonSerializer.DeserializeAsync<DownloadUrlResponse>(stream, _jsonOptions, cancellationToken)
             .ConfigureAwait(false);
         if (result is null || string.IsNullOrEmpty(result.Data))
@@ -400,66 +331,39 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
             return null;
         }
 
-        return Uri.TryCreate(result.Data, UriKind.Absolute, out var uri) ? uri : null;
+        return Uri.TryCreate(result.Data, UriKind.Absolute, out var uri)
+            ? ValidateSignedDownloadUri(uri)
+            : null;
     }
 
     public async Task<Stream> DownloadFileAsync(string id, CancellationToken cancellationToken = default)
     {
-        ValidateId(id, nameof(id));
-        var response = await _httpClient
-            .GetAsync($"files/{Uri.EscapeDataString(id)}/download", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-            .ConfigureAwait(false);
-        var disposeResponse = true;
-        try
-        {
-            await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-            var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-            disposeResponse = false;
-            return new StreamWithResponse(response, stream);
-        }
-        finally
-        {
-            if (disposeResponse)
-            {
-                response.Dispose();
-            }
-        }
+        var downloadUri = await GetFileDownloadUrlAsync(id, cancellationToken).ConfigureAwait(false);
+        return await DownloadFromSignedUrlAsync(
+            downloadUri ?? throw new InvalidDataException("VirusTotal returned no signed download URL."),
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
     /// Retrieves reports for multiple URLs.
     /// </summary>
-    /// <param name="ids">Identifiers of the URLs to retrieve. Must contain between 1 and 4 items.</param>
+    /// <param name="ids">Identifiers of the URLs to retrieve. Each object is requested individually.</param>
     /// <param name="fields">Optional fields to include in the response.</param>
     /// <param name="relationships">Optional relationships to include in the response.</param>
     /// <param name="cancellationToken">Token that can be used to cancel the operation.</param>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="ids"/> is empty or contains more than four items.</exception>
-    public async Task<IReadOnlyList<UrlReport>?> GetUrlReportsAsync(
+    /// <exception cref="ArgumentException">Thrown when <paramref name="ids"/> is empty or contains an invalid identifier.</exception>
+    public async Task<IReadOnlyList<UrlReport>> GetUrlReportsAsync(
         IEnumerable<string> ids,
         IEnumerable<string>? fields = null,
         IEnumerable<string>? relationships = null,
         CancellationToken cancellationToken = default)
     {
-        var idArray = ValidateIds(ids, nameof(ids));
-        var url = new StringBuilder("urls?ids=")
-            .Append(string.Join(",", idArray.Select(Uri.EscapeDataString)));
-
-        if (fields != null && fields.Any())
-        {
-            url.Append("&fields=").Append(string.Join(",", fields.Select(Uri.EscapeDataString)));
-        }
-
-        if (relationships != null && relationships.Any())
-        {
-            url.Append("&relationships=").Append(string.Join(",", relationships.Select(Uri.EscapeDataString)));
-        }
-
-        using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        var result = await JsonSerializer.DeserializeAsync<UrlReportsResponse>(stream, _jsonOptions, cancellationToken)
+        return await GetManyAsync(
+                ids,
+                (id, token) => GetUrlReportAsync(id, fields, relationships, token),
+                nameof(ids),
+                cancellationToken)
             .ConfigureAwait(false);
-        return result?.Data;
     }
 
     public async Task<UrlReport?> GetUrlReportAsync(
@@ -469,25 +373,10 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        var url = new StringBuilder($"urls/{Uri.EscapeDataString(id)}");
-        var hasQuery = false;
-
-        if (fields != null && fields.Any())
-        {
-            url.Append("?fields=").Append(string.Join(",", fields.Select(Uri.EscapeDataString)));
-            hasQuery = true;
-        }
-
-        if (relationships != null && relationships.Any())
-        {
-            url.Append(hasQuery ? '&' : '?')
-                .Append("relationships=")
-                .Append(string.Join(",", relationships.Select(Uri.EscapeDataString)));
-        }
-
-        using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
+        var url = BuildObjectUrl("urls", id, fields, relationships);
+        using var response = await _httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         var result = await JsonSerializer.DeserializeAsync<UrlReportResponse>(stream, _jsonOptions, cancellationToken)
             .ConfigureAwait(false);
         return result?.Data;
@@ -539,7 +428,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
 
             using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
             await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+            using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
             var page = await JsonSerializer.DeserializeAsync<AnalysisReportsResponse>(stream, _jsonOptions, cancellationToken)
                 .ConfigureAwait(false);
             if (page != null)
@@ -581,7 +470,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         }
         using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         var result = await JsonSerializer.DeserializeAsync<FileReportsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
         return result?.Data;
     }
@@ -606,7 +495,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         }
         using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         var result = await JsonSerializer.DeserializeAsync<FileReportsResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
         return result?.Data;
     }
@@ -631,7 +520,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         }
         using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         var result = await JsonSerializer.DeserializeAsync<UrlSummariesResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
         return result?.Data;
     }
@@ -656,7 +545,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         }
         using var response = await _httpClient.GetAsync(path.ToString(), cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         var result = await JsonSerializer.DeserializeAsync<IpAddressSummariesResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
         return result?.Data;
     }
@@ -666,200 +555,28 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"urls/{Uri.EscapeDataString(id)}/last_serving_ip_address", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
         var result = await JsonSerializer.DeserializeAsync<IpAddressSummaryResponse>(stream, _jsonOptions, cancellationToken)
             .ConfigureAwait(false);
         return result?.Data;
     }
 
     /// <summary>
-    /// Retrieves reports for multiple IP addresses.
-    /// </summary>
-    /// <param name="ids">Identifiers of the IP addresses to retrieve. Must contain between 1 and 4 items.</param>
-    /// <param name="fields">Optional fields to include in the response.</param>
-    /// <param name="relationships">Optional relationships to include in the response.</param>
-    /// <param name="cancellationToken">Token that can be used to cancel the operation.</param>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="ids"/> is empty or contains more than four items.</exception>
-    public async Task<IReadOnlyList<IpAddressReport>?> GetIpAddressReportsAsync(
-        IEnumerable<string> ids,
-        IEnumerable<string>? fields = null,
-        IEnumerable<string>? relationships = null,
-        CancellationToken cancellationToken = default)
-    {
-        var idArray = ValidateIds(ids, nameof(ids));
-        var url = new StringBuilder("ip_addresses?ids=")
-            .Append(string.Join(",", idArray.Select(Uri.EscapeDataString)));
-
-        if (fields != null && fields.Any())
-        {
-            url.Append("&fields=").Append(string.Join(",", fields.Select(Uri.EscapeDataString)));
-        }
-
-        if (relationships != null && relationships.Any())
-        {
-            url.Append("&relationships=").Append(string.Join(",", relationships.Select(Uri.EscapeDataString)));
-        }
-
-        using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        var result = await JsonSerializer.DeserializeAsync<IpAddressReportsResponse>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
-        return result?.Data;
-    }
-
-    public async Task<IpAddressReport?> GetIpAddressReportAsync(
-        string id,
-        IEnumerable<string>? fields = null,
-        IEnumerable<string>? relationships = null,
-        CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        var url = new StringBuilder($"ip_addresses/{Uri.EscapeDataString(id)}");
-        var hasQuery = false;
-
-        if (fields != null && fields.Any())
-        {
-            url.Append("?fields=").Append(string.Join(",", fields.Select(Uri.EscapeDataString)));
-            hasQuery = true;
-        }
-
-        if (relationships != null && relationships.Any())
-        {
-            url.Append(hasQuery ? '&' : '?')
-                .Append("relationships=")
-                .Append(string.Join(",", relationships.Select(Uri.EscapeDataString)));
-        }
-
-        using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        var result = await JsonSerializer.DeserializeAsync<IpAddressReportResponse>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
-        return result?.Data;
-    }
-
-    public async Task<IpWhois?> GetIpAddressWhoisAsync(string id, CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        using var response = await _httpClient.GetAsync($"ip_addresses/{Uri.EscapeDataString(id)}/whois", cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<IpWhois>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Retrieves reports for multiple domains.
-    /// </summary>
-    /// <param name="ids">Domain identifiers to retrieve. Must contain between 1 and 4 items.</param>
-    /// <param name="fields">Optional fields to include in the response.</param>
-    /// <param name="relationships">Optional relationships to include in the response.</param>
-    /// <param name="cancellationToken">Token that can be used to cancel the operation.</param>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="ids"/> is empty or contains more than four items.</exception>
-    public async Task<IReadOnlyList<DomainReport>?> GetDomainReportsAsync(
-        IEnumerable<string> ids,
-        IEnumerable<string>? fields = null,
-        IEnumerable<string>? relationships = null,
-        CancellationToken cancellationToken = default)
-    {
-        var idArray = ValidateIds(ids, nameof(ids));
-        var url = new StringBuilder("domains?ids=")
-            .Append(string.Join(",", idArray.Select(Uri.EscapeDataString)));
-
-        if (fields != null && fields.Any())
-        {
-            url.Append("&fields=").Append(string.Join(",", fields.Select(Uri.EscapeDataString)));
-        }
-
-        if (relationships != null && relationships.Any())
-        {
-            url.Append("&relationships=").Append(string.Join(",", relationships.Select(Uri.EscapeDataString)));
-        }
-
-        using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        var result = await JsonSerializer.DeserializeAsync<DomainReportsResponse>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
-        return result?.Data;
-    }
-
-    public async Task<DomainReport?> GetDomainReportAsync(
-        string id,
-        IEnumerable<string>? fields = null,
-        IEnumerable<string>? relationships = null,
-        CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        var url = new StringBuilder($"domains/{Uri.EscapeDataString(id)}");
-        var hasQuery = false;
-
-        if (fields != null && fields.Any())
-        {
-            url.Append("?fields=").Append(string.Join(",", fields.Select(Uri.EscapeDataString)));
-            hasQuery = true;
-        }
-
-        if (relationships != null && relationships.Any())
-        {
-            url.Append(hasQuery ? '&' : '?')
-                .Append("relationships=")
-                .Append(string.Join(",", relationships.Select(Uri.EscapeDataString)));
-        }
-
-        using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        var result = await JsonSerializer.DeserializeAsync<DomainReportResponse>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
-        return result?.Data;
-    }
-
-    public async Task<DomainWhois?> GetDomainWhoisAsync(string id, CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        using var response = await _httpClient.GetAsync($"domains/{Uri.EscapeDataString(id)}/whois", cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<DomainWhois>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
     /// Retrieves reports for multiple analyses.
     /// </summary>
-    /// <param name="ids">Identifiers of the analyses to retrieve. Must contain between 1 and 4 items.</param>
-    /// <param name="fields">Optional fields to include in the response.</param>
-    /// <param name="relationships">Optional relationships to include in the response.</param>
+    /// <param name="ids">Identifiers of the analyses to retrieve. Each object is requested individually.</param>
     /// <param name="cancellationToken">Token that can be used to cancel the operation.</param>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="ids"/> is empty or contains more than four items.</exception>
-    public async Task<IReadOnlyList<AnalysisReport>?> GetAnalysesAsync(
+    /// <exception cref="ArgumentException">Thrown when <paramref name="ids"/> is empty or contains an invalid identifier.</exception>
+    public async Task<IReadOnlyList<AnalysisReport>> GetAnalysesAsync(
         IEnumerable<string> ids,
-        IEnumerable<string>? fields = null,
-        IEnumerable<string>? relationships = null,
         CancellationToken cancellationToken = default)
     {
-        var idArray = ValidateIds(ids, nameof(ids));
-        var url = new StringBuilder("analyses?ids=")
-            .Append(string.Join(",", idArray.Select(Uri.EscapeDataString)));
-
-        if (fields != null && fields.Any())
-        {
-            url.Append("&fields=").Append(string.Join(",", fields.Select(Uri.EscapeDataString)));
-        }
-
-        if (relationships != null && relationships.Any())
-        {
-            url.Append("&relationships=").Append(string.Join(",", relationships.Select(Uri.EscapeDataString)));
-        }
-
-        using var response = await _httpClient.GetAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        var result = await JsonSerializer.DeserializeAsync<AnalysisReportsResponse>(stream, _jsonOptions, cancellationToken)
+        return await GetManyAsync(
+                ids,
+                (id, token) => GetAnalysisAsync(id, token),
+                nameof(ids),
+                cancellationToken)
             .ConfigureAwait(false);
-        return result?.Data;
     }
 
     public async Task<AnalysisReport?> GetAnalysisAsync(string id, CancellationToken cancellationToken = default)
@@ -867,9 +584,8 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"analyses/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<AnalysisReport>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<AnalysisReport>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<PrivateAnalysis?> GetPrivateAnalysisAsync(string id, CancellationToken cancellationToken = default)
@@ -877,9 +593,8 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         ValidateId(id, nameof(id));
         using var response = await _httpClient.GetAsync($"private/analyses/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<PrivateAnalysis>(stream, _jsonOptions, cancellationToken)
-            .ConfigureAwait(false);
+        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<PrivateAnalysis>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<AnalysisReport?> WaitForAnalysisCompletionAsync(
@@ -889,21 +604,71 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         CancellationToken cancellationToken = default)
     {
         ValidateId(id, nameof(id));
-        var interval = pollingInterval ?? TimeSpan.FromSeconds(1);
-        var start = DateTimeOffset.UtcNow;
+        if (timeout <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(timeout), "Timeout must be greater than zero.");
+        }
+
+        var interval = pollingInterval ?? TimeSpan.FromSeconds(20);
+        if (interval <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(pollingInterval), "Polling interval must be greater than zero.");
+        }
+        var stopwatch = Stopwatch.StartNew();
 
         while (true)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var report = await GetAnalysisAsync(id, cancellationToken).ConfigureAwait(false);
-            var status = report?.Data?.Attributes?.Status;
+            var remainingBeforeRequest = timeout - stopwatch.Elapsed;
+            if (remainingBeforeRequest <= TimeSpan.Zero)
+            {
+                throw new TimeoutException("The analysis did not complete within the specified timeout.");
+            }
+
+            AnalysisReport? report;
+            using var requestCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var requestDuration = remainingBeforeRequest < MaxAnalysisStatusRequestDuration
+                ? remainingBeforeRequest
+                : MaxAnalysisStatusRequestDuration;
+            requestCancellation.CancelAfter(requestDuration);
+            try
+            {
+                report = await GetAnalysisAsync(id, requestCancellation.Token).ConfigureAwait(false);
+            }
+            catch (RateLimitExceededException ex)
+            {
+                var remainingAfterLimit = timeout - stopwatch.Elapsed;
+                if (remainingAfterLimit <= TimeSpan.Zero)
+                {
+                    throw new TimeoutException("The analysis did not complete within the specified timeout.", ex);
+                }
+
+                var retryDelay = ex.RetryAfter is { } serverDelay && serverDelay > TimeSpan.Zero
+                    ? serverDelay
+                    : interval;
+                await Task.Delay(
+                    retryDelay < remainingAfterLimit ? retryDelay : remainingAfterLimit,
+                    cancellationToken).ConfigureAwait(false);
+                continue;
+            }
+            catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                throw new TimeoutException("The analysis did not complete within the specified timeout.", ex);
+            }
+
+            if (stopwatch.Elapsed >= timeout)
+            {
+                throw new TimeoutException("The analysis did not complete within the specified timeout.");
+            }
+
+            var status = report?.Attributes.Status;
             if (status == AnalysisStatus.Completed)
             {
                 return report;
             }
 
-            var error = report?.Data?.Attributes?.Error;
+            var error = report?.Attributes.Error;
             if (status == AnalysisStatus.Error || status == AnalysisStatus.Cancelled)
             {
                 var apiError = string.IsNullOrEmpty(error) ? null : new ApiError { Message = error };
@@ -915,12 +680,7 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
                 throw new TimeoutException(error ?? "The analysis request timed out.");
             }
 
-            if (DateTimeOffset.UtcNow - start >= timeout)
-            {
-                throw new TimeoutException("The analysis did not complete within the specified timeout.");
-            }
-
-            var remaining = timeout - (DateTimeOffset.UtcNow - start);
+            var remaining = timeout - stopwatch.Elapsed;
             var delay = remaining < interval ? remaining : interval;
             if (delay > TimeSpan.Zero)
             {
@@ -929,32 +689,4 @@ using var stream = await response.Content.ReadContentStreamAsync(cancellationTok
         }
     }
 
-    private static string[] ValidateIds(IEnumerable<string> ids, string paramName)
-    {
-        if (ids == null)
-        {
-            throw new ArgumentNullException(paramName);
-        }
-
-        var array = ids as string[] ?? ids.ToArray();
-        if (array.Length == 0)
-        {
-            throw new ArgumentException("The collection must not be empty.", paramName);
-        }
-
-        if (array.Length > 4)
-        {
-            throw new ArgumentException("A maximum of 4 ids is allowed.", paramName);
-        }
-
-        for (var i = 0; i < array.Length; i++)
-        {
-            if (string.IsNullOrWhiteSpace(array[i]))
-            {
-                throw new ArgumentException("The collection cannot contain null, empty, or whitespace ids.", paramName);
-            }
-        }
-
-        return array;
-    }
 }

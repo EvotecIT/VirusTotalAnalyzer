@@ -8,5 +8,7 @@ public sealed class PagedResponse<T>
 
     public Meta? Meta { get; set; }
 
+    public Links? Links { get; set; }
+
     public string? NextCursor => Meta?.Cursor;
 }

@@ -14,12 +14,8 @@ namespace VirusTotalAnalyzer.PowerShell;
 ///   <para>Displays community feedback for the file with the given hash.</para>
 /// </example>
 [Cmdlet(VerbsCommon.Get, "VirusComment")]
-public sealed class CmdletGetVirusComment : AsyncPSCmdlet
+public sealed class CmdletGetVirusComment : VirusTotalCmdlet
 {
-    /// <summary>VirusTotal API key.</summary>
-    [Parameter(Mandatory = true)]
-    public string ApiKey { get; set; } = string.Empty;
-
     /// <summary>Resource type to retrieve comments for.</summary>
     [Parameter(Mandatory = true)]
     public ResourceType ResourceType { get; set; }
@@ -36,17 +32,12 @@ public sealed class CmdletGetVirusComment : AsyncPSCmdlet
     [Parameter]
     public string? Cursor { get; set; }
 
-    /// <summary>Existing VirusTotal client to reuse.</summary>
-    [Parameter]
-    public VirusTotalClient? Client { get; set; }
-
     /// <inheritdoc/>
     protected override async Task ProcessRecordAsync()
     {
-        var client = Client ?? VirusTotalClient.Create(ApiKey);
         try
         {
-            var comments = await client.GetCommentsAsync(ResourceType, Id, Limit, Cursor, CancelToken).ConfigureAwait(false);
+            var comments = await ActiveClient.GetCommentsAsync(ResourceType, Id, Limit, Cursor, CancelToken).ConfigureAwait(false);
             if (comments is not null)
             {
                 WriteObject(comments.Data, true);
@@ -55,13 +46,6 @@ public sealed class CmdletGetVirusComment : AsyncPSCmdlet
         catch (ApiException ex)
         {
             WriteApiError(ex, Id);
-        }
-        finally
-        {
-            if (Client is null)
-            {
-                client.Dispose();
-            }
         }
     }
 }

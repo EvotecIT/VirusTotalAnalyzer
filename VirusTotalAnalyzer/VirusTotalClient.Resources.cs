@@ -41,7 +41,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.GetAsync($"graphs/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<Graph>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<Graph>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Graph?> CreateGraphAsync(CreateGraphRequest request, CancellationToken cancellationToken = default)
@@ -55,7 +55,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.PostAsync("graphs", content, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<Graph>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<Graph>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Graph?> UpdateGraphAsync(string id, UpdateGraphRequest request, CancellationToken cancellationToken = default)
@@ -71,7 +71,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.SendAsync(message, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<Graph>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<Graph>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task DeleteGraphAsync(string id, CancellationToken cancellationToken = default)
@@ -94,12 +94,6 @@ public sealed partial class VirusTotalClient
             throw new ArgumentNullException(nameof(request));
         }
         return CreateCommentAsync(ResourceType.Graph, id, request, cancellationToken);
-    }
-
-    public async Task DeleteGraphCommentAsync(string graphId, string commentId, CancellationToken cancellationToken = default)
-    {
-        using var response = await _httpClient.DeleteAsync($"graphs/{Uri.EscapeDataString(graphId)}/comments/{Uri.EscapeDataString(commentId)}", cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
     public Task<PagedResponse<Collection>?> ListCollectionsAsync(int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken cancellationToken = default)
@@ -128,7 +122,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.GetAsync($"collections/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<Collection>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<Collection>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Collection?> CreateCollectionAsync(CreateCollectionRequest request, CancellationToken cancellationToken = default)
@@ -142,7 +136,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.PostAsync("collections", content, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<Collection>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<Collection>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Collection?> UpdateCollectionAsync(string id, UpdateCollectionRequest request, CancellationToken cancellationToken = default)
@@ -158,7 +152,7 @@ public sealed partial class VirusTotalClient
         using var response = await _httpClient.SendAsync(message, cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
         using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<Collection>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        return await DeserializeDataAsync<Collection>(stream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task DeleteCollectionAsync(string id, CancellationToken cancellationToken = default)
@@ -168,159 +162,84 @@ public sealed partial class VirusTotalClient
         await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
-    public Task<PagedResponse<Relationship>?> ListCollectionItemsAsync(string id, int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken cancellationToken = default)
+    /// <summary>Gets full objects from one collection relationship.</summary>
+    public Task<PagedResponse<SearchResult>?> GetCollectionObjectsAsync(
+        string collectionId,
+        string relationship,
+        int? limit = null,
+        string? cursor = null,
+        bool fetchAll = false,
+        CancellationToken cancellationToken = default)
     {
-        ValidateId(id, nameof(id));
-        return GetPagedAsync<Relationship>(async (c, token) =>
-        {
-            var path = new StringBuilder($"collections/{Uri.EscapeDataString(id)}/items");
-            var hasQuery = false;
-            if (limit.HasValue)
-            {
-                path.Append("?limit=").Append(limit.Value);
-                hasQuery = true;
-            }
-            if (!string.IsNullOrEmpty(c))
-            {
-                path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(c));
-            }
-            using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
-            await EnsureSuccessAsync(response, token).ConfigureAwait(false);
-            using var stream = await response.Content.ReadContentStreamAsync(token).ConfigureAwait(false);
-            return await JsonSerializer.DeserializeAsync<PagedResponse<Relationship>>(stream, _jsonOptions, token).ConfigureAwait(false);
-        }, cursor, fetchAll, cancellationToken);
+        ValidateId(collectionId, nameof(collectionId));
+        ValidateId(relationship, nameof(relationship));
+        var path = $"collections/{Uri.EscapeDataString(collectionId)}/{Uri.EscapeDataString(relationship)}";
+        return GetPagedAsync<SearchResult>(
+            (nextCursor, token) => GetPageAsync<SearchResult>(path, limit, nextCursor, token),
+            cursor,
+            fetchAll,
+            cancellationToken);
     }
 
-    public async Task<RelationshipResponse?> AddCollectionItemsAsync(string id, AddItemsRequest request, CancellationToken cancellationToken = default)
+    /// <summary>Gets descriptors from one collection relationship.</summary>
+    public Task<PagedResponse<Relationship>?> GetCollectionRelationshipDescriptorsAsync(
+        string collectionId,
+        string relationship,
+        int? limit = null,
+        string? cursor = null,
+        bool fetchAll = false,
+        CancellationToken cancellationToken = default)
     {
-        ValidateId(id, nameof(id));
+        ValidateId(collectionId, nameof(collectionId));
+        ValidateId(relationship, nameof(relationship));
+        var path = $"collections/{Uri.EscapeDataString(collectionId)}/relationships/{Uri.EscapeDataString(relationship)}";
+        return GetPagedAsync<Relationship>(
+            (nextCursor, token) => GetPageAsync<Relationship>(path, limit, nextCursor, token),
+            cursor,
+            fetchAll,
+            cancellationToken);
+    }
+
+    /// <summary>Adds descriptors to one collection relationship.</summary>
+    public Task AddCollectionItemsAsync(
+        string collectionId,
+        string relationship,
+        RelationshipDescriptorsRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateId(collectionId, nameof(collectionId));
+        ValidateId(relationship, nameof(relationship));
         if (request is null)
         {
             throw new ArgumentNullException(nameof(request));
         }
-        var json = JsonSerializer.Serialize(request, _jsonOptions);
-        using var content = new StringContent(json, Encoding.UTF8, "application/json");
-        using var response = await _httpClient.PostAsync($"collections/{Uri.EscapeDataString(id)}/items", content, cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<RelationshipResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        request.Validate();
+        return SendJsonAsync(
+            HttpMethod.Post,
+            $"collections/{Uri.EscapeDataString(collectionId)}/{Uri.EscapeDataString(relationship)}",
+            request,
+            cancellationToken);
     }
 
-    public async Task DeleteCollectionItemAsync(string id, string itemId, CancellationToken cancellationToken = default)
+    /// <summary>Deletes descriptors from one collection relationship.</summary>
+    public Task DeleteCollectionItemsAsync(
+        string collectionId,
+        string relationship,
+        RelationshipDescriptorsRequest request,
+        CancellationToken cancellationToken = default)
     {
-        ValidateId(id, nameof(id));
-        using var response = await _httpClient.DeleteAsync($"collections/{Uri.EscapeDataString(id)}/items/{Uri.EscapeDataString(itemId)}", cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-    }
-
-    public Task<PagedResponse<Bundle>?> ListBundlesAsync(int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken cancellationToken = default)
-        => GetPagedAsync<Bundle>(async (c, token) =>
-        {
-            var path = new StringBuilder("bundles");
-            var hasQuery = false;
-            if (limit.HasValue)
-            {
-                path.Append("?limit=").Append(limit.Value);
-                hasQuery = true;
-            }
-            if (!string.IsNullOrEmpty(c))
-            {
-                path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(c));
-            }
-            using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
-            await EnsureSuccessAsync(response, token).ConfigureAwait(false);
-            using var stream = await response.Content.ReadContentStreamAsync(token).ConfigureAwait(false);
-            return await JsonSerializer.DeserializeAsync<PagedResponse<Bundle>>(stream, _jsonOptions, token).ConfigureAwait(false);
-        }, cursor, fetchAll, cancellationToken);
-
-    public async Task<Bundle?> GetBundleAsync(string id, CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        using var response = await _httpClient.GetAsync($"bundles/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<Bundle>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-    }
-
-    public async Task<Bundle?> CreateBundleAsync(CreateBundleRequest request, CancellationToken cancellationToken = default)
-    {
+        ValidateId(collectionId, nameof(collectionId));
+        ValidateId(relationship, nameof(relationship));
         if (request is null)
         {
             throw new ArgumentNullException(nameof(request));
         }
-        var json = JsonSerializer.Serialize(request, _jsonOptions);
-        using var content = new StringContent(json, Encoding.UTF8, "application/json");
-        using var response = await _httpClient.PostAsync("bundles", content, cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<Bundle>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+        request.Validate();
+        return SendJsonAsync(
+            HttpMethod.Delete,
+            $"collections/{Uri.EscapeDataString(collectionId)}/{Uri.EscapeDataString(relationship)}",
+            request,
+            cancellationToken);
     }
 
-    public async Task<Bundle?> UpdateBundleAsync(string id, UpdateBundleRequest request, CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-        var json = JsonSerializer.Serialize(request, _jsonOptions);
-        using var content = new StringContent(json, Encoding.UTF8, "application/json");
-        using var message = new HttpRequestMessage(new HttpMethod("PATCH"), $"bundles/{Uri.EscapeDataString(id)}") { Content = content };
-        using var response = await _httpClient.SendAsync(message, cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<Bundle>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-    }
-
-    public async Task DeleteBundleAsync(string id, CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        using var response = await _httpClient.DeleteAsync($"bundles/{Uri.EscapeDataString(id)}", cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-    }
-
-    public Task<PagedResponse<Relationship>?> ListBundleItemsAsync(string id, int? limit = null, string? cursor = null, bool fetchAll = false, CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        return GetPagedAsync<Relationship>(async (c, token) =>
-        {
-            var path = new StringBuilder($"bundles/{Uri.EscapeDataString(id)}/items");
-            var hasQuery = false;
-            if (limit.HasValue)
-            {
-                path.Append("?limit=").Append(limit.Value);
-                hasQuery = true;
-            }
-            if (!string.IsNullOrEmpty(c))
-            {
-                path.Append(hasQuery ? '&' : '?').Append("cursor=").Append(Uri.EscapeDataString(c));
-            }
-            using var response = await _httpClient.GetAsync(path.ToString(), token).ConfigureAwait(false);
-            await EnsureSuccessAsync(response, token).ConfigureAwait(false);
-            using var stream = await response.Content.ReadContentStreamAsync(token).ConfigureAwait(false);
-            return await JsonSerializer.DeserializeAsync<PagedResponse<Relationship>>(stream, _jsonOptions, token).ConfigureAwait(false);
-        }, cursor, fetchAll, cancellationToken);
-    }
-
-    public async Task<RelationshipResponse?> AddBundleItemsAsync(string id, AddItemsRequest request, CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        if (request is null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
-        var json = JsonSerializer.Serialize(request, _jsonOptions);
-        using var content = new StringContent(json, Encoding.UTF8, "application/json");
-        using var response = await _httpClient.PostAsync($"bundles/{Uri.EscapeDataString(id)}/items", content, cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-        using var stream = await response.Content.ReadContentStreamAsync(cancellationToken).ConfigureAwait(false);
-        return await JsonSerializer.DeserializeAsync<RelationshipResponse>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-    }
-
-    public async Task DeleteBundleItemAsync(string id, string itemId, CancellationToken cancellationToken = default)
-    {
-        ValidateId(id, nameof(id));
-        using var response = await _httpClient.DeleteAsync($"bundles/{Uri.EscapeDataString(id)}/items/{Uri.EscapeDataString(itemId)}", cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
-    }
 }

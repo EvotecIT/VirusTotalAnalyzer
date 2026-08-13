@@ -1,22 +1,24 @@
 ﻿@{
-    AliasesToExport      = @('Get-VirusScan')
+    AliasesToExport      = @('Get-VirusAccount', 'Get-VirusScan')
     Author               = 'Przemyslaw Klys'
-    CmdletsToExport      = @('Get-VirusReport', 'New-VirusScan')
+    CmdletsToExport      = @('Get-VirusComment', 'Get-VirusRelationship', 'Get-VirusReport', 'Get-VirusTotalMonitorEvent', 'Get-VirusTotalMonitorItem', 'Get-VirusTotalMonitorStatistics', 'Get-VirusUser', 'New-VirusScan', 'New-VirusTotalMonitorFolder', 'New-VirusVote', 'Remove-VirusTotalMonitorItem', 'Send-VirusTotalMonitorFile', 'Set-VirusTotalMonitorItem')
     CompanyName          = 'Evotec'
     CompatiblePSEditions = @('Desktop', 'Core')
-    Copyright            = '(c) 2011 - 2025 Przemyslaw Klys @ Evotec. All rights reserved.'
-    Description          = 'PowerShell module that intearacts with the VirusTotal service using a VirusTotal API (free)'
+    Copyright            = '(c) 2011 - 2026 Przemyslaw Klys @ Evotec. All rights reserved.'
+    Description          = 'VirusTotal API v3 module for reports, submissions, community data, and publisher Monitor workflows.'
     FunctionsToExport    = @()
     GUID                 = '2e82faa1-d870-42b2-b5aa-4a63bf02f43e'
-    ModuleVersion        = '0.0.5'
+    ModuleVersion        = '1.0.0'
     PowerShellVersion    = '5.1'
     PrivateData          = @{
         PSData = @{
-            ExternalModuleDependencies = @('Microsoft.PowerShell.Management', 'Microsoft.PowerShell.Utility')
+            ExternalModuleDependencies = @()
             ProjectUri                 = 'https://github.com/EvotecIT/VirusTotalAnalyzer'
-            Tags                       = @('Windows', 'Linux', 'macOs', 'VirusTotal', 'virus', 'threat', 'analyzer')
+            Tags                       = @('Windows', 'Linux', 'macOS', 'VirusTotal', 'Monitor', 'publisher', 'malware', 'security')
+            RequireLicenseAcceptance   = $false
         }
     }
-    RequiredModules      = @('Microsoft.PowerShell.Management', 'Microsoft.PowerShell.Utility')
-    RootModule           = 'VirusTotalAnalyzer.PowerShell.dll'
+    RequiredModules      = @()
+    RootModule           = 'VirusTotalAnalyzer.psm1'
+    ScriptsToProcess     = @()
 }

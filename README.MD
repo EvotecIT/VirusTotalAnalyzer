@@ -1,221 +1,139 @@
-# VirusTotalAnalyzer - VirusTotal API v3 client for .NET + PowerShell
+<p align="center">
+  <a href="https://www.powershellgallery.com/packages/VirusTotalAnalyzer"><img src="https://img.shields.io/powershellgallery/v/VirusTotalAnalyzer.svg"></a>
+  <a href="https://www.nuget.org/packages/VirusTotalAnalyzer"><img src="https://img.shields.io/nuget/v/VirusTotalAnalyzer.svg"></a>
+  <a href="https://github.com/EvotecIT/VirusTotalAnalyzer"><img src="https://img.shields.io/github/license/EvotecIT/VirusTotalAnalyzer.svg"></a>
+  <a href="https://www.powershellgallery.com/packages/VirusTotalAnalyzer"><img src="https://img.shields.io/powershellgallery/dt/VirusTotalAnalyzer.svg"></a>
+  <a href="https://www.nuget.org/packages/VirusTotalAnalyzer"><img src="https://img.shields.io/nuget/dt/VirusTotalAnalyzer.svg"></a>
+</p>
 
-📦 PowerShell Gallery
+# VirusTotalAnalyzer
 
-[![powershell gallery](https://img.shields.io/powershellgallery/v/VirusTotalAnalyzer.svg)](https://www.powershellgallery.com/packages/VirusTotalAnalyzer)
-[![powershell gallery preview](https://img.shields.io/powershellgallery/vpre/VirusTotalAnalyzer.svg?label=powershell%20gallery%20preview&colorB=yellow)](https://www.powershellgallery.com/packages/VirusTotalAnalyzer)
-[![powershell gallery downloads](https://img.shields.io/powershellgallery/dt/VirusTotalAnalyzer.svg)](https://www.powershellgallery.com/packages/VirusTotalAnalyzer)
+VirusTotalAnalyzer is a typed .NET client and compiled PowerShell module for the documented VirusTotal API v3. Its main job is the everyday VirusTotal workflow: submit a file or URL, wait for analysis, and retrieve reports for files, URLs, domains, and IP addresses.
 
-📦 NuGet Package
+The library targets .NET Framework 4.7.2, .NET 8, and .NET 10. The PowerShell module supports Windows PowerShell 5.1 and PowerShell 7+.
 
-[![nuget downloads](https://img.shields.io/nuget/dt/VirusTotalAnalyzer?label=nuget%20downloads)](https://www.nuget.org/packages/VirusTotalAnalyzer)
-[![nuget version](https://img.shields.io/nuget/v/VirusTotalAnalyzer)](https://www.nuget.org/packages/VirusTotalAnalyzer)
+## Public API usage
 
-🛠️ Project Information
-
-[![build](https://github.com/EvotecIT/VirusTotalAnalyzer/actions/workflows/test.yml/badge.svg)](https://github.com/EvotecIT/VirusTotalAnalyzer/actions/workflows/test.yml)
-[![codecov](https://codecov.io/gh/EvotecIT/VirusTotalAnalyzer/branch/master/graph/badge.svg)](https://codecov.io/gh/EvotecIT/VirusTotalAnalyzer)
-[![top language](https://img.shields.io/github/languages/top/EvotecIT/VirusTotalAnalyzer.svg)](https://github.com/EvotecIT/VirusTotalAnalyzer)
-[![license](https://img.shields.io/github/license/EvotecIT/VirusTotalAnalyzer.svg)](https://github.com/EvotecIT/VirusTotalAnalyzer)
-
-👨‍💻 Author & Social
-
-[![Twitter follow](https://img.shields.io/twitter/follow/PrzemyslawKlys.svg?label=Twitter%20%40PrzemyslawKlys&style=social)](https://twitter.com/PrzemyslawKlys)
-[![Blog](https://img.shields.io/badge/Blog-evotec.xyz-2A6496.svg)](https://evotec.xyz/hub)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-pklys-0077B5.svg?logo=LinkedIn)](https://www.linkedin.com/in/pklys)
-[![Threads](https://img.shields.io/badge/Threads-@PrzemyslawKlys-000000.svg?logo=Threads&logoColor=White)](https://www.threads.net/@przemyslaw.klys)
-[![Discord](https://img.shields.io/discord/508328927853281280?style=flat-square&label=discord%20chat)](https://evo.yt/discord)
-
-## What it's all about
-
-**VirusTotalAnalyzer** is a .NET + PowerShell wrapper around the VirusTotal API v3. It provides a modern .NET client and a small set of PowerShell cmdlets for common workflows such as looking up files, URLs, domains, IPs, and submitting content for analysis.
-
-## Highlights
-
-- .NET client with async APIs, pagination helpers, and typed models
-- PowerShell module for quick lookups and submissions
-- Cross-platform CI (Windows, Linux, macOS) and PowerShell 5.1 coverage
-- Examples for files, URLs, graphs, comments, votes, and more
-
-## First 60 seconds
-
-### PowerShell
+Create a free VirusTotal Community account and store its API key in the `VIRUSTOTAL_API_KEY` environment variable:
 
 ```powershell
-$env:VT_API_KEY = 'YOUR_API_KEY'
-Import-Module VirusTotalAnalyzer -Force
-Get-VirusReport -ApiKey $env:VT_API_KEY -Hash '44d88612fea8a8f36de82e1278abb02f'
+$env:VIRUSTOTAL_API_KEY = 'your-api-key'
+Import-Module VirusTotalAnalyzer
 ```
 
-### C#
+The key can still be supplied explicitly with `-ApiKey`, or an existing `IVirusTotalClient` can be passed with `-Client`.
+
+Submit a file or URL and wait for the completed analysis:
+
+```powershell
+$fileAnalysis = New-VirusScan -File '.\sample.exe' -Wait
+$urlAnalysis  = New-VirusScan -Url 'https://example.com' -Wait
+```
+
+The default 20-second polling interval is deliberately conservative for the public API. It can be changed when the account has a different licensed limit:
+
+```powershell
+New-VirusScan -File '.\sample.exe' -Wait -TimeoutSeconds 600 -PollingIntervalSeconds 30
+```
+
+Retrieve existing reports without submitting content:
+
+```powershell
+Get-VirusReport -Hash 'BFF77EECBB2F7DA25ECBC9D9673E5DC1DB68DCC68FD76D006E836F9AC61C547E'
+Get-VirusReport -File '.\sample.exe'
+Get-VirusReport -Url 'https://example.com'
+Get-VirusReport -DomainName 'example.com'
+Get-VirusReport -IPAddress '1.1.1.1'
+```
+
+For several indicators, pass an array or pipe values into the command. `Get-VirusReport` removes duplicate requests, caches successful reports for five minutes, retries `429` responses using `Retry-After`, and starts requests 20 seconds apart by default:
+
+```powershell
+$verdicts = Get-VirusReport -Hash $hashes -Summary
+$verdicts | Select-Object Id, Verdict, Malicious, Suspicious, Reputation, LastAnalysisDate, Permalink
+
+# Keep the complete response when deeper inspection is needed.
+$fullReport = $verdicts[0].Report
+```
+
+The 20-second interval suits a free key. Set `-MinimumIntervalSeconds 0` only when the account's licensed quota permits it. `-CacheSeconds` and `-MaxRetries` tune the other batch behaviors.
+
+Useful network relationships have a typed PowerShell surface:
+
+```powershell
+Get-VirusRelationship -DomainName 'example.com' -Relationship Resolutions
+Get-VirusRelationship -DomainName 'example.com' -Relationship HistoricalWhois
+Get-VirusRelationship -DomainName 'example.com' -Relationship HistoricalSslCertificates
+Get-VirusRelationship -DomainName 'example.com' -Relationship CommunicatingFiles -Limit 10
+Get-VirusRelationship -IPAddress '1.1.1.1' -Relationship Resolutions
+Get-VirusRelationship -IPAddress '1.1.1.1' -Relationship CommunicatingFiles -Limit 10
+```
+
+Configure a non-secret user identifier separately from the key when account information is needed:
+
+```powershell
+$env:VIRUSTOTAL_USER_ID = 'your-user-id'
+Get-VirusAccount
+Get-VirusAccount -Quota
+```
+
+`Get-VirusAccount` is an alias for `Get-VirusUser`. The command never substitutes the API key into `/users/{id}`. VirusTotal returns quotas, privileges, historical WHOIS, and other relationship data only when the caller is entitled to see them.
+
+VirusTotal currently limits the Public API to 500 requests per day and 4 requests per minute. Its terms also prohibit use of the Public API in commercial products or services and in business workflows that do not contribute new files. Use a licensed VirusTotal service for those scenarios. See [Public vs Premium API](https://docs.virustotal.com/reference/public-vs-premium-api).
+
+## .NET usage
 
 ```csharp
-using System;
 using VirusTotalAnalyzer;
 
-IVirusTotalClient client = VirusTotalClient.Create(Environment.GetEnvironmentVariable("VT_API_KEY"));
-var report = await client.GetFileReportAsync("44d88612fea8a8f36de82e1278abb02f");
-Console.WriteLine(report?.Id);
+using var client = VirusTotalClient.Create(
+    Environment.GetEnvironmentVariable("VIRUSTOTAL_API_KEY")
+        ?? throw new InvalidOperationException("VIRUSTOTAL_API_KEY is not set."));
+
+var submission = await client.ScanFileAsync("sample.exe", cancellationToken: cancellationToken);
+var analysis = submission is null
+    ? null
+    : await client.WaitForAnalysisCompletionAsync(
+        submission.Id,
+        TimeSpan.FromMinutes(5),
+        cancellationToken: cancellationToken);
 ```
 
-## Supported targets
+For free-key-friendly report batches, use the explicit batch methods:
 
-### .NET library
+```csharp
+var reports = await client.GetFileReportsBatchAsync(hashes, cancellationToken: cancellationToken);
+var verdicts = reports.Select(report => report.ToVerdict()).ToArray();
+```
 
-| Target | Notes |
-| --- | --- |
-| .NET Framework 4.7.2 | Windows PowerShell 5.1 compatibility |
-| .NET 8 | Cross-platform |
-| .NET 9 | Cross-platform |
+`VirusTotalBatchOptions` controls request spacing, cache duration, and rate-limit retries. Ordinary singular and plural report methods remain direct API calls; the `*BatchAsync` methods opt into quota coordination.
 
-### PowerShell
+The same client exposes comments, votes, relationships, graphs, collections, Intelligence search and hunting, private scanning, feeds, ZIP jobs, and VirusTotal Monitor. Historical WHOIS, DNS resolutions, related files, and certificate history have typed methods. Licensed endpoints remain available for entitled accounts but are not part of the free-key workflow.
 
-| Edition | Platform | Notes |
-| --- | --- | --- |
-| Windows PowerShell 5.1 | Windows | Uses `net472` build |
-| PowerShell 7+ | Windows, Linux, macOS | Uses modern .NET builds |
+## VirusTotal Monitor
 
-## Installation
-
-### PowerShell
+Monitor is a licensed publisher workflow, not an antivirus verdict from the Public API. The upload API streams file content, verifies the remote SHA-256 by default, and supports versioned destination paths:
 
 ```powershell
-Install-Module -Name VirusTotalAnalyzer -Scope CurrentUser
+Send-VirusTotalMonitorFile `
+    -ApiKey $env:VIRUSTOTAL_MONITOR_API_KEY `
+    -File '.\MyProduct.exe' `
+    -Path '/MyProduct/1.2.3/win-x64/MyProduct.exe' `
+    -Details 'Signed release artifact'
+
+Get-VirusTotalMonitorItem -ApiKey $env:VIRUSTOTAL_MONITOR_API_KEY -List -All
+Get-VirusTotalMonitorEvent -ApiKey $env:VIRUSTOTAL_MONITOR_API_KEY -All
+Get-VirusTotalMonitorStatistics -ApiKey $env:VIRUSTOTAL_MONITOR_API_KEY
 ```
 
-### .NET (library)
+## Install
+
+```powershell
+Install-Module VirusTotalAnalyzer -Scope CurrentUser
+```
 
 ```powershell
 dotnet add package VirusTotalAnalyzer
 ```
 
-Reference the `VirusTotalAnalyzer` project directly, or use the built DLL from the module artifacts/release package.
-
-## API key setup
-
-You need a VirusTotal API key. Create an account, then open your profile in the VirusTotal web UI and copy the API key.
-Direct link: [My API key](https://www.virustotal.com/gui/my-apikey)
-
-Recommended: store it in an environment variable so it doesn't end up in scripts or logs.
-
-### PowerShell
-
-```powershell
-$env:VT_API_KEY = 'YOUR_API_KEY'
-```
-
-### C#
-
-```csharp
-var apiKey = Environment.GetEnvironmentVariable("VT_API_KEY");
-```
-
-## Hello world
-
-### PowerShell
-
-```powershell
-Import-Module VirusTotalAnalyzer -Force
-Get-VirusReport -ApiKey $env:VT_API_KEY -Hash '44d88612fea8a8f36de82e1278abb02f'
-```
-
-### C#
-
-```csharp
-using System;
-using VirusTotalAnalyzer;
-
-IVirusTotalClient client = VirusTotalClient.Create(Environment.GetEnvironmentVariable("VT_API_KEY"));
-var report = await client.GetFileReportAsync("44d88612fea8a8f36de82e1278abb02f");
-Console.WriteLine(report?.Id);
-```
-
-## Quick usage (PowerShell)
-
-```powershell
-Import-Module VirusTotalAnalyzer -Force
-
-$apiKey = 'APIKEY'
-
-# File / hash / URL / domain / IP
-Get-VirusReport -ApiKey $apiKey -Hash 'BFF77EECBB2F7DA25ECBC9D9673E5DC1DB68DCC68FD76D006E836F9AC61C547E'
-Get-VirusReport -ApiKey $apiKey -File "C:\Samples\TestFile.txt"
-Get-VirusReport -ApiKey $apiKey -Search "https://evotec.xyz"
-Get-VirusReport -ApiKey $apiKey -DomainName 'evotec.xyz'
-Get-VirusReport -ApiKey $apiKey -IPAddress '1.1.1.1'
-```
-
-```powershell
-Import-Module VirusTotalAnalyzer -Force
-
-$apiKey = 'APIKEY'
-
-# Submit URL or file for scanning
-New-VirusScan -ApiKey $apiKey -Url 'https://evotec.pl'
-New-VirusScan -ApiKey $apiKey -File "C:\Samples\TestFile.txt"
-```
-
-## Quick usage (C#)
-
-```csharp
-using VirusTotalAnalyzer;
-using VirusTotalAnalyzer.Models;
-
-IVirusTotalClient client = VirusTotalClient.Create("YOUR_API_KEY");
-
-try {
-    var report = await client.GetFileReportAsync(
-        "44d88612fea8a8f36de82e1278abb02f",
-        fields: new[] { "md5", "sha256" },
-        relationships: new[] { "analyses" });
-
-    Console.WriteLine(report?.Id);
-    Console.WriteLine(report?.Attributes.CreationDate);
-}
-catch (RateLimitExceededException ex) {
-    Console.WriteLine($"Rate limit exceeded. Retry after: {ex.RetryAfter}");
-}
-catch (ApiException ex) {
-    Console.WriteLine($"API error: {ex.Error?.Message}");
-}
-```
-
-## Cmdlets
-
-| Cmdlet | Description |
-| --- | --- |
-| `Get-VirusReport` | Retrieve file, URL, domain, IP, or analysis reports |
-| `New-VirusScan` | Submit a file or URL for analysis or re-analysis |
-| `Get-VirusComment` | Retrieve comments for a file or URL |
-| `New-VirusVote` | Vote on a file or URL |
-| `Get-VirusUser` | Get account and quota information |
-
-## Examples
-
-- .NET samples: `VirusTotalAnalyzer.Examples`
-- PowerShell samples: `Module/Examples`
-- Blog post: [Working with VirusTotal from PowerShell](https://evotec.xyz/working-with-virustotal-from-powershell/)
-
-## API coverage & roadmap
-
-- Coverage matrix and parity plan: [Docs/API-Coverage.md](Docs/API-Coverage.md)
-
-## Build and test
-
-```powershell
-dotnet restore VirusTotalAnalyzer.sln
-dotnet build VirusTotalAnalyzer.sln -c Release
-dotnet test VirusTotalAnalyzer.Tests/VirusTotalAnalyzer.Tests.csproj -c Release
-```
-
-```powershell
-pwsh -NoLogo -NoProfile -Command "Invoke-Pester -Path 'Module/Tests' -Output Detailed -CI"
-```
-
-```powershell
-powershell -NoLogo -NoProfile -Command "Invoke-Pester -Path 'Module/Tests' -Output Detailed -CI"
-```
-
-## License
-
-MIT.
+Review [V3-MIGRATION.md](V3-MIGRATION.md) before upgrading code that used the pre-release .NET API surface.

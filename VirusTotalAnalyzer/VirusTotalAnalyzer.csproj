@@ -15,7 +15,7 @@
     <PackageProjectUrl>https://github.com/EvotecIT/VirusTotalAnalyzer</PackageProjectUrl>
     <RepositoryUrl>https://github.com/EvotecIT/VirusTotalAnalyzer.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReadmeFile>README.MD</PackageReadmeFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
@@ -27,7 +27,7 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="..\README.MD" Pack="true" PackagePath="\" />
     <InternalsVisibleTo Include="VirusTotalAnalyzer.Tests" />
   </ItemGroup>
 </Project>

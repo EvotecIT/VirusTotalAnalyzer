@@ -10,7 +10,7 @@ using Xunit;
 
 namespace VirusTotalAnalyzer.Tests;
 
-public sealed class VirusTotalClientBatchTests
+public sealed partial class VirusTotalClientBatchTests
 {
     [Fact]
     public async Task Batch_DeduplicatesRequestsButPreservesDuplicateOutput()
@@ -402,25 +402,37 @@ public sealed class VirusTotalClientBatchTests
     public async Task Batch_RetryAfterCanAdvanceScheduleWhileAnotherCallerWaits()
     {
         var handler = new DelayedRateLimitHandler();
-        using var client = CreateClient(handler);
+        var clock = new BatchTestClock();
+        using var guard = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        using var client = new VirusTotalClient(
+            new HttpClient(handler) { BaseAddress = new Uri("https://www.virustotal.com/api/v3/") },
+            batchTimestamp: clock.GetTimestamp, batchDelay: clock.DelayAsync);
         var options = ImmediateOptions();
         options.MinimumInterval = TimeSpan.FromMilliseconds(300);
         options.CacheDuration = TimeSpan.Zero;
         options.MaxRetries = 0;
 
-        var rateLimited = client.GetFileReportsBatchAsync(new[] { "first" }, options);
+        var rateLimited = client.GetFileReportsBatchAsync(new[] { "first" }, options, cancellationToken: guard.Token);
         await handler.FirstStarted.Task;
-        var other = client.GetFileReportsBatchAsync(new[] { "second" }, options);
-        await Task.Delay(50);
+        var other = client.GetFileReportsBatchAsync(new[] { "second" }, options, cancellationToken: guard.Token);
+        await clock.WaitForDelayAsync(guard.Token);
+        var retryDeadline = clock.GetTimestamp() + Stopwatch.Frequency;
         handler.ReleaseRateLimit.TrySetResult(true);
 
         await Assert.ThrowsAsync<RateLimitExceededException>(() => rateLimited);
+        // The caller already waiting for its 300 ms interval must re-read the
+        // new one-second Retry-After deadline before it sends a request.
+        clock.Advance(TimeSpan.FromMilliseconds(300));
+        await clock.WaitForDelayAsync(guard.Token);
+        Assert.Equal(retryDeadline, clock.PendingDeadline);
+        Assert.False(other.IsCompleted);
+        clock.Advance(TimeSpan.FromMilliseconds(699));
+        Assert.False(other.IsCompleted);
+        clock.Advance(TimeSpan.FromMilliseconds(1));
         var reports = await other;
 
         Assert.Single(reports);
-        Assert.True(
-            handler.SuccessfulRequest - handler.FirstRequest >= TimeSpan.FromMilliseconds(800),
-            $"Waiting caller started after {handler.SuccessfulRequest - handler.FirstRequest}.");
+        Assert.Equal(2, handler.RequestCount);
     }
 
     [Fact]
@@ -682,15 +694,12 @@ public sealed class VirusTotalClientBatchTests
     private sealed class DelayedRateLimitHandler : HttpMessageHandler
     {
         private int _requestCount;
-        private long _firstRequest;
-        private long _successfulRequest;
 
         internal TaskCompletionSource<bool> FirstStarted { get; } =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal TaskCompletionSource<bool> ReleaseRateLimit { get; } =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
-        internal TimeSpan FirstRequest => ToElapsed(_firstRequest);
-        internal TimeSpan SuccessfulRequest => ToElapsed(_successfulRequest);
+        internal int RequestCount => Volatile.Read(ref _requestCount);
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
@@ -699,7 +708,6 @@ public sealed class VirusTotalClientBatchTests
             var requestNumber = Interlocked.Increment(ref _requestCount);
             if (requestNumber == 1)
             {
-                _firstRequest = Stopwatch.GetTimestamp();
                 FirstStarted.TrySetResult(true);
                 await ReleaseRateLimit.Task.ConfigureAwait(false);
                 var response = new HttpResponseMessage((HttpStatusCode)429)
@@ -713,12 +721,8 @@ public sealed class VirusTotalClientBatchTests
                 return response;
             }
 
-            _successfulRequest = Stopwatch.GetTimestamp();
             return FileResponse("second");
         }
-
-        private static TimeSpan ToElapsed(long timestamp)
-            => TimeSpan.FromSeconds((double)timestamp / Stopwatch.Frequency);
     }
 
     private sealed class OutOfOrderHandler : HttpMessageHandler

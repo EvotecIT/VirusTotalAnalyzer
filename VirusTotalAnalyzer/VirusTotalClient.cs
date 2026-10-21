@@ -44,7 +44,10 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
     /// is disposed.
     /// </param>
     /// <param name="userAgent">Optional user-agent value. A library default is used when omitted.</param>
-    internal VirusTotalClient(HttpClient httpClient, bool disposeClient = false, string? userAgent = null)
+    /// <param name="batchTimestamp">Optional monotonic batch clock, in Stopwatch frequency units.</param>
+    /// <param name="batchDelay">Optional asynchronous delay paired with the batch clock.</param>
+    internal VirusTotalClient(HttpClient httpClient, bool disposeClient = false, string? userAgent = null,
+        Func<long>? batchTimestamp = null, Func<TimeSpan, CancellationToken, Task>? batchDelay = null)
         : this(
             httpClient,
             CreateDownloadClient(httpClient?.Timeout ?? throw new ArgumentNullException(nameof(httpClient))),
@@ -52,6 +55,10 @@ public sealed partial class VirusTotalClient : IVirusTotalClient
             disposeDownloadClient: true,
             userAgent)
     {
+        if ((batchTimestamp is null) != (batchDelay is null))
+            throw new ArgumentException("The batch clock and delay must be supplied together.");
+        _batchTimestamp = batchTimestamp ?? _batchTimestamp;
+        _batchDelay = batchDelay ?? _batchDelay;
     }
 
     internal VirusTotalClient(

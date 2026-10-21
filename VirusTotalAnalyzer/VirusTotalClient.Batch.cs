@@ -16,6 +16,8 @@ public sealed partial class VirusTotalClient
     private readonly Dictionary<string, BatchInFlightEntry> _batchInFlight = new(StringComparer.Ordinal);
     private readonly object _batchInFlightSync = new();
     private readonly SemaphoreSlim _batchRequestGate = new(1, 1);
+    private readonly Func<long> _batchTimestamp = Stopwatch.GetTimestamp;
+    private readonly Func<TimeSpan, CancellationToken, Task> _batchDelay = Task.Delay;
     private long _batchFetchGeneration;
     private long _lastBatchRequestTimestamp;
     private long _nextBatchRequestTimestamp;
@@ -347,7 +349,7 @@ public sealed partial class VirusTotalClient
         await _batchRequestGate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
         try
         {
-            var now = Stopwatch.GetTimestamp();
+            var now = _batchTimestamp();
             var retryTicksDouble = retryDelay <= TimeSpan.Zero
                 ? 0d
                 : Math.Ceiling(retryDelay.TotalSeconds * Stopwatch.Frequency);
@@ -370,7 +372,7 @@ public sealed partial class VirusTotalClient
             await _batchRequestGate.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                var now = Stopwatch.GetTimestamp();
+                var now = _batchTimestamp();
                 var intervalTicks = minimumInterval <= TimeSpan.Zero
                     ? 0L
                     : checked((long)Math.Ceiling(minimumInterval.TotalSeconds * Stopwatch.Frequency));
@@ -403,13 +405,13 @@ public sealed partial class VirusTotalClient
         }
     }
 
-    private static async Task DelaySafelyAsync(TimeSpan delay, CancellationToken cancellationToken)
+    private async Task DelaySafelyAsync(TimeSpan delay, CancellationToken cancellationToken)
     {
         var maximumSlice = TimeSpan.FromMilliseconds(int.MaxValue - 1d);
         while (delay > TimeSpan.Zero)
         {
             var slice = delay > maximumSlice ? maximumSlice : delay;
-            await Task.Delay(slice, cancellationToken).ConfigureAwait(false);
+            await _batchDelay(slice, cancellationToken).ConfigureAwait(false);
             delay -= slice;
         }
     }
